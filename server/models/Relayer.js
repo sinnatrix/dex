@@ -21,19 +21,39 @@ const Relayer = new Schema({
   networks: [NetworkSchema]
 })
 
-Relayer.methods.loadOrderbook = async function (baseTokenAddress = '0xe41d2489571d322189246dafa5ebde1f4699f498', quoteTokenAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') {
+Relayer.methods.loadOrderbook = async function ({baseTokenAddress, quoteTokenAddress}) {
+  if (!baseTokenAddress) {
+    throw new Error('baseTokenAddress is a required parameter')
+  }
+  if (!quoteTokenAddress) {
+    throw new Error('quoteTokenAddress is a required parameter')
+  }
+
+  const network = this.getNetwork()
+
+  const uri = `${network.sra_http_endpoint}/v0/orderbook?baseTokenAddress=${baseTokenAddress}&quoteTokenAddress=${quoteTokenAddress}`
+  const result = await rp({uri})
+
+  return result
+}
+
+Relayer.methods.loadOrders = async function () {
+  const network = this.getNetwork()
+
+  const uri = `${network.sra_http_endpoint}/v0/orders`
+  const result = await rp({uri, json: true})
+
+  return result
+}
+
+Relayer.methods.getNetwork = function () {
   const network = this.networks.find(one => one.networkId === config.NETWORK_ID)
 
   if (!network) {
     throw new Error('network unavailable')
   }
 
-  const uri = `${network.sra_http_endpoint}/v0/orderbook?baseTokenAddress=${baseTokenAddress}&quoteTokenAddress=${quoteTokenAddress}`
-  const result = await rp({
-    uri
-  })
-
-  return result
+  return network
 }
 
 module.exports = mongoose.model('Relayer', Relayer)

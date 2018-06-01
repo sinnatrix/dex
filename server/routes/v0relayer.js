@@ -18,10 +18,12 @@ router.get('/orderbook', async (req, res) => {
   res.status(201).send(renderOrderBook(baseTokenAddress, quoteTokenAddress))
 })
 
-router.post('/order', (req, res) => {
+router.post('/order', async (req, res) => {
   const order = req.body
-  log.info('HTTP: POST order', {order})
-  orders.push(order)
+  log.info({order}, 'HTTP: POST order')
+
+  const model = new Order(order)
+  await model.save()
 
   // if (socketConnection !== undefined) {
   //   const message = {
