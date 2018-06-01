@@ -1,8 +1,11 @@
 const config = require('./config')
 const express = require('express')
 const bodyParser = require('body-parser')
-const {getColl} = require('./utils/db')
 const log = require('./utils/log')
+const mongoose = require('mongoose')
+const Relayer = require('./models/Relayer')
+
+mongoose.connect(`mongodb://localhost/${config.DB_NAME}`)
 
 const v0relayer = require('./routes/v0relayer')
 
@@ -13,8 +16,7 @@ app.use(bodyParser.json())
 app.use('/api/v0', v0relayer)
 
 app.get('/api/relayers', async (req, res) => {
-  const coll = await getColl('relayers')
-  const relayers = await coll.find().toArray()
+  const relayers = await Relayer.find()
   res.json(relayers)
 })
 

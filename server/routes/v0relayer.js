@@ -2,21 +2,25 @@ const log = require('../utils/log')
 const router = require('express').Router()
 const {BigNumber} = require('@0xproject/utils')
 const {ZeroEx} = require('0x.js')
+const Order = require('../models/Order')
 
 const orders = []
 
-router.get('/orderbook', (req, res) => {
+router.get('/orderbook', async (req, res) => {
   log.info('HTTP: GET orderbook')
 
-  const baseTokenAddress = req.param('baseTokenAddress')
-  const quoteTokenAddress = req.param('quoteTokenAddress')
+  const items = await Order.find({})
+  log.info({items})
+
+  const baseTokenAddress = req.query['baseTokenAddress']
+  const quoteTokenAddress = req.query['quoteTokenAddress']
 
   res.status(201).send(renderOrderBook(baseTokenAddress, quoteTokenAddress))
 })
 
 router.post('/order', (req, res) => {
-  log.info('HTTP: POST order')
   const order = req.body
+  log.info('HTTP: POST order', {order})
   orders.push(order)
 
   // if (socketConnection !== undefined) {

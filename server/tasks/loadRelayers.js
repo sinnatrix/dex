@@ -1,20 +1,15 @@
-const {getColl, closeConn} = require('../utils/db')
+const runner = require('../utils/runner')
 const log = require('../utils/log')
 const registry = require('../api/relayerRegistry')
+const Relayer = require('../models/Relayer')
 
-const mainAsync = async () => {
+runner(async () => {
   const items = await registry.load()
-  log.info('loaded')
+  log.info({count: items.length}, 'loaded')
 
-  log.info({items})
+  await Relayer.remove({}).exec()
 
-  const coll = await getColl('relayers')
-  await coll.remove({})
-  await coll.insert(items)
+  await Relayer.insertMany(items)
 
   log.info('saved')
-
-  await closeConn()
-}
-
-mainAsync().catch(console.error)
+})

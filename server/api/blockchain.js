@@ -1,4 +1,4 @@
-const config = require('./.config')
+const config = require('../config')
 const log = require('../utils/log')
 // const {ZeroEx} = require('0x.js')
 const Web3 = require('web3')
