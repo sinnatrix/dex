@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "standard"
+    "test": "standard",
+    "rpc": "ganache-cli"
   },
   "dependencies": {
     "0x.js": "^0.38.3",
@@ -25,6 +26,7 @@
     "web3": "^1.0.0-beta.34"
   },
   "devDependencies": {
+    "ganache-cli": "^6.1.0",
     "nodemon": "^1.17.5",
     "standard": "^11.0.1"
   }

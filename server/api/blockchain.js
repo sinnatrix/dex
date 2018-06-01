@@ -3,6 +3,8 @@ const log = require('../utils/log')
 // const {ZeroEx} = require('0x.js')
 const Web3 = require('web3')
 
+const getProvider = () => new Web3.providers.HttpProvider(config.BLOCKCHAIN_NODE_URL)
+
 const sendSignedTx = (web3, signedTx) => {
   const method = web3.eth.sendSignedTransaction.method
   const payload = method.toPayload([signedTx.rawTransaction])
@@ -21,9 +23,7 @@ const sendSignedTx = (web3, signedTx) => {
 const sendTx = async tx => {
   log.info('tx: ', tx)
 
-  const nodeRpcUrl = `https://kovan.infura.io/${config.INFURA_KEY}`
-
-  const provider = new Web3.providers.HttpProvider(nodeRpcUrl)
+  const provider = getProvider()
 
   // const zeroEx = new ZeroEx(provider, {
   //   networkId: config.KOVAN_NETWORK_ID
@@ -57,5 +57,6 @@ const sendTx = async tx => {
 }
 
 module.exports = {
-  sendTx
+  sendTx,
+  getProvider
 }
