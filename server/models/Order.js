@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const uniqueValidator = require('mongoose-unique-validator')
-const config = require('../config')
 const blockchain = require('../api/blockchain')
 const {ZeroEx} = require('0x.js')
 const {BigNumber} = require('@0xproject/utils')
@@ -76,7 +75,7 @@ Order.methods.validateInBlockchain = async function () {
   const provider = blockchain.getProvider()
 
   const zeroEx = new ZeroEx(provider, {
-    networkId: config.NETWORK_ID
+    networkId: process.env.NETWORK_ID
   })
 
   const data = this.toZeroExOrder()
@@ -84,6 +83,31 @@ Order.methods.validateInBlockchain = async function () {
   console.log('order: ', data)
 
   await zeroEx.exchange.validateOrderFillableOrThrowAsync(data)
+}
+
+Order.methods.fillInBlockchain = async function () {
+  const provider = blockchain.getProvider()
+
+  const zeroEx = new ZeroEx(provider, {
+    networkId: process.env.NETWORK_ID
+  })
+
+  // const data = this.toZeroExOrder()
+
+  // Get token information
+  const wethTokenInfo = await zeroEx.tokenRegistry.getTokenBySymbolIfExistsAsync('WETH')
+  const zrxTokenInfo = await zeroEx.tokenRegistry.getTokenBySymbolIfExistsAsync('ZRX')
+
+  // Check if either getTokenIfExistsAsync query resulted in undefined
+  if (wethTokenInfo === undefined || zrxTokenInfo === undefined) {
+    throw new Error('could not find token info')
+  }
+
+  // Get token contract addresses
+  const WETH_ADDRESS = wethTokenInfo.address
+  const ZRX_ADDRESS = zrxTokenInfo.address
+
+  console.log('tokens: ', {WETH_ADDRESS, ZRX_ADDRESS})
 }
 
 module.exports = mongoose.model('Order', Order)

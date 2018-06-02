@@ -1,4 +1,3 @@
-const config = require('../config')
 const rp = require('request-promise-native')
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
@@ -47,7 +46,7 @@ Relayer.methods.loadOrders = async function () {
 }
 
 Relayer.methods.getNetwork = function () {
-  const network = this.networks.find(one => one.networkId === config.NETWORK_ID)
+  const network = this.networks.find(one => one.networkId === process.env.NETWORK_ID)
 
   if (!network) {
     throw new Error('network unavailable')

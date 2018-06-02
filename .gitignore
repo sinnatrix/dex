@@ -1,4 +1,6 @@
 node_modules
 .env
+.env.kovan
+.env.mainnet
 *.log
 .vscode

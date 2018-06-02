@@ -18,8 +18,8 @@ router.get('/token_pairs', async (req, res) => {
     const tokenB = await Token.findOne({address: one.tokenBAddress})
 
     result.push({
-      tokenA,
-      tokenB
+      tokenA: tokenA.toSRAObject(),
+      tokenB: tokenB.toSRAObject()
     })
   }
 
