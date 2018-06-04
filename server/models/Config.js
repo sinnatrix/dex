@@ -33,7 +33,7 @@ configSchema.init = async function () {
     throw new Error('no config in db!')
   }
 
-  Object.keys(data).forEach(key => {
+  Object.keys(data.toObject()).forEach(key => {
     if (key === '_id') {
       return
     }
@@ -48,7 +48,7 @@ configSchema.init = async function () {
     process.env.BLOCKCHAIN_NODE_URL = process.env.TEST_RPC_URL
   }
 
-  console.log(process.env)
+  // console.log(process.env)
 }
 
 module.exports = configSchema

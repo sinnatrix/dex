@@ -31,7 +31,7 @@ Relayer.methods.loadOrderbook = async function ({baseTokenAddress, quoteTokenAdd
   const network = this.getNetwork()
 
   const uri = `${network.sra_http_endpoint}/v0/orderbook?baseTokenAddress=${baseTokenAddress}&quoteTokenAddress=${quoteTokenAddress}`
-  const result = await rp({uri})
+  const result = await rp({uri, json: true})
 
   return result
 }
@@ -46,7 +46,7 @@ Relayer.methods.loadOrders = async function () {
 }
 
 Relayer.methods.getNetwork = function () {
-  const network = this.networks.find(one => one.networkId === process.env.NETWORK_ID)
+  const network = this.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID, 10))
 
   if (!network) {
     throw new Error('network unavailable')

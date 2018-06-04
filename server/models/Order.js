@@ -75,7 +75,7 @@ Order.methods.validateInBlockchain = async function () {
   const provider = blockchain.getProvider()
 
   const zeroEx = new ZeroEx(provider, {
-    networkId: process.env.NETWORK_ID
+    networkId: parseInt(process.env.NETWORK_ID, 10)
   })
 
   const data = this.toZeroExOrder()
@@ -83,13 +83,15 @@ Order.methods.validateInBlockchain = async function () {
   console.log('order: ', data)
 
   await zeroEx.exchange.validateOrderFillableOrThrowAsync(data)
+
+  console.log('order valid')
 }
 
 Order.methods.fillInBlockchain = async function () {
   const provider = blockchain.getProvider()
 
   const zeroEx = new ZeroEx(provider, {
-    networkId: process.env.NETWORK_ID
+    networkId: parseInt(process.env.NETWORK_ID, 10)
   })
 
   // const data = this.toZeroExOrder()
@@ -108,6 +110,8 @@ Order.methods.fillInBlockchain = async function () {
   const ZRX_ADDRESS = zrxTokenInfo.address
 
   console.log('tokens: ', {WETH_ADDRESS, ZRX_ADDRESS})
+
+  await this.validateInBlockchain()
 }
 
 module.exports = mongoose.model('Order', Order)
