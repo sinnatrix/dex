@@ -3,8 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^1.2.0",
+    "@material-ui/icons": "^1.1.0",
+    "axios": "^0.18.0",
+    "date-fns": "^1.29.0",
+    "material-ui-smart-button": "^0.7.0",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
+    "react-jss": "^8.4.0",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
     "react-scripts": "1.1.4"
   },
   "scripts": {
@@ -19,8 +27,14 @@
     "standard": "^11.0.1"
   },
   "standard": {
+    "parser": "babel-eslint",
     "ignore": [
       "build/*"
     ]
+  },
+  "proxy": {
+    "/api": {
+      "target": "http://localhost:7001"
+    }
   }
 }

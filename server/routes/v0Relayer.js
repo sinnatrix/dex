@@ -46,7 +46,7 @@ router.get('/orderbook', async (req, res) => {
 })
 
 router.get('/orders', async (req, res) => {
-  const orders = await Order.find({})
+  const orders = await Order.find().sort({expirationUnixTimestampSec: -1})
 
   res.send(orders)
 })

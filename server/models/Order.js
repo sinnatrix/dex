@@ -83,8 +83,6 @@ Order.methods.validateInBlockchain = async function () {
   console.log('order: ', data)
 
   await zeroEx.exchange.validateOrderFillableOrThrowAsync(data)
-
-  console.log('order valid')
 }
 
 Order.methods.fillInBlockchain = async function () {

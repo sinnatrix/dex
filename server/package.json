@@ -27,8 +27,12 @@
     "web3": "^1.0.0-beta.34"
   },
   "devDependencies": {
+    "babel-eslint": "^8.2.3",
     "ganache-cli": "^6.1.0",
     "nodemon": "^1.17.5",
     "standard": "^11.0.1"
+  },
+  "standard": {
+    "parser": "babel-eslint"
   }
 }
