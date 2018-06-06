@@ -11,6 +11,7 @@ import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import Typography from '@material-ui/core/Typography'
 import Toolbar from '@material-ui/core/Toolbar'
+import format from 'date-fns/format'
 
 const connector = connect(
   state => ({
@@ -67,6 +68,7 @@ class Orderbook extends React.Component {
               <TableCell>price</TableCell>
               <TableCell>selling</TableCell>
               <TableCell>buying</TableCell>
+              <TableCell>expires</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -84,8 +86,14 @@ class Orderbook extends React.Component {
         <TableCell>{order.price}</TableCell>
         <TableCell>{order.makerAmount} {order.makerSymbol}</TableCell>
         <TableCell>{order.takerAmount} {order.takerSymbol}</TableCell>
+        <TableCell>{this.renderExpiresAt(order)}</TableCell>
       </TableRow>
     )
+  }
+
+  renderExpiresAt = order => {
+    const date = new Date(parseInt(order.expiresAt, 0) * 1000)
+    return format(date, 'MM/DD HH:ss')
   }
 }
 
