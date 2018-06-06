@@ -61,7 +61,8 @@ orderSchema.methods.toBid = function ({baseToken, quoteToken}) {
     makerSymbol: makerToken.symbol,
     takerSymbol: takerToken.symbol,
     makerAmount,
-    takerAmount
+    takerAmount,
+    expiresAt: data.expirationUnixTimestampSec
   }
 
   return result
