@@ -165,7 +165,7 @@ Order.findBidsOwn = async ({baseTokenSymbol, quoteTokenSymbol}) => {
   })
 
   const bidsOwn = bids.map(bid => bid.toBid({baseToken, quoteToken}))
-  const bidsOwnSorted = R.sortBy(R.prop('price'), bidsOwn)
+  const bidsOwnSorted = R.sort(R.descend(R.prop('price')), bidsOwn)
 
   return bidsOwnSorted
 }
