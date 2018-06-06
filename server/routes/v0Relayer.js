@@ -31,12 +31,12 @@ router.get('/orderbook', async (req, res) => {
 
   const {baseTokenAddress, quoteTokenAddress} = req.query
   if (!baseTokenAddress) {
-    res.status(500).send('baseTokenAddress is a required param')
+    res.status(400).send('baseTokenAddress is a required param')
     return
   }
 
   if (!quoteTokenAddress) {
-    res.status(500).send('quouteTokenAddress is a required param')
+    res.status(400).send('quouteTokenAddress is a required param')
     return
   }
 

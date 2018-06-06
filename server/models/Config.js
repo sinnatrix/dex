@@ -11,7 +11,7 @@ const configSchema = new Schema({
 
 const Config = mongoose.model('Config', configSchema)
 
-configSchema.initBasic = function () {
+Config.initBasic = function () {
   const path = require('path')
   const fs = require('fs')
   const dotenv = require('dotenv')
@@ -27,7 +27,7 @@ configSchema.initBasic = function () {
   }
 }
 
-configSchema.init = async function () {
+Config.init = async function () {
   const data = await Config.findOne()
   if (!data) {
     throw new Error('no config in db!')
@@ -51,4 +51,4 @@ configSchema.init = async function () {
   // console.log(process.env)
 }
 
-module.exports = configSchema
+module.exports = Config

@@ -2,7 +2,7 @@ const rp = require('request-promise-native')
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const NetworkSchema = new Schema({
+const networkSchema = new Schema({
   networkId: Number,
   sra_http_endpoint: String,
   sra_ws_endpoint: String,
@@ -11,16 +11,16 @@ const NetworkSchema = new Schema({
   }
 })
 
-const Relayer = new Schema({
+const relayerSchema = new Schema({
   name: String,
   homepage_url: String,
   app_url: String,
   header_img: String,
   logo_img: String,
-  networks: [NetworkSchema]
+  networks: [networkSchema]
 })
 
-Relayer.methods.loadOrderbook = async function ({baseTokenAddress, quoteTokenAddress}) {
+relayerSchema.methods.loadOrderbook = async function ({baseTokenAddress, quoteTokenAddress}) {
   if (!baseTokenAddress) {
     throw new Error('baseTokenAddress is a required parameter')
   }
@@ -36,7 +36,7 @@ Relayer.methods.loadOrderbook = async function ({baseTokenAddress, quoteTokenAdd
   return result
 }
 
-Relayer.methods.loadOrders = async function () {
+relayerSchema.methods.loadOrders = async function () {
   const network = this.getNetwork()
 
   const uri = `${network.sra_http_endpoint}/v0/orders`
@@ -45,7 +45,7 @@ Relayer.methods.loadOrders = async function () {
   return result
 }
 
-Relayer.methods.getNetwork = function () {
+relayerSchema.methods.getNetwork = function () {
   const network = this.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID, 10))
 
   if (!network) {
@@ -55,4 +55,4 @@ Relayer.methods.getNetwork = function () {
   return network
 }
 
-module.exports = mongoose.model('Relayer', Relayer)
+module.exports = mongoose.model('Relayer', relayerSchema)
