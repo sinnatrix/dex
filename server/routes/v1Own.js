@@ -66,4 +66,17 @@ router.post('/orders/:hash/validate', async (req, res) => {
   }
 })
 
+router.post('/orders', async (req, res) => {
+  const data = req.body
+  let order = await Order.findOne({orderHash: data.hash})
+  if (order) {
+    throw new Error('order already exists')
+  }
+
+  order = new Order(data)
+  await order.save()
+
+  res.send(order)
+})
+
 module.exports = router
