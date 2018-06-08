@@ -6,11 +6,11 @@ import RadioGroup from '@material-ui/core/RadioGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import TextField from '@material-ui/core/TextField'
 import SmartButton from 'material-ui-smart-button'
-import {ZeroEx} from '0x.js'
-import axios from 'axios'
-import {BigNumber} from '@0xproject/utils'
 import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
 import compose from 'ramda/es/compose'
+import {makeOrder} from 'modules/index'
+import {BigNumber} from '@0xproject/utils'
 
 const decorate = jss({
   root: {
@@ -26,7 +26,8 @@ const connector = connect(
   state => ({
     marketplaceToken: state.marketplaceToken,
     currentToken: state.currentToken
-  })
+  }),
+  dispatch => bindActionCreators({makeOrder}, dispatch)
 )
 
 class LimitOrderForm extends React.Component {
@@ -55,71 +56,13 @@ class LimitOrderForm extends React.Component {
   }
 
   handlePlaceOrder = async () => {
-    const {marketplaceToken, currentToken} = this.props
+    const {type, amount, price} = this.state
 
-    const {type} = this.state
-    const amount = parseFloat(this.state.amount)
-    const price = parseFloat(this.state.price)
-
-    let data
-
-    if (type === 'buy') {
-      data = {
-        takerToken: currentToken,
-        takerAmount: amount,
-        makerToken: marketplaceToken,
-        makerAmount: price * amount
-      }
-    } else {
-      data = {
-        takerToken: marketplaceToken,
-        takerAmount: price * amount,
-        makerToken: currentToken,
-        makerAmount: amount
-      }
-    }
-
-    const makerAddress = window.web3js.eth.accounts[0]
-
-    const networkId = parseInt(window.web3.version.network, 10)
-
-    const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
-
-    const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress()
-
-    const order = {
-      maker: makerAddress,
-      taker: ZeroEx.NULL_ADDRESS,
-      feeRecipient: ZeroEx.NULL_ADDRESS,
-      makerTokenAddress: data.makerToken.address,
-      takerTokenAddress: data.takerToken.address,
-      exchangeContractAddress: EXCHANGE_ADDRESS,
-      salt: ZeroEx.generatePseudoRandomSalt(),
-      makerFee: new BigNumber(0),
-      takerFee: new BigNumber(0),
-      makerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(data.makerAmount), data.makerToken.decimals),
-      takerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(data.takerAmount), data.takerToken.decimals),
-      expirationUnixTimestampSec: new BigNumber(parseInt(Date.now() / 1000 + 3600 * 24, 10)) // Valid for up to a day
-    }
-
-    const orderHash = ZeroEx.getOrderHashHex(order)
-
-    const shouldAddPersonalMessagePrefix = window.web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
-    let ecSignature
-    try {
-      ecSignature = await zeroEx.signOrderHashAsync(orderHash, makerAddress, shouldAddPersonalMessagePrefix)
-    } catch (e) {
-      console.error('e: ', e)
-      return
-    }
-
-    const signedOrder = {
-      ...order,
-      orderHash,
-      ecSignature
-    }
-
-    await axios.post('/api/v1/orders', signedOrder)
+    this.props.makeOrder({
+      type,
+      amount: new BigNumber(amount),
+      price: new BigNumber(price)
+    })
   }
 
   render () {
