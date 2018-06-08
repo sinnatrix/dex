@@ -13,19 +13,7 @@ router.get('/tokens', async (req, res) => {
   res.json(tokens)
 })
 
-router.get('/token/:address', async (req, res) => {
-  const {address} = req.params
-
-  const token = await Token.findOne({address})
-  if (!token) {
-    res.status(404).send('not found')
-    return
-  }
-
-  res.json(token)
-})
-
-router.get('/token/by-symbol/:symbol', async (req, res) => {
+router.get('/tokens/:symbol', async (req, res) => {
   const {symbol} = req.params
 
   const token = await Token.findOne({symbol})
@@ -35,18 +23,6 @@ router.get('/token/by-symbol/:symbol', async (req, res) => {
   }
 
   res.json(token)
-})
-
-router.get('/orders/bids', async (req, res) => {
-  const {baseTokenSymbol, quoteTokenSymbol} = req.query
-  const bids = await Order.findBidsOwn({baseTokenSymbol, quoteTokenSymbol})
-  res.json(bids)
-})
-
-router.get('/orders/asks', async (req, res) => {
-  const {baseTokenSymbol, quoteTokenSymbol} = req.query
-  const asks = await Order.findAsksOwn({baseTokenSymbol, quoteTokenSymbol})
-  res.json(asks)
 })
 
 router.post('/orders/:hash/validate', async (req, res) => {

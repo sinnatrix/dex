@@ -5,6 +5,9 @@ import Wallet from './components/Wallet'
 import Marketplace from './components/Marketplace'
 import LimitOrderForm from './components/LimitOrderForm'
 import Orderbook from './components/Orderbook'
+import routerListener from 'hocs/routerListener'
+import compose from 'ramda/es/compose'
+import {loadMarketplaceToken, loadCurrentToken, loadOrderbook} from 'modules/index'
 
 const decorate = jss({
   root: {
@@ -41,4 +44,16 @@ const TradePage = ({classes}) =>
     </div>
   </Layout>
 
-export default decorate(TradePage)
+export default compose(
+  routerListener({
+    onEnter ({params, dispatch}) {
+      Promise.all([
+        dispatch(loadMarketplaceToken(params.marketplace)),
+        dispatch(loadCurrentToken(params.token))
+      ]).then(() => {
+        dispatch(loadOrderbook())
+      })
+    }
+  }),
+  decorate
+)(TradePage)
