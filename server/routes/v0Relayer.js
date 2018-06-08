@@ -5,6 +5,7 @@ const {ZeroEx} = require('0x.js')
 const Order = require('../models/Order')
 const Token = require('../models/Token')
 const TokenPair = require('../models/TokenPair')
+const clients = require('../clients')
 
 router.get('/token_pairs', async (req, res) => {
   const tokenPairs = await TokenPair.find({})
@@ -68,17 +69,18 @@ router.post('/order', async (req, res) => {
   const model = new Order(order)
   await model.save()
 
-  // if (socketConnection !== undefined) {
-  //   const message = {
-  //     type: 'update',
-  //     channel: 'orderbook',
-  //     requestId: 1,
-  //     payload: order
-  //   }
-  //   socketConnection.send(JSON.stringify(message))
-  // }
-
   res.status(201).end()
+
+  clients.forEach(client => {
+    const msg = {
+      type: 'update',
+      channel: 'orderbook',
+      requestId: 1,
+      payload: order
+    }
+
+    client.send(JSON.stringify(msg))
+  })
 })
 
 router.post('/fees', (req, res) => {

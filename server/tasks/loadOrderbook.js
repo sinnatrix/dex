@@ -19,7 +19,6 @@ runner(async () => {
   })
 
   const orders = orderbook.bids.concat(orderbook.asks)
-  // log.info(orderbook)
 
   for (let order of orders) {
     const orderHash = ZeroEx.getOrderHashHex(order)
@@ -34,6 +33,4 @@ runner(async () => {
       console.log('e: ', e)
     }
   }
-
-  // console.log(orders)
 })

@@ -65,9 +65,9 @@ class Orderbook extends React.Component {
     const {classes} = this.props
     return (
       <TableRow key={order.orderHash} className={classes.row}>
-        <TableCell>{order.price}</TableCell>
-        <TableCell>{order.makerAmount} {order.makerSymbol}</TableCell>
-        <TableCell>{order.takerAmount} {order.takerSymbol}</TableCell>
+        <TableCell>{order.price.toString()}</TableCell>
+        <TableCell>{order.makerAmount.toString()} {order.makerSymbol}</TableCell>
+        <TableCell>{order.takerAmount.toString()} {order.takerSymbol}</TableCell>
         <TableCell>{this.renderExpiresAt(order)}</TableCell>
       </TableRow>
     )
