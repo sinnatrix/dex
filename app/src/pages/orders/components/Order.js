@@ -34,7 +34,7 @@ class Order extends React.Component {
     })
 
     const {order} = this.state
-    const {data: {error}} = await axios.post(`/api/v1/orders/${order.orderHash}/validate`)
+    const {data: {error}} = await axios.post(`/api/v1/orders/${order.order.orderHash}/validate`)
 
     this.setState({
       error

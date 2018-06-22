@@ -2,6 +2,7 @@ import axios from 'axios'
 import * as R from 'ramda'
 import {BigNumber} from '@0xproject/utils'
 import {ZeroEx} from '0x.js'
+import {generateBid} from '../helpers'
 
 const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
@@ -35,51 +36,13 @@ const setAsks = payload => ({type: SET_ASKS, payload})
 const setMarketplaceToken = payload => ({type: SET_MARKETPLACE_TOKEN, payload})
 const setCurrentToken = payload => ({type: SET_CURRENT_TOKEN, payload})
 
-const generateBid = ({order, baseToken, quoteToken}) => {
-  const makerToken = order.makerTokenAddress === baseToken.address ? baseToken : quoteToken
-  const takerToken = order.takerTokenAddress === baseToken.address ? baseToken : quoteToken
+export const resetHighlighting = () => async (dispatch, getState) => {
+  await new Promise(resolve => setTimeout(resolve, 2000))
 
-  const decimalFields = [
-    'expirationUnixTimestampSec',
-    'makerFee',
-    'makerTokenAmount',
-    'salt',
-    'takerFee',
-    'takerTokenAmount'
-  ]
+  const {bids, asks} = getState()
 
-  decimalFields.forEach(key => {
-    order = {
-      ...order,
-      [key]: new BigNumber(order[key])
-    }
-  })
-
-  const makerAmount = order.makerTokenAmount.dividedBy(
-    Math.pow(10, makerToken.decimals)
-  )
-  const takerAmount = order.takerTokenAmount.dividedBy(
-    Math.pow(10, takerToken.decimals)
-  )
-
-  let price
-  if (order.takerTokenAddress === baseToken.address) {
-    price = takerAmount.dividedBy(makerAmount)
-  } else {
-    price = makerAmount.dividedBy(takerAmount)
-  }
-
-  const bid = {
-    price,
-    orderHash: order.orderHash,
-    makerSymbol: makerToken.symbol,
-    takerSymbol: takerToken.symbol,
-    makerAmount,
-    takerAmount,
-    expiresAt: order.expirationUnixTimestampSec
-  }
-
-  return bid
+  dispatch(setBids(bids.map(R.dissoc('highlight'))))
+  dispatch(setAsks(asks.map(R.dissoc('highlight'))))
 }
 
 export const setOrderbook = ({bids: bidOrders, asks: askOrders}) => (dispatch, getState) => {
@@ -102,16 +65,24 @@ export const addOrder = order => (dispatch, getState) => {
   const {marketplaceToken, currentToken, bids, asks} = getState()
 
   if (order.makerTokenAddress === currentToken.address && order.takerTokenAddress === marketplaceToken.address) {
-    const bid = generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken})
+    const bid = {
+      ...generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken}),
+      highlight: true
+    }
     const bidsSorted = R.sort(R.descend(R.prop('price')), [...bids, bid])
 
     dispatch(setBids(bidsSorted))
   } else {
-    const ask = generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken})
+    const ask = {
+      ...generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken}),
+      highlight: true
+    }
     const asksSorted = R.sort(R.descend(R.prop('price')), [...asks, ask])
 
     dispatch(setAsks(asksSorted))
   }
+
+  dispatch(resetHighlighting())
 }
 
 export const loadOrderbook = () => async (dispatch, getState, {send}) => {

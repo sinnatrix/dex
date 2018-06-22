@@ -10,6 +10,9 @@ import Typography from '@material-ui/core/Typography'
 import Toolbar from '@material-ui/core/Toolbar'
 import format from 'date-fns/format'
 import compose from 'ramda/es/compose'
+import ClipboardButton from './ClipboardButton'
+import cx from 'classnames'
+import red from '@material-ui/core/colors/red'
 
 const connector = connect(
   state => ({
@@ -24,7 +27,12 @@ const decorate = jss({
     minHeight: 0,
     overflowY: 'auto'
   },
-  row: {}
+  row: {
+    transition: 'background-color 1000ms linear'
+  },
+  highlight: {
+    backgroundColor: red[500]
+  }
 })
 
 class Orderbook extends React.Component {
@@ -51,6 +59,7 @@ class Orderbook extends React.Component {
               <TableCell>selling</TableCell>
               <TableCell>buying</TableCell>
               <TableCell>expires</TableCell>
+              <TableCell />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -64,17 +73,18 @@ class Orderbook extends React.Component {
   renderOrder = order => {
     const {classes} = this.props
     return (
-      <TableRow key={order.orderHash} className={classes.row}>
+      <TableRow key={order.order.orderHash} className={cx(classes.row, order.highlight && classes.highlight)}>
         <TableCell>{order.price.toString()}</TableCell>
-        <TableCell>{order.makerAmount.toString()} {order.makerSymbol}</TableCell>
-        <TableCell>{order.takerAmount.toString()} {order.takerSymbol}</TableCell>
+        <TableCell>{order.makerAmount.toString()} {order.makerToken.symbol}</TableCell>
+        <TableCell>{order.takerAmount.toString()} {order.takerToken.symbol}</TableCell>
         <TableCell>{this.renderExpiresAt(order)}</TableCell>
+        <TableCell><ClipboardButton order={order} /></TableCell>
       </TableRow>
     )
   }
 
   renderExpiresAt = order => {
-    const date = new Date(parseInt(order.expiresAt, 0) * 1000)
+    const date = new Date(parseInt(order.order.expirationUnixTimestampSec, 0) * 1000)
     return format(date, 'MM/DD HH:ss')
   }
 }
