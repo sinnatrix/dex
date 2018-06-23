@@ -49,7 +49,7 @@ class Wallet extends React.Component {
 
     return (
       <Panel className={classes.root}>
-        <EtherscanLink address={account} network={network}>{account} ({network})</EtherscanLink>
+        <EtherscanLink address={account} network={network}>{account}</EtherscanLink>
         <Balance address={account} />
       </Panel>
     )

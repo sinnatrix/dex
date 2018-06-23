@@ -4,6 +4,12 @@ import Button from '@material-ui/core/Button'
 
 const decorate = jss({
   root: {
+    display: 'flex'
+  },
+  content: {
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   }
 })
 
@@ -14,7 +20,9 @@ const EtherscanLink = ({classes, children, network, address}) => {
       className={classes.root}
       target='_blank'
       href={`https://${network}.etherscan.io/address/${address}`}
-    >{children}</Button>
+    >
+      <span className={classes.content}>{children}</span> ({network})
+    </Button>
   )
 }
 

@@ -35,7 +35,7 @@ class Balance extends React.Component {
     }
     const {classes} = this.props
     return (
-      <div className={classes.root}>{balance} ETH</div>
+      <div className={classes.root}>{balance.toFixed(6)}&nbsp;ETH</div>
     )
   }
 }
