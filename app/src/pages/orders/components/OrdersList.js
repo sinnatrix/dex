@@ -28,8 +28,8 @@ class OrdersList extends React.Component {
 
   renderOneOrder = (order, index) =>
     <div key={index}>
-      <Link to={`/orders/${order.order.orderHash}`}>
-        {order.order.orderHash}
+      <Link to={`/orders/${order.orderHash}`}>
+        {order.orderHash}
       </Link>
     </div>
 }
