@@ -21,7 +21,7 @@ const EtherscanLink = ({classes, children, network, address}) => {
       target='_blank'
       href={`https://${network}.etherscan.io/address/${address}`}
     >
-      <span className={classes.content}>{children}</span> ({network})
+      <span className={classes.content}>{children}</span>&nbsp;({network})
     </Button>
   )
 }
