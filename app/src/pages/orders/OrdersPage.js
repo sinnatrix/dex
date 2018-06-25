@@ -8,7 +8,7 @@ import OrdersList from './components/OrdersList'
 const decorate = jss({
   root: {
     display: 'flex',
-    marginTop: 30
+    marginTop: 35
   }
 })
 
