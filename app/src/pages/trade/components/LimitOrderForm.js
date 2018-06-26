@@ -15,7 +15,8 @@ import {BigNumber} from '@0xproject/utils'
 const decorate = jss({
   root: {
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    flex: 'none'
   },
   button: {
     marginTop: 30

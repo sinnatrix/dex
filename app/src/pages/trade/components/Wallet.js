@@ -12,7 +12,8 @@ const networkNamesByIds = {
 const decorate = jss({
   root: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    flex: 'none'
   }
 })
 

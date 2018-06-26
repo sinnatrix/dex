@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import cx from 'classnames'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
@@ -17,6 +17,10 @@ const decorate = jss({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center'
+  },
+  titleLink: {
+    color: 'rgba(0, 0, 0, 0.87)',
+    textDecoration: 'none'
   },
   content: {
     flex: 1,
@@ -53,7 +57,7 @@ const Layout = ({classes, children, contentClassName}) => {
       <AppBar position='static' color='default'>
         <Toolbar className={classes.header}>
           <Typography variant='title' color='inherit'>
-            DEX
+            <Link to='/' className={classes.titleLink}>DEX</Link>
           </Typography>
           <div className={classes.menu}>
             <NavLink exact activeClassName={classes.activeLink} className={classes.link} to='/'>trade</NavLink>

@@ -6,7 +6,8 @@ import Panel from 'components/Panel'
 
 const decorate = jss({
   root: {
-    display: 'flex'
+    display: 'flex',
+    flex: 'none'
   },
   wrapper: {
     marginRight: 30

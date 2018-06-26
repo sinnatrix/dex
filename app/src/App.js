@@ -1,6 +1,6 @@
 import React from 'react'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 import OrdersPage from 'pages/orders/OrdersPage'
 import TradePage from 'pages/trade/TradePage'
 import { MuiThemeProvider } from '@material-ui/core/styles'
@@ -34,6 +34,7 @@ class App extends React.Component {
           <Provider store={store}>
             <Router>
               <Switch>
+                <Route exact path='/' render={() => <Redirect to='/WETH/ZRX' />} />
                 <Route path='/orders' component={OrdersPage} />
                 <Route path='/:marketplace?/:token?' component={TradePage} />
               </Switch>
