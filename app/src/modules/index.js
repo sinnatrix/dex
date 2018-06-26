@@ -8,12 +8,20 @@ const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
 const SET_MARKETPLACE_TOKEN = 'SET_MARKETPLACE_TOKEN'
 const SET_CURRENT_TOKEN = 'SET_CURRENT_TOKEN'
+const SET_ACCOUNT = 'SET_ACCOUNT'
+const SET_NETWORK = 'SET_NETWORK'
+const SET_TOKEN_BALANCE = 'SET_TOKEN_BALANCE'
+const SET_ETH_BALANCE = 'SET_ETH_BALANCE'
 
 const initialState = {
   bids: [],
   asks: [],
   marketplaceToken: {},
-  currentToken: {}
+  currentToken: {},
+  account: '',
+  network: '',
+  ethBalance: 0,
+  tokenBalances: {}
 }
 
 export default (state = initialState, {type, payload}) => {
@@ -26,6 +34,20 @@ export default (state = initialState, {type, payload}) => {
       return {...state, marketplaceToken: payload}
     case SET_CURRENT_TOKEN:
       return {...state, currentToken: payload}
+    case SET_ACCOUNT:
+      return {...state, account: payload}
+    case SET_NETWORK:
+      return {...state, network: payload}
+    case SET_ETH_BALANCE:
+      return {...state, ethBalance: payload}
+    case SET_TOKEN_BALANCE:
+      return {
+        ...state,
+        tokenBalances: {
+          ...state.tokenBalances,
+          [payload.symbol]: payload.value
+        }
+      }
     default:
       return state
   }
@@ -35,6 +57,10 @@ const setBids = payload => ({type: SET_BIDS, payload})
 const setAsks = payload => ({type: SET_ASKS, payload})
 const setMarketplaceToken = payload => ({type: SET_MARKETPLACE_TOKEN, payload})
 const setCurrentToken = payload => ({type: SET_CURRENT_TOKEN, payload})
+export const setAccount = payload => ({type: SET_ACCOUNT, payload})
+export const setNetwork = payload => ({type: SET_NETWORK, payload})
+export const setTokenBalance = (symbol, value) => ({type: SET_TOKEN_BALANCE, payload: {symbol, value}})
+export const setEthBalance = payload => ({type: SET_ETH_BALANCE, payload})
 
 export const resetHighlighting = () => async (dispatch, getState) => {
   await new Promise(resolve => setTimeout(resolve, 2000))

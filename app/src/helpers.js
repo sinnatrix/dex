@@ -45,3 +45,40 @@ export const generateBid = ({order, baseToken, quoteToken}) => {
 
   return bid
 }
+
+export const getEthBalance = address => {
+  return new Promise((resolve, reject) => {
+    window.web3js.eth.getBalance(address, (err, balance) => {
+      if (err) {
+        console.error(err)
+        reject(err)
+        return
+      }
+
+      const eth = balance / Math.pow(10, 18)
+
+      resolve(eth)
+    })
+  })
+}
+
+export const getTokenBalance = (walletAddr, tokenAddr) => {
+  return new Promise((resolve, reject) => {
+    const methodHex = '0x70a08231000000000000000000000000'
+    window.web3js.eth.call({
+      to: tokenAddr,
+      data: methodHex + walletAddr.substr(2)
+    }, (err, result) => {
+      if (err) {
+        console.error(err)
+        reject(err)
+        return
+      }
+
+      const wei = window.web3js.toBigNumber(result).toString()
+      const tokenBalance = parseFloat(window.web3js.fromWei(wei))
+
+      resolve(tokenBalance)
+    })
+  })
+}

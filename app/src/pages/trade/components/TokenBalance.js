@@ -1,60 +1,51 @@
 import React from 'react'
 import jss from 'react-jss'
+import {getTokenBalance} from 'helpers'
+import {bindActionCreators} from 'redux'
+import {setTokenBalance} from 'modules/index'
+import {connect} from 'react-redux'
+
+const connector = connect(
+  (state, ownProps) => ({
+    account: state.account,
+    balance: state.tokenBalances[ownProps.token.symbol]
+  }),
+  dispatch => bindActionCreators({setTokenBalance}, dispatch)
+)
 
 const decorate = jss({
-  root: {
-    marginLeft: 30
-  }
+  root: {}
 })
-
-const getTokenBalance = (walletAddr, tokenAddr) => {
-  return new Promise((resolve, reject) => {
-    const methodHex = '0x70a08231000000000000000000000000'
-    window.web3js.eth.call({
-      to: tokenAddr,
-      data: methodHex + walletAddr.substr(2)
-    }, (err, result) => {
-      if (err) {
-        console.error(err)
-        reject(err)
-        return
-      }
-
-      const wei = window.web3js.toBigNumber(result).toString()
-      const tokenBalance = parseFloat(window.web3js.fromWei(wei))
-
-      resolve(tokenBalance)
-    })
-  })
-}
 
 class TokenBalance extends React.Component {
   state = {
-    loaded: false,
-    tokenBalance: 0
+    loaded: false
   }
 
   async componentDidMount () {
-    const wethTokenAddr = '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
+    const {account, token} = this.props
 
-    const tokenBalance = await getTokenBalance(this.props.address, wethTokenAddr)
+    const balance = await getTokenBalance(account, token.address)
 
     this.setState({
-      loaded: true,
-      tokenBalance
+      loaded: true
     })
+
+    this.props.setTokenBalance(token.symbol, balance)
   }
 
   render () {
-    const {loaded, tokenBalance} = this.state
-    if (!loaded) {
+    const {loaded} = this.state
+    const {classes, token, balance} = this.props
+
+    if (!loaded || balance === undefined) {
       return null
     }
-    const {classes} = this.props
+
     return (
-      <div className={classes.root}>{tokenBalance.toFixed(6)}&nbsp;WETH</div>
+      <div className={classes.root}>{token.symbol} {balance.toFixed(6)}</div>
     )
   }
 }
 
-export default decorate(TokenBalance)
+export default connector(decorate(TokenBalance))
