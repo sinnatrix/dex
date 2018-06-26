@@ -4,6 +4,7 @@ import Web3 from 'web3'
 import Panel from 'components/Panel'
 import EtherscanLink from 'components/EtherscanLink'
 import Balance from './Balance'
+import TokenBalance from './TokenBalance'
 
 const networkNamesByIds = {
   42: 'kovan'
@@ -12,8 +13,9 @@ const networkNamesByIds = {
 const decorate = jss({
   root: {
     display: 'flex',
-    alignItems: 'center',
-    flex: 'none'
+    alignItems: 'left',
+    flex: 'none',
+    flexDirection: 'column'
   }
 })
 
@@ -52,6 +54,7 @@ class Wallet extends React.Component {
       <Panel className={classes.root}>
         <EtherscanLink address={account} network={network}>{account}</EtherscanLink>
         <Balance address={account} />
+        <TokenBalance address={account} />
       </Panel>
     )
   }
