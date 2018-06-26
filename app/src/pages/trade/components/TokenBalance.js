@@ -7,8 +7,26 @@ const decorate = jss({
   }
 })
 
-const methodHex = '0x70a08231000000000000000000000000'
-const tokenAddr = '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
+const getTokenBalance = (walletAddr, tokenAddr) => {
+  return new Promise((resolve, reject) => {
+    const methodHex = '0x70a08231000000000000000000000000'
+    window.web3js.eth.call({
+      to: tokenAddr,
+      data: methodHex + walletAddr.substr(2)
+    }, (err, result) => {
+      if (err) {
+        console.error(err)
+        reject(err)
+        return
+      }
+
+      const wei = window.web3js.toBigNumber(result).toString()
+      const tokenBalance = parseFloat(window.web3js.fromWei(wei))
+
+      resolve(tokenBalance)
+    })
+  })
+}
 
 class TokenBalance extends React.Component {
   state = {
@@ -16,26 +34,17 @@ class TokenBalance extends React.Component {
     tokenBalance: 0
   }
 
-  componentDidMount () {
-    window.web3js.eth.call({
-      to: tokenAddr,
-      data: methodHex + this.props.address.substr(2)
-    }, (err, result) => {
-      if (err) {
-        console.error(err)
-        return
-      }
+  async componentDidMount () {
+    const wethTokenAddr = '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
 
-      const wei = window.web3js.toBigNumber(result).toString()
-      const tokenBalance = parseFloat(window.web3js.fromWei(wei))
+    const tokenBalance = await getTokenBalance(this.props.address, wethTokenAddr)
 
-      this.setState({
-        loaded: true,
-        tokenBalance
-      })
+    this.setState({
+      loaded: true,
+      tokenBalance
     })
   }
-  
+
   render () {
     const {loaded, tokenBalance} = this.state
     if (!loaded) {
