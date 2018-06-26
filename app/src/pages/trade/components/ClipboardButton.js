@@ -16,7 +16,15 @@ const copyToClipboard = str => {
 }
 
 const decorate = jss({
-  root: {}
+  root: {},
+  button: {
+    width: 32,
+    height: 32
+  },
+  icon: {
+    width: 18,
+    height: 18
+  }
 })
 
 class ClipboardButton extends React.Component {
@@ -42,8 +50,8 @@ class ClipboardButton extends React.Component {
   render () {
     const {classes} = this.props
     return (
-      <IconButton className={classes.root} onClick={this.handleClick}>
-        <CopyIcon />
+      <IconButton className={classes.root} onClick={this.handleClick} classes={{root: classes.button}}>
+        <CopyIcon classes={{root: classes.icon}} />
       </IconButton>
     )
   }
