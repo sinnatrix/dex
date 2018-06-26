@@ -21,6 +21,7 @@ const decorate = jss({
 
 class Wallet extends React.Component {
   web3js
+  internal
   state = {
     account: '',
     network: ''
@@ -31,15 +32,29 @@ class Wallet extends React.Component {
       this.web3js = new Web3(window.web3.currentProvider)
       window.web3js = this.web3js
 
-      const account = this.web3js.eth.accounts[0]
-      const networkId = this.web3js.version.network
-      const network = networkNamesByIds[networkId]
-
-      this.setState({
-        account,
-        network
-      })
+      this.interval = setInterval(() => {
+        this.setAccountData()
+      }, 100)
     }
+  }
+
+  componentWillUnmount () {
+    clearInterval(this.interval)
+  }
+
+  setAccountData = () => {
+    const account = this.web3js.eth.accounts[0]
+    const networkId = this.web3js.version.network
+    const network = networkNamesByIds[networkId]
+
+    if (account === this.state.account) {
+      return
+    }
+
+    this.setState({
+      account,
+      network
+    })
   }
 
   render () {
