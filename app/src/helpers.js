@@ -50,7 +50,6 @@ export const getEthBalance = address => {
   return new Promise((resolve, reject) => {
     window.web3js.eth.getBalance(address, (err, balance) => {
       if (err) {
-        console.error(err)
         reject(err)
         return
       }
@@ -70,7 +69,6 @@ export const getTokenBalance = (walletAddr, tokenAddr) => {
       data: methodHex + walletAddr.substr(2)
     }, (err, result) => {
       if (err) {
-        console.error(err)
         reject(err)
         return
       }

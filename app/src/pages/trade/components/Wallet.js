@@ -7,7 +7,7 @@ import Balance from './EthBalance'
 import TokenBalance from './TokenBalance'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
-import {setAccount, setNetwork} from 'modules/index'
+import {setAccount, setNetwork, loadTokens} from 'modules/index'
 
 const networkNamesByIds = {
   42: 'kovan'
@@ -16,9 +16,10 @@ const networkNamesByIds = {
 const connector = connect(
   state => ({
     account: state.account,
-    network: state.network
+    network: state.network,
+    tokens: state.tokens
   }),
-  dispatch => bindActionCreators({setAccount, setNetwork}, dispatch)
+  dispatch => bindActionCreators({setAccount, setNetwork, loadTokens}, dispatch)
 )
 
 const decorate = jss({
@@ -34,7 +35,7 @@ class Wallet extends React.Component {
   web3js
   internal
 
-  componentDidMount () {
+  async componentDidMount () {
     if (window.web3) {
       this.web3js = new Web3(window.web3.currentProvider)
       window.web3js = this.web3js
@@ -43,6 +44,8 @@ class Wallet extends React.Component {
         this.updateAccountData()
       }, 100)
     }
+
+    this.props.loadTokens()
   }
 
   componentWillUnmount () {
@@ -64,7 +67,7 @@ class Wallet extends React.Component {
   }
 
   render () {
-    const {classes, account, network} = this.props
+    const {classes, account, network, tokens} = this.props
 
     if (!account) {
       return <Panel>Account not connected</Panel>
@@ -75,10 +78,9 @@ class Wallet extends React.Component {
         <EtherscanLink address={account} network={network}>{account}</EtherscanLink>
 
         <Balance />
-        <TokenBalance token={{
-          address: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
-          symbol: 'WETH'
-        }} />
+        {tokens.map(token =>
+          <TokenBalance key={token.address} token={token} />
+        )}
       </Panel>
     )
   }

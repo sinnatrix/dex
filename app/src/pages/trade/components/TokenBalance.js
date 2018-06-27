@@ -1,49 +1,69 @@
 import React from 'react'
 import jss from 'react-jss'
-import {getTokenBalance} from 'helpers'
 import {bindActionCreators} from 'redux'
-import {setTokenBalance} from 'modules/index'
+import {loadTokenBalance} from 'modules/index'
 import {connect} from 'react-redux'
+import ErrorIcon from '@material-ui/icons/Error'
+import CircularProgress from '@material-ui/core/CircularProgress'
 
 const connector = connect(
   (state, ownProps) => ({
-    account: state.account,
     balance: state.tokenBalances[ownProps.token.symbol]
   }),
-  dispatch => bindActionCreators({setTokenBalance}, dispatch)
+  dispatch => bindActionCreators({loadTokenBalance}, dispatch)
 )
 
 const decorate = jss({
-  root: {}
+  root: {
+    borderBottom: '1px solid #999',
+    padding: [[5, 0]]
+  },
+  header: {
+    marginBottom: 5
+  },
+  symbol: {
+    marginRight: 10
+  }
 })
 
 class TokenBalance extends React.Component {
   state = {
-    loaded: false
+    loaded: false,
+    error: false
   }
 
   async componentDidMount () {
-    const {account, token} = this.props
-
-    const balance = await getTokenBalance(account, token.address)
-
-    this.setState({
-      loaded: true
-    })
-
-    this.props.setTokenBalance(token.symbol, balance)
+    try {
+      await this.props.loadTokenBalance(this.props.token)
+      this.setState({
+        loaded: true
+      })
+    } catch (e) {
+      this.setState({
+        error: true
+      })
+    }
   }
 
   render () {
-    const {loaded} = this.state
+    const {loaded, error} = this.state
     const {classes, token, balance} = this.props
 
-    if (!loaded || balance === undefined) {
-      return null
-    }
-
     return (
-      <div className={classes.root}>{token.symbol} {balance.toFixed(6)}</div>
+      <div className={classes.root}>
+        <div className={classes.header}>
+          <span className={classes.symbol}>{token.symbol}</span>
+          <span className={classes.name}>{token.name}</span>
+        </div>
+        {loaded
+          ? <span>{balance.toFixed(6)}</span>
+          : (
+            error
+              ? <ErrorIcon />
+              : <CircularProgress size={20} />
+          )
+        }
+      </div>
     )
   }
 }

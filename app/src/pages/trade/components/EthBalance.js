@@ -1,46 +1,61 @@
 import React from 'react'
 import jss from 'react-jss'
+import ErrorIcon from '@material-ui/icons/Error'
 import {connect} from 'react-redux'
-import {getEthBalance} from 'helpers'
 import {bindActionCreators} from 'redux'
-import {setEthBalance} from 'modules/index'
+import {loadEthBalance} from 'modules/index'
+import WrapEthForm from './WrapEthForm'
 
 const connector = connect(
   state => ({
-    account: state.account,
-    balance: state.ethBalance
+    ethBalance: state.ethBalance
   }),
-  dispatch => bindActionCreators({setEthBalance}, dispatch)
+  dispatch => bindActionCreators({loadEthBalance}, dispatch)
 )
 
 const decorate = jss({
-  root: {}
+  root: {
+    marginBottom: 10
+  }
 })
 
 class EthBalance extends React.Component {
   state = {
     loaded: false,
-    balance: 0
+    error: false
   }
 
   async componentDidMount () {
-    const balance = await getEthBalance(this.props.account)
-
-    this.setState({
-      loaded: true
-    })
-
-    this.props.setEthBalance(balance)
+    try {
+      this.props.loadEthBalance()
+      this.setState({
+        loaded: true
+      })
+    } catch (e) {
+      this.setState({
+        error: true
+      })
+    }
   }
 
   render () {
-    const {loaded} = this.state
-    if (!loaded) {
-      return null
-    }
-    const {classes, balance} = this.props
+    const {classes, ethBalance} = this.props
+    const {loaded, error} = this.state
     return (
-      <div className={classes.root}>ETH {balance.toFixed(6)}</div>
+      <div className={classes.root}>
+        <div>ETH</div>
+        <div>
+          {loaded
+            ? ethBalance.toFixed(6)
+            : (
+              error
+                ? <ErrorIcon />
+                : 'error'
+            )
+          }
+        </div>
+        <WrapEthForm />
+      </div>
     )
   }
 }
