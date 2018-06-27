@@ -14,6 +14,7 @@ const SET_NETWORK = 'SET_NETWORK'
 const SET_TOKEN_BALANCE = 'SET_TOKEN_BALANCE'
 const SET_ETH_BALANCE = 'SET_ETH_BALANCE'
 const SET_TOKENS = 'SET_TOKENS'
+const SET_TOKEN_ALLOWANCE = 'SET_TOKEN_ALLOWANCE'
 
 const initialState = {
   bids: [],
@@ -24,6 +25,7 @@ const initialState = {
   network: '',
   ethBalance: 0,
   tokenBalances: {},
+  tokenAllowances: {},
   tokens: []
 }
 
@@ -51,6 +53,14 @@ export default (state = initialState, {type, payload}) => {
           [payload.symbol]: payload.value
         }
       }
+    case SET_TOKEN_ALLOWANCE:
+      return {
+        ...state,
+        tokenAllowances: {
+          ...state.tokenAllowances,
+          [payload.symbol]: payload.value
+        }
+      }
     case SET_TOKENS:
       return {...state, tokens: payload}
     default:
@@ -67,12 +77,70 @@ export const setAccount = payload => ({type: SET_ACCOUNT, payload})
 export const setNetwork = payload => ({type: SET_NETWORK, payload})
 const setTokenBalance = (symbol, value) => ({type: SET_TOKEN_BALANCE, payload: {symbol, value}})
 const setEthBalance = payload => ({type: SET_ETH_BALANCE, payload})
+const setTokenAllowance = (symbol, value) => ({type: SET_TOKEN_ALLOWANCE, payload: {symbol, value}})
+
+const getZeroEx = () => {
+  const networkId = parseInt(window.web3.version.network, 10)
+  const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
+  return zeroEx
+}
 
 export const loadEthBalance = () => async (dispatch, getState) => {
   const {account} = getState()
   const balance = await getEthBalance(account)
 
   dispatch(setEthBalance(balance))
+}
+
+export const loadTokenAllowance = token => async (dispatch, getState) => {
+  const {account} = getState()
+
+  const zeroEx = getZeroEx()
+
+  const result = await zeroEx.token.getAllowanceAsync(
+    token.address,
+    account,
+    zeroEx.proxy.getContractAddress()
+  )
+
+  dispatch(setTokenAllowance(token.symbol, !result.isZero()))
+}
+
+export const setUnlimitedTokenAllowance = token => async (dispatch, getState) => {
+  const {account} = getState()
+
+  const zeroEx = getZeroEx()
+
+  const txHash = await zeroEx.token.setUnlimitedAllowanceAsync(
+    token.address,
+    account,
+    zeroEx.proxy.getContractAddress()
+  )
+
+  await awaitTransaction(txHash)
+
+  delay(200)
+
+  await dispatch(loadTokenAllowance(token))
+}
+
+export const setZeroTokenAllowance = token => async (dispatch, getState) => {
+  const {account} = getState()
+
+  const zeroEx = getZeroEx()
+
+  const txHash = await zeroEx.token.setAllowanceAsync(
+    token.address,
+    account,
+    zeroEx.proxy.getContractAddress(),
+    new BigNumber(0)
+  )
+
+  await awaitTransaction(txHash)
+
+  delay(200)
+
+  await dispatch(loadTokenAllowance(token))
 }
 
 export const resetHighlighting = () => async (dispatch, getState) => {
@@ -187,9 +255,7 @@ export const makeOrder = ({type, amount, price}) => async (dispatch, getState) =
 
   const makerAddress = window.web3js.eth.accounts[0]
 
-  const networkId = parseInt(window.web3.version.network, 10)
-
-  const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
+  const zeroEx = getZeroEx()
 
   const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress()
 
@@ -241,12 +307,8 @@ const sendTransaction = tx => {
 }
 
 const awaitTransaction = async txHash => {
-  const networkId = parseInt(window.web3.version.network, 10)
-  const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
-
-  // console.log('awaiting transaction')
+  const zeroEx = getZeroEx()
   await zeroEx.awaitTransactionMinedAsync(txHash)
-  // console.log('transaction mined')
 }
 
 const delay = ts => new Promise(resolve => setTimeout(resolve, ts))

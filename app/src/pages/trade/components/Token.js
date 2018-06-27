@@ -1,16 +1,17 @@
 import React from 'react'
 import jss from 'react-jss'
 import {bindActionCreators} from 'redux'
-import {loadTokenBalance} from 'modules/index'
+import {loadTokenBalance, loadTokenAllowance} from 'modules/index'
 import {connect} from 'react-redux'
 import ErrorIcon from '@material-ui/icons/Error'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import TokenAllowance from './TokenAllowance'
 
 const connector = connect(
   (state, ownProps) => ({
     balance: state.tokenBalances[ownProps.token.symbol]
   }),
-  dispatch => bindActionCreators({loadTokenBalance}, dispatch)
+  dispatch => bindActionCreators({loadTokenBalance, loadTokenAllowance}, dispatch)
 )
 
 const decorate = jss({
@@ -35,8 +36,12 @@ class Token extends React.Component {
   }
 
   async componentDidMount () {
+    const {token} = this.props
+
     try {
-      await this.props.loadTokenBalance(this.props.token)
+      await this.props.loadTokenBalance(token)
+      await this.props.loadTokenAllowance(token)
+
       this.setState({
         loaded: true
       })
@@ -65,6 +70,7 @@ class Token extends React.Component {
               : <CircularProgress size={20} />
           )
         }
+        <TokenAllowance token={token} />
       </div>
     )
   }
