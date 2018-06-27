@@ -2,18 +2,28 @@ import axios from 'axios'
 import * as R from 'ramda'
 import {BigNumber} from '@0xproject/utils'
 import {ZeroEx} from '0x.js'
-import {generateBid} from '../helpers'
+import {generateBid, getTokenBalance, getEthBalance} from '../helpers'
 
 const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
 const SET_MARKETPLACE_TOKEN = 'SET_MARKETPLACE_TOKEN'
 const SET_CURRENT_TOKEN = 'SET_CURRENT_TOKEN'
+const SET_ACCOUNT = 'SET_ACCOUNT'
+const SET_NETWORK = 'SET_NETWORK'
+const SET_TOKEN_BALANCE = 'SET_TOKEN_BALANCE'
+const SET_ETH_BALANCE = 'SET_ETH_BALANCE'
+const SET_TOKENS = 'SET_TOKENS'
 
 const initialState = {
   bids: [],
   asks: [],
   marketplaceToken: {},
-  currentToken: {}
+  currentToken: {},
+  account: '',
+  network: '',
+  ethBalance: 0,
+  tokenBalances: {},
+  tokens: []
 }
 
 export default (state = initialState, {type, payload}) => {
@@ -26,6 +36,22 @@ export default (state = initialState, {type, payload}) => {
       return {...state, marketplaceToken: payload}
     case SET_CURRENT_TOKEN:
       return {...state, currentToken: payload}
+    case SET_ACCOUNT:
+      return {...state, account: payload}
+    case SET_NETWORK:
+      return {...state, network: payload}
+    case SET_ETH_BALANCE:
+      return {...state, ethBalance: payload}
+    case SET_TOKEN_BALANCE:
+      return {
+        ...state,
+        tokenBalances: {
+          ...state.tokenBalances,
+          [payload.symbol]: payload.value
+        }
+      }
+    case SET_TOKENS:
+      return {...state, tokens: payload}
     default:
       return state
   }
@@ -35,6 +61,18 @@ const setBids = payload => ({type: SET_BIDS, payload})
 const setAsks = payload => ({type: SET_ASKS, payload})
 const setMarketplaceToken = payload => ({type: SET_MARKETPLACE_TOKEN, payload})
 const setCurrentToken = payload => ({type: SET_CURRENT_TOKEN, payload})
+const setTokens = payload => ({type: SET_TOKENS, payload})
+export const setAccount = payload => ({type: SET_ACCOUNT, payload})
+export const setNetwork = payload => ({type: SET_NETWORK, payload})
+const setTokenBalance = (symbol, value) => ({type: SET_TOKEN_BALANCE, payload: {symbol, value}})
+const setEthBalance = payload => ({type: SET_ETH_BALANCE, payload})
+
+export const loadEthBalance = () => async (dispatch, getState) => {
+  const {account} = getState()
+  const balance = await getEthBalance(account)
+
+  dispatch(setEthBalance(balance))
+}
 
 export const resetHighlighting = () => async (dispatch, getState) => {
   await new Promise(resolve => setTimeout(resolve, 2000))
@@ -113,6 +151,18 @@ export const loadCurrentToken = symbol => async dispatch => {
   dispatch(setCurrentToken(data))
 }
 
+export const loadTokens = tokens => async dispatch => {
+  const {data} = await axios.get('/api/v1/tokens')
+  dispatch(setTokens(data))
+}
+
+export const loadTokenBalance = token => async (dispatch, getState) => {
+  const {account} = getState()
+  const balance = await getTokenBalance(account, token.address)
+
+  dispatch(setTokenBalance(token.symbol, balance))
+}
+
 export const makeOrder = ({type, amount, price}) => async (dispatch, getState) => {
   const {marketplaceToken, currentToken} = getState()
 
@@ -175,4 +225,47 @@ export const makeOrder = ({type, amount, price}) => async (dispatch, getState) =
   }
 
   await axios.post('/api/relayer/v0/order', signedOrder)
+}
+
+export const wrapEth = amount => async (dispatch, getState) => {
+  const {account, tokens} = getState()
+  const wethToken = tokens.find(one => one.symbol === 'WETH')
+  if (!wethToken) {
+    console.error('WETH token is not found')
+    return
+  }
+
+  const rawTx = {
+    to: wethToken.address,
+    from: account,
+    value: window.web3js.toWei(amount),
+    gas: 21000 * 2
+  }
+
+  const txHash = await new Promise((resolve, reject) => {
+    window.web3js.eth.sendTransaction(rawTx, (err, txHash) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve(txHash)
+    })
+  })
+
+  console.log('txHash: ', txHash)
+
+  const networkId = parseInt(window.web3.version.network, 10)
+  const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
+
+  console.log('awaiting transaction')
+  await zeroEx.awaitTransactionMinedAsync(txHash)
+  console.log('transaction mined')
+
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  console.log('weth token balance loaded')
+  dispatch(loadTokenBalance(wethToken))
+
+  await new Promise(resolve => setTimeout(resolve, 3000))
+  console.log('eth balance loaded')
+  dispatch(loadEthBalance())
 }
