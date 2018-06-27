@@ -3,6 +3,7 @@ import * as R from 'ramda'
 import {BigNumber} from '@0xproject/utils'
 import {ZeroEx} from '0x.js'
 import {generateBid, getTokenBalance, getEthBalance} from '../helpers'
+import {getToken} from 'selectors'
 
 const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
@@ -227,13 +228,37 @@ export const makeOrder = ({type, amount, price}) => async (dispatch, getState) =
   await axios.post('/api/relayer/v0/order', signedOrder)
 }
 
+const sendTransaction = tx => {
+  return new Promise((resolve, reject) => {
+    window.web3js.eth.sendTransaction(tx, (err, txHash) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve(txHash)
+    })
+  })
+}
+
+const awaitTransaction = async txHash => {
+  const networkId = parseInt(window.web3.version.network, 10)
+  const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
+
+  // console.log('awaiting transaction')
+  await zeroEx.awaitTransactionMinedAsync(txHash)
+  // console.log('transaction mined')
+}
+
+const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
+
 export const wrapEth = amount => async (dispatch, getState) => {
-  const {account, tokens} = getState()
-  const wethToken = tokens.find(one => one.symbol === 'WETH')
+  const wethToken = getToken('WETH', getState())
   if (!wethToken) {
     console.error('WETH token is not found')
     return
   }
+
+  const {account} = getState()
 
   const rawTx = {
     to: wethToken.address,
@@ -242,30 +267,50 @@ export const wrapEth = amount => async (dispatch, getState) => {
     gas: 21000 * 2
   }
 
+  const txHash = await sendTransaction(rawTx)
+
+  await awaitTransaction(txHash)
+
+  await delay(2000)
+  dispatch(loadTokenBalance(wethToken))
+
+  await delay(3000)
+  dispatch(loadEthBalance())
+}
+
+export const unwrapWeth = amount => async (dispatch, getState) => {
+  const wethToken = getToken('WETH', getState())
+  if (!wethToken) {
+    console.error('WETH token is not found')
+    return
+  }
+
+  const {account} = getState()
+
+  const contract = window.web3js.eth.contract(wethToken.abi)
+  const contractInstance = contract.at(wethToken.address)
+
+  const rawTx = {
+    from: account,
+    gas: 21000 * 2
+  }
+  const value = window.web3js.toWei(amount)
+
   const txHash = await new Promise((resolve, reject) => {
-    window.web3js.eth.sendTransaction(rawTx, (err, txHash) => {
+    contractInstance.withdraw.sendTransaction(value, rawTx, (err, result) => {
       if (err) {
         reject(err)
         return
       }
-      resolve(txHash)
+      resolve(result)
     })
   })
 
-  console.log('txHash: ', txHash)
+  await awaitTransaction(txHash)
 
-  const networkId = parseInt(window.web3.version.network, 10)
-  const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
-
-  console.log('awaiting transaction')
-  await zeroEx.awaitTransactionMinedAsync(txHash)
-  console.log('transaction mined')
-
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  console.log('weth token balance loaded')
+  await delay(2000)
   dispatch(loadTokenBalance(wethToken))
 
-  await new Promise(resolve => setTimeout(resolve, 3000))
-  console.log('eth balance loaded')
+  await delay(3000)
   dispatch(loadEthBalance())
 }

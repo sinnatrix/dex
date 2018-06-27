@@ -20,7 +20,8 @@ const decorate = jss({
   left: {
     display: 'flex',
     flexDirection: 'column',
-    minWidth: 250
+    minWidth: 250,
+    overflowY: 'auto'
   },
   right: {
     flex: 1,
