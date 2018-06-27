@@ -19,14 +19,16 @@ const decorate = jss({
     padding: [[5, 0]]
   },
   header: {
-    marginBottom: 5
+    marginBottom: 5,
+    display: 'flex'
   },
   symbol: {
-    marginRight: 10
+    width: 45,
+    marginRight: 30
   }
 })
 
-class TokenBalance extends React.Component {
+class Token extends React.Component {
   state = {
     loaded: false,
     error: false
@@ -68,4 +70,4 @@ class TokenBalance extends React.Component {
   }
 }
 
-export default connector(decorate(TokenBalance))
+export default connector(decorate(Token))

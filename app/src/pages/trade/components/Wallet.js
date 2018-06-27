@@ -4,7 +4,8 @@ import Web3 from 'web3'
 import Panel from 'components/Panel'
 import EtherscanLink from 'components/EtherscanLink'
 import Balance from './EthBalance'
-import TokenBalance from './TokenBalance'
+import Token from './Token'
+import WethToken from './WethToken'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
 import {setAccount, setNetwork, loadTokens} from 'modules/index'
@@ -78,8 +79,10 @@ class Wallet extends React.Component {
         <EtherscanLink address={account} network={network}>{account}</EtherscanLink>
 
         <Balance />
-        {tokens.map(token =>
-          <TokenBalance key={token.address} token={token} />
+
+        {tokens.map(token => token.symbol === 'WETH'
+          ? <WethToken key={token.address} token={token} />
+          : <Token key={token.address} token={token} />
         )}
       </Panel>
     )

@@ -63,10 +63,13 @@ export const getEthBalance = address => {
 
 export const getTokenBalance = (walletAddr, tokenAddr) => {
   return new Promise((resolve, reject) => {
-    const methodHex = '0x70a08231000000000000000000000000'
+    const methodHex = window.web3js.sha3('balanceOf(address)').substr(0, '0x'.length + 8)
+    const params = walletAddr.substr(2).padStart(32 * 2, '0')
+    const data = methodHex + params
+
     window.web3js.eth.call({
       to: tokenAddr,
-      data: methodHex + walletAddr.substr(2)
+      data
     }, (err, result) => {
       if (err) {
         reject(err)

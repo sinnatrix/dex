@@ -1,21 +1,21 @@
 import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
+import SmartButton from 'material-ui-smart-button'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
-import {wrapEth} from 'modules/index'
-import SmartButton from 'material-ui-smart-button'
+import {unwrapWeth} from 'modules/index'
 
 const connector = connect(
   null,
-  dispatch => bindActionCreators({wrapEth}, dispatch)
+  dispatch => bindActionCreators({unwrapWeth}, dispatch)
 )
 
 const decorate = jss({
   root: {}
 })
 
-class WrapEthForm extends React.Component {
+class UnwrapWethForm extends React.Component {
   state = {
     value: ''
   }
@@ -29,7 +29,7 @@ class WrapEthForm extends React.Component {
   handleClick = async () => {
     const amount = parseFloat(this.state.value, 10)
 
-    await this.props.wrapEth(amount)
+    await this.props.unwrapWeth(amount)
 
     this.setState({
       value: ''
@@ -39,14 +39,13 @@ class WrapEthForm extends React.Component {
   render () {
     const {classes} = this.props
     const {value} = this.state
-
     return (
       <div className={classes.root}>
         <TextField value={value} onChange={this.handleChange} />
-        <SmartButton variant='raised' onClick={this.handleClick}>Wrap</SmartButton>
+        <SmartButton variant='raised' onClick={this.handleClick}>Unwrap</SmartButton>
       </div>
     )
   }
 }
 
-export default connector(decorate(WrapEthForm))
+export default connector(decorate(UnwrapWethForm))
