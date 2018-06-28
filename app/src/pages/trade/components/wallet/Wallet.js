@@ -3,7 +3,7 @@ import jss from 'react-jss'
 import Web3 from 'web3'
 import Panel from 'components/Panel'
 import EtherscanLink from 'components/EtherscanLink'
-import Balance from './EthBalance'
+import EthToken from './EthToken'
 import Token from './Token'
 import WethToken from './WethToken'
 import {connect} from 'react-redux'
@@ -28,11 +28,15 @@ const decorate = jss({
     display: 'flex',
     alignItems: 'left',
     flex: 'none',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    padding: 0
   },
   token: {
-    borderBottom: '1px solid #999',
-    padding: [[5, 0]]
+    borderTop: '1px solid #ccc',
+    padding: [[12, 24]]
+  },
+  connectionWidget: {
+    padding: [[12, 24]]
   }
 })
 
@@ -78,18 +82,25 @@ class Wallet extends React.Component {
       return <Panel>Account not connected</Panel>
     }
 
+    const wethToken = tokens.find(one => one.symbol === 'WETH')
+
     return (
       <Panel className={classes.root}>
-        <EtherscanLink address={account} network={network}>{account}</EtherscanLink>
+        <div className={classes.connectionWidget}>
+          <EtherscanLink address={account} network={network}>{account}</EtherscanLink>
+        </div>
 
-        <Balance />
+        <div className={classes.token}>
+          <EthToken />
+        </div>
 
-        {tokens.map(token =>
+        <div className={classes.token}>
+          <WethToken token={wethToken} />
+        </div>
+
+        {tokens.filter(token => token.symbol !== 'WETH').map(token =>
           <div key={token.address} className={classes.token}>
-            {token.symbol === 'WETH'
-              ? <WethToken token={token} />
-              : <Token token={token} />
-            }
+            <Token token={token} />
           </div>
         )}
       </Panel>

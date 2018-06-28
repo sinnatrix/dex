@@ -12,7 +12,10 @@ const connector = connect(
 )
 
 const decorate = jss({
-  root: {},
+  root: {
+    display: 'flex',
+    marginBottom: 2
+  },
   button: {
     marginLeft: 10
   }

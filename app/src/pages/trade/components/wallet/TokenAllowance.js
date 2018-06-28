@@ -3,20 +3,27 @@ import jss from 'react-jss'
 import Switch from '@material-ui/core/Switch'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
-import {setUnlimitedTokenAllowance, setZeroTokenAllowance} from 'modules/index'
+import {setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance} from 'modules/index'
 
 const connector = connect(
   (state, ownProps) => ({
     allowance: state.tokenAllowances[ownProps.token.symbol]
   }),
-  dispatch => bindActionCreators({setUnlimitedTokenAllowance, setZeroTokenAllowance}, dispatch)
+  dispatch => bindActionCreators({setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance}, dispatch)
 )
 
 const decorate = jss({
-  root: {}
+  root: {
+    marginTop: -8,
+    marginBottom: -8
+  }
 })
 
 class TokenAllowance extends React.Component {
+  componentDidMount () {
+    this.props.loadTokenAllowance(this.props.token)
+  }
+
   handleChange = e => {
     const {token} = this.props
     const {checked} = e.target
@@ -29,9 +36,10 @@ class TokenAllowance extends React.Component {
   }
 
   render () {
-    const {allowance} = this.props
+    const {allowance, classes} = this.props
     return (
       <Switch
+        className={classes.root}
         value='allowance'
         checked={allowance || false}
         onChange={this.handleChange}

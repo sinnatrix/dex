@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import Layout from 'components/Layout'
-import Wallet from './components/Wallet'
+import Wallet from './components/wallet/Wallet'
 import Marketplace from './components/Marketplace'
 import LimitOrderForm from './components/LimitOrderForm'
 import Orderbook from './components/Orderbook'
@@ -17,10 +17,18 @@ const decorate = jss({
       flexDirection: 'column'
     }
   },
+  wallet: {
+    width: 300,
+    paddingRight: 5,
+    overflowY: 'auto'
+  },
   left: {
     display: 'flex',
     flexDirection: 'column',
-    minWidth: 250,
+    minWidth: 300,
+    marginLeft: 20,
+    paddingLeft: 5,
+    paddingRight: 5,
     overflowY: 'auto'
   },
   right: {
@@ -35,8 +43,10 @@ const decorate = jss({
 
 const TradePage = ({classes}) =>
   <Layout contentClassName={classes.root}>
-    <div className={classes.left}>
+    <div className={classes.wallet}>
       <Wallet />
+    </div>
+    <div className={classes.left}>
       <Marketplace />
       <LimitOrderForm />
     </div>
