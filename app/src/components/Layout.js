@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import cx from 'classnames'
-import { NavLink, Link } from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
@@ -59,10 +59,10 @@ const Layout = ({classes, children, contentClassName}) => {
           <Typography variant='title' color='inherit'>
             <Link to='/' className={classes.titleLink}>DEX</Link>
           </Typography>
-          <div className={classes.menu}>
+          {/* <div className={classes.menu}>
             <NavLink exact activeClassName={classes.activeLink} className={classes.link} to='/'>trade</NavLink>
             <NavLink activeClassName={classes.activeLink} className={classes.link} to='/orders'>orders</NavLink>
-          </div>
+          </div> */}
         </Toolbar>
       </AppBar>
 
