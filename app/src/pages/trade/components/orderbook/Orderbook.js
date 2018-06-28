@@ -6,20 +6,12 @@ import Toolbar from '@material-ui/core/Toolbar'
 import format from 'date-fns/format'
 import compose from 'ramda/es/compose'
 import ClipboardButton from './ClipboardButton'
-import SpreadRow from './SpreadRow'
 import red from '@material-ui/core/colors/red'
 import ReactTable, {ReactTableDefaults} from 'react-table'
 import 'react-table/react-table.css'
+import createTrComponent from './createTrComponent'
 
-const DefaultRowComponent = ReactTableDefaults.TrComponent
-
-ReactTableDefaults.TrComponent = props => {
-  const {spread, ...resultProps} = props
-  if (spread) {
-    return <SpreadRow spread={spread} />
-  }
-  return <DefaultRowComponent {...resultProps} />
-}
+ReactTableDefaults.TrComponent = createTrComponent(ReactTableDefaults.TrComponent)
 
 const connector = connect(
   state => ({
@@ -35,9 +27,9 @@ const decorate = jss({
     display: 'flex',
     flexDirection: 'column'
   },
-  row: {
-    transition: 'background-color 1000ms linear'
-  },
+  // row: {
+  //   transition: 'background-color 1000ms linear'
+  // },
   highlight: {
     backgroundColor: red[500]
   },
@@ -92,7 +84,8 @@ class Orderbook extends React.Component {
           pageSize={orders.length}
           getTrProps={(state, rowInfo, column) => {
             return {
-              spread: rowInfo.original.spread
+              spread: rowInfo.original.spread,
+              highlightClassName: rowInfo.original.highlight ? classes.highlight : ''
             }
           }}
           columns={[
@@ -128,19 +121,6 @@ class Orderbook extends React.Component {
       </div>
     )
   }
-
-  // renderOrder = order => {
-  //   const {classes} = this.props
-  //   return (
-  //     <TableRow key={order.order.orderHash} className={cx(classes.row, order.highlight && classes.highlight)}>
-  //       <TableCell>{order.price.toFixed(6)}</TableCell>
-  //       <TableCell>{order.makerAmount.toFixed(6)} {order.makerToken.symbol}</TableCell>
-  //       <TableCell>{order.takerAmount.toFixed(6)} {order.takerToken.symbol}</TableCell>
-  //       <TableCell>{this.renderExpiresAt(order)}</TableCell>
-  //       <TableCell><ClipboardButton order={order} /></TableCell>
-  //     </TableRow>
-  //   )
-  // }
 
   renderExpiresAt = order => {
     const date = new Date(parseInt(order.order.expirationUnixTimestampSec, 0) * 1000)
