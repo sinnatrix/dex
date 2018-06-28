@@ -29,6 +29,10 @@ const decorate = jss({
     alignItems: 'left',
     flex: 'none',
     flexDirection: 'column'
+  },
+  token: {
+    borderBottom: '1px solid #999',
+    padding: [[5, 0]]
   }
 })
 
@@ -80,9 +84,13 @@ class Wallet extends React.Component {
 
         <Balance />
 
-        {tokens.map(token => token.symbol === 'WETH'
-          ? <WethToken key={token.address} token={token} />
-          : <Token key={token.address} token={token} />
+        {tokens.map(token =>
+          <div key={token.address} className={classes.token}>
+            {token.symbol === 'WETH'
+              ? <WethToken token={token} />
+              : <Token token={token} />
+            }
+          </div>
         )}
       </Panel>
     )

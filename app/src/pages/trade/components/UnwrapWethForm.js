@@ -12,7 +12,10 @@ const connector = connect(
 )
 
 const decorate = jss({
-  root: {}
+  root: {},
+  button: {
+    marginLeft: 10
+  }
 })
 
 class UnwrapWethForm extends React.Component {
@@ -42,7 +45,7 @@ class UnwrapWethForm extends React.Component {
     return (
       <div className={classes.root}>
         <TextField value={value} onChange={this.handleChange} />
-        <SmartButton variant='raised' onClick={this.handleClick}>Unwrap</SmartButton>
+        <SmartButton variant='raised' onClick={this.handleClick} className={classes.button}>Unwrap</SmartButton>
       </div>
     )
   }

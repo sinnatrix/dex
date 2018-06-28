@@ -15,10 +15,7 @@ const connector = connect(
 )
 
 const decorate = jss({
-  root: {
-    borderBottom: '1px solid #999',
-    padding: [[5, 0]]
-  },
+  root: {},
   header: {
     marginBottom: 5,
     display: 'flex'

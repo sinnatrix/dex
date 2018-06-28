@@ -12,7 +12,10 @@ const connector = connect(
 )
 
 const decorate = jss({
-  root: {}
+  root: {},
+  button: {
+    marginLeft: 10
+  }
 })
 
 class WrapEthForm extends React.Component {
@@ -43,7 +46,7 @@ class WrapEthForm extends React.Component {
     return (
       <div className={classes.root}>
         <TextField value={value} onChange={this.handleChange} />
-        <SmartButton variant='raised' onClick={this.handleClick}>Wrap</SmartButton>
+        <SmartButton variant='raised' onClick={this.handleClick} className={classes.button}>Wrap</SmartButton>
       </div>
     )
   }
