@@ -54,18 +54,21 @@ class MarketOrderForm extends React.Component {
   }
 
   render () {
-    const {classes} = this.props
+    const {classes, marketplaceToken, currentToken} = this.props
     const {amount, mode} = this.state
+
+    const symbol = mode === 'buy' ? marketplaceToken.symbol : currentToken.symbol
 
     return (
       <div className={classes.root}>
         <OrderModeRadio
           mode={mode}
-          onChange={this.handleTypeChange}
+          onChange={this.handleModeChange}
         />
 
         <TextField
           type='number'
+          label={`Amount (${symbol})`}
           value={amount}
           onChange={this.handleAmountChange}
         />
