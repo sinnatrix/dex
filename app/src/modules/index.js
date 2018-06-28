@@ -232,7 +232,7 @@ export const loadTokenBalance = token => async (dispatch, getState) => {
   dispatch(setTokenBalance(token.symbol, balance))
 }
 
-export const makeOrder = ({type, amount, price}) => async (dispatch, getState) => {
+export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getState) => {
   const {marketplaceToken, currentToken} = getState()
 
   let data
@@ -277,13 +277,8 @@ export const makeOrder = ({type, amount, price}) => async (dispatch, getState) =
   const orderHash = ZeroEx.getOrderHashHex(order)
 
   const shouldAddPersonalMessagePrefix = window.web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
-  let ecSignature
-  try {
-    ecSignature = await zeroEx.signOrderHashAsync(orderHash, makerAddress, shouldAddPersonalMessagePrefix)
-  } catch (e) {
-    console.error('e: ', e)
-    return
-  }
+
+  const ecSignature = await zeroEx.signOrderHashAsync(orderHash, makerAddress, shouldAddPersonalMessagePrefix)
 
   const signedOrder = {
     ...order,
@@ -292,6 +287,10 @@ export const makeOrder = ({type, amount, price}) => async (dispatch, getState) =
   }
 
   await axios.post('/api/relayer/v0/order', signedOrder)
+}
+
+export const makeMarketOrder = ({type, amount}) => dispatch => {
+  console.log('market order: ', type, amount)
 }
 
 const sendTransaction = tx => {

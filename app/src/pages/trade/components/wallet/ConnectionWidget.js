@@ -65,7 +65,10 @@ class ConnectionWidget extends React.Component {
 
     if (!account) {
       return (
-        <div className={classes.error}><a target='_blank' href='https://metamask.io/'>Metamask</a> account is not connected</div>
+        <div className={classes.error}>
+          <a target='_blank' href='https://metamask.io/' rel='noopener noreferrer'>Metamask</a>
+          account is not connected
+        </div>
       )
     }
 
