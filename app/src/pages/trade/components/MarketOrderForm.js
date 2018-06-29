@@ -47,10 +47,15 @@ class MarketOrderForm extends React.Component {
   handlePlaceOrder = async () => {
     const {mode, amount} = this.state
 
-    this.props.makeMarketOrder({
-      type: mode,
-      amount
-    })
+    try {
+      await this.props.makeMarketOrder({
+        type: mode,
+        amount
+      })
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
   }
 
   render () {
@@ -73,7 +78,12 @@ class MarketOrderForm extends React.Component {
           onChange={this.handleAmountChange}
         />
 
-        <SmartButton variant='raised' color='secondary' className={classes.button} onClick={this.handlePlaceOrder}>Place order</SmartButton>
+        <SmartButton
+          variant='raised'
+          color='secondary'
+          className={classes.button}
+          onClick={this.handlePlaceOrder}
+        >Place order</SmartButton>
       </div>
     )
   }

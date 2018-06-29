@@ -37,6 +37,7 @@ export const generateBid = ({order, baseToken, quoteToken}) => {
   const bid = {
     order,
     price,
+    maker: order.maker,
     makerToken,
     takerToken,
     makerAmount,

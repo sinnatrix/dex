@@ -89,7 +89,12 @@ class LimitOrderForm extends React.Component {
           onChange={this.handlePriceChange}
         />
 
-        <SmartButton className={classes.button} variant='raised' color='secondary' onClick={this.handlePlaceOrder}>Place order</SmartButton>
+        <SmartButton
+          className={classes.button}
+          variant='raised'
+          color='secondary'
+          onClick={this.handlePlaceOrder}
+        >Place order</SmartButton>
       </div>
     )
   }

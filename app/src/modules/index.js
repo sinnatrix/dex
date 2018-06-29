@@ -97,10 +97,9 @@ export const loadTokenAllowance = token => async (dispatch, getState) => {
 
   const zeroEx = getZeroEx()
 
-  const result = await zeroEx.token.getAllowanceAsync(
+  const result = await zeroEx.token.getProxyAllowanceAsync(
     token.address,
-    account,
-    zeroEx.proxy.getContractAddress()
+    account
   )
 
   dispatch(setTokenAllowance(token.symbol, !result.isZero()))
@@ -111,10 +110,9 @@ export const setUnlimitedTokenAllowance = token => async (dispatch, getState) =>
 
   const zeroEx = getZeroEx()
 
-  const txHash = await zeroEx.token.setUnlimitedAllowanceAsync(
+  const txHash = await zeroEx.token.setUnlimitedProxyAllowanceAsync(
     token.address,
-    account,
-    zeroEx.proxy.getContractAddress()
+    account
   )
 
   await awaitTransaction(txHash)
@@ -129,10 +127,9 @@ export const setZeroTokenAllowance = token => async (dispatch, getState) => {
 
   const zeroEx = getZeroEx()
 
-  const txHash = await zeroEx.token.setAllowanceAsync(
+  const txHash = await zeroEx.token.setProxyAllowanceAsync(
     token.address,
     account,
-    zeroEx.proxy.getContractAddress(),
     new BigNumber(0)
   )
 
@@ -289,8 +286,37 @@ export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getSta
   await axios.post('/api/relayer/v0/order', signedOrder)
 }
 
-export const makeMarketOrder = ({type, amount}) => dispatch => {
+export const makeMarketOrder = ({type, amount}) => async (dispatch, getState) => {
   console.log('market order: ', type, amount)
+  const {bids, asks, account} = getState()
+
+  const zeroEx = getZeroEx()
+
+  const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order)
+
+  // console.log('ordersToCheck.length: ', ordersToCheck.length)
+
+  const ordersToFill = []
+  for (const order of ordersToCheck) {
+    try {
+      await zeroEx.exchange.validateOrderFillableOrThrowAsync(order)
+      ordersToFill.push(order)
+    } catch (e) {
+      console.log('order: ', order.orderHash, ' is not fillable')
+    }
+  }
+  // console.log('ordersToFill.length: ', ordersToFill.length)
+
+  const amountToFill = ZeroEx.toBaseUnitAmount(new BigNumber(amount), 18)
+
+  const fillTxHash = await zeroEx.exchange.fillOrdersUpToAsync(
+    ordersToFill,
+    amountToFill,
+    true,
+    account
+  )
+
+  console.log('fillTxHash: ', fillTxHash)
 }
 
 const sendTransaction = tx => {

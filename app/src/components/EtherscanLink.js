@@ -7,9 +7,11 @@ const decorate = jss({
     display: 'flex'
   },
   content: {
-    minWidth: 0,
     overflow: 'hidden',
     textOverflow: 'ellipsis'
+  },
+  label: {
+    minWidth: 0
   }
 })
 
@@ -18,6 +20,7 @@ const EtherscanLink = ({classes, children, network, address}) => {
     <Button
       variant='outlined'
       className={classes.root}
+      classes={{label: classes.label}}
       target='_blank'
       href={`https://${network}.etherscan.io/address/${address}`}
     >

@@ -98,13 +98,21 @@ orderSchema.methods.fillInBlockchain = async function () {
 const Order = mongoose.model('Order', orderSchema)
 
 Order.generateOrderbook = async ({baseTokenAddress, quoteTokenAddress}) => {
+  const currentTs = (Date.now() / 1000).toFixed(0)
+
   const bids = await Order.find({
     takerTokenAddress: baseTokenAddress,
-    makerTokenAddress: quoteTokenAddress
+    makerTokenAddress: quoteTokenAddress,
+    expirationUnixTimestampSec: {
+      $gte: currentTs
+    }
   })
   const asks = await Order.find({
     takerTokenAddress: quoteTokenAddress,
-    makerTokenAddress: baseTokenAddress
+    makerTokenAddress: baseTokenAddress,
+    expirationUnixTimestampSec: {
+      $gte: currentTs
+    }
   })
 
   return {bids, asks}
