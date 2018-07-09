@@ -75,6 +75,11 @@ class OrdersTable extends React.Component {
             accessor: order => order.spread ? null : this.renderExpiresAt(order)
           },
           {
+            Header: 'maker',
+            id: 'maker',
+            accessor: order => order.maker
+          },
+          {
             Header: '',
             id: 'clipboard',
             Cell: ({original: order}) => order.spread ? null : <ClipboardButton order={order} />,

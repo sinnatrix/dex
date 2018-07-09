@@ -12,7 +12,7 @@ const decorate = jss({
 
 class OrderPanel extends React.Component {
   state = {
-    type: 'limit'
+    type: 'market'
   }
 
   handleTypeChange = (e, type) => {
