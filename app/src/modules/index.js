@@ -155,13 +155,13 @@ export const setOrderbook = ({bids: bidOrders, asks: askOrders}) => (dispatch, g
   const bids = bidOrders.map(
     order => generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken})
   )
-  const bidsSorted = R.sort(R.descend(R.prop('price')), bids)
+  const bidsSorted = R.sort(R.descend(R.path(['data', 'price'])), bids)
   dispatch(setBids(bidsSorted))
 
   const asks = askOrders.map(
     order => generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken})
   )
-  const asksSorted = R.sort(R.descend(R.prop('price')), asks)
+  const asksSorted = R.sort(R.descend(R.path(['data', 'price'])), asks)
   dispatch(setAsks(asksSorted))
 }
 
@@ -173,7 +173,7 @@ export const addOrder = order => (dispatch, getState) => {
       ...generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken}),
       highlight: true
     }
-    const bidsSorted = R.sort(R.descend(R.prop('price')), [...bids, bid])
+    const bidsSorted = R.sort(R.descend(R.path(['data', 'price'])), [...bids, bid])
 
     dispatch(setBids(bidsSorted))
   } else {
@@ -181,7 +181,7 @@ export const addOrder = order => (dispatch, getState) => {
       ...generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken}),
       highlight: true
     }
-    const asksSorted = R.sort(R.descend(R.prop('price')), [...asks, ask])
+    const asksSorted = R.sort(R.descend(R.path(['data', 'price'])), [...asks, ask])
 
     dispatch(setAsks(asksSorted))
   }
@@ -287,14 +287,12 @@ export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getSta
 }
 
 export const makeMarketOrder = ({type, amount}) => async (dispatch, getState) => {
-  console.log('market order: ', type, amount)
+  console.log('market order: ', {type, amount})
   const {bids, asks, account} = getState()
 
   const zeroEx = getZeroEx()
 
-  const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order)
-
-  // console.log('ordersToCheck.length: ', ordersToCheck.length)
+  const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order.data)
 
   const ordersToFill = []
   for (const order of ordersToCheck) {
@@ -302,10 +300,9 @@ export const makeMarketOrder = ({type, amount}) => async (dispatch, getState) =>
       await zeroEx.exchange.validateOrderFillableOrThrowAsync(order)
       ordersToFill.push(order)
     } catch (e) {
-      console.log('order: ', order.orderHash, ' is not fillable')
+      console.warn('order: ', order.orderHash, ' is not fillable')
     }
   }
-  // console.log('ordersToFill.length: ', ordersToFill.length)
 
   const amountToFill = ZeroEx.toBaseUnitAmount(new BigNumber(amount), 18)
 

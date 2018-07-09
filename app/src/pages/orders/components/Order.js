@@ -34,7 +34,7 @@ class Order extends React.Component {
     })
 
     const {order} = this.state
-    const {data: {error}} = await axios.post(`/api/v1/orders/${order.order.orderHash}/validate`)
+    const {data: {error}} = await axios.post(`/api/v1/orders/${order.order.data.orderHash}/validate`)
 
     this.setState({
       error
@@ -57,7 +57,7 @@ class Order extends React.Component {
       return null
     }
 
-    const d = new Date(parseInt(order.expirationUnixTimestampSec, 0) * 1000)
+    const d = new Date(parseInt(order.data.expirationUnixTimestampSec, 0) * 1000)
 
     return (
       <div className={classes.root}>
