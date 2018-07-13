@@ -31,7 +31,7 @@ class ClipboardButton extends React.Component {
   handleClick = () => {
     const {order} = this.props
     copyToClipboard(JSON.stringify({
-      signedOrder: order.order,
+      signedOrder: order.order.data,
       metadata: {
         makerToken: {
           name: order.makerToken.name,

@@ -1,8 +1,8 @@
 import {BigNumber} from '@0xproject/utils'
 
 export const generateBid = ({order, baseToken, quoteToken}) => {
-  const makerToken = order.makerTokenAddress === baseToken.address ? baseToken : quoteToken
-  const takerToken = order.takerTokenAddress === baseToken.address ? baseToken : quoteToken
+  const makerToken = order.data.makerTokenAddress === baseToken.address ? baseToken : quoteToken
+  const takerToken = order.data.takerTokenAddress === baseToken.address ? baseToken : quoteToken
 
   const decimalFields = [
     'expirationUnixTimestampSec',
@@ -13,22 +13,24 @@ export const generateBid = ({order, baseToken, quoteToken}) => {
     'takerTokenAmount'
   ]
 
-  decimalFields.forEach(key => {
-    order = {
-      ...order,
-      [key]: new BigNumber(order[key])
+  const orderData = decimalFields.reduce((agg, key) => {
+    return {
+      ...agg,
+      [key]: new BigNumber(order.data[key])
     }
-  })
+  }, {...order.data})
+  order = {...order, data: orderData}
+  console.log('order: ', order)
 
-  const makerAmount = order.makerTokenAmount.dividedBy(
+  const makerAmount = order.data.makerTokenAmount.dividedBy(
     Math.pow(10, makerToken.decimals)
   )
-  const takerAmount = order.takerTokenAmount.dividedBy(
+  const takerAmount = order.data.takerTokenAmount.dividedBy(
     Math.pow(10, takerToken.decimals)
   )
 
   let price
-  if (order.takerTokenAddress === baseToken.address) {
+  if (order.data.takerTokenAddress === baseToken.address) {
     price = takerAmount.dividedBy(makerAmount)
   } else {
     price = makerAmount.dividedBy(takerAmount)
@@ -37,7 +39,7 @@ export const generateBid = ({order, baseToken, quoteToken}) => {
   const bid = {
     order,
     price,
-    maker: order.maker,
+    maker: order.data.maker,
     makerToken,
     takerToken,
     makerAmount,

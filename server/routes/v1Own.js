@@ -27,7 +27,7 @@ router.get('/tokens/:symbol', async (req, res) => {
 
 router.post('/orders/:hash/validate', async (req, res) => {
   const {hash} = req.params
-  const order = await Order.findOne({orderHash: hash})
+  const order = await Order.findOne({'data.orderHash': hash})
 
   try {
     await order.validateInBlockchain()
@@ -43,13 +43,13 @@ router.post('/orders/:hash/validate', async (req, res) => {
 })
 
 router.post('/orders', async (req, res) => {
-  const data = req.body
-  let order = await Order.findOne({orderHash: data.hash})
+  const {data} = req.body
+  let order = await Order.findOne({'data.orderHash': data.hash})
   if (order) {
     throw new Error('order already exists')
   }
 
-  order = new Order(data)
+  order = new Order({data})
   await order.save()
 
   res.send(order)

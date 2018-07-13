@@ -11,7 +11,7 @@ runner(async () => {
   log.info({count: orders.length}, 'loaded')
 
   for (let order of orders) {
-    const model = new Order(order)
+    const model = new Order({data: order})
     try {
       await model.save()
       log.info({order}, 'saved')

@@ -7,36 +7,36 @@ const {BigNumber} = require('@0xproject/utils')
 const Schema = mongoose.Schema
 
 const orderSchema = new Schema({
-  orderHash: {
-    type: String,
-    index: true,
-    unique: true
-  },
-  maker: String,
-  taker: String,
-  feeRecipient: String,
-  makerTokenAddress: String,
-  takerTokenAddress: String,
-  exchangeContractAddress: String,
-  salt: String,
-  makerFee: String,
-  takerFee: String,
-  makerTokenAmount: String,
-  takerTokenAmount: String,
-  expirationUnixTimestampSec: String,
-  ecSignature: {
-    v: Number,
-    r: String,
-    s: String
+  data: {
+    orderHash: {
+      type: String,
+      index: true,
+      unique: true
+    },
+    maker: String,
+    taker: String,
+    feeRecipient: String,
+    makerTokenAddress: String,
+    takerTokenAddress: String,
+    exchangeContractAddress: String,
+    salt: String,
+    makerFee: String,
+    takerFee: String,
+    makerTokenAmount: String,
+    takerTokenAmount: String,
+    expirationUnixTimestampSec: String,
+    ecSignature: {
+      v: Number,
+      r: String,
+      s: String
+    }
   }
 })
 
 orderSchema.plugin(uniqueValidator)
 
 orderSchema.methods.toZeroExOrder = function () {
-  const data = this.toObject()
-  delete data._id
-  delete data.__v
+  const {data} = this.toObject()
 
   const fields = [
     'expirationUnixTimestampSec',
@@ -47,11 +47,17 @@ orderSchema.methods.toZeroExOrder = function () {
     'takerTokenAmount'
   ]
 
-  fields.forEach(key => {
-    data[key] = new BigNumber(data[key])
+  const resultData = {}
+
+  Object.keys(data).forEach(key => {
+    if (fields.indexOf(key) === -1) {
+      resultData[key] = data[key]
+    } else {
+      resultData[key] = new BigNumber(data[key])
+    }
   })
 
-  return data
+  return resultData
 }
 
 orderSchema.methods.validateInBlockchain = async function () {
@@ -101,16 +107,16 @@ Order.generateOrderbook = async ({baseTokenAddress, quoteTokenAddress}) => {
   const currentTs = (Date.now() / 1000).toFixed(0)
 
   const bids = await Order.find({
-    takerTokenAddress: baseTokenAddress,
-    makerTokenAddress: quoteTokenAddress,
-    expirationUnixTimestampSec: {
+    'data.takerTokenAddress': baseTokenAddress,
+    'data.makerTokenAddress': quoteTokenAddress,
+    'data.expirationUnixTimestampSec': {
       $gte: currentTs
     }
   })
   const asks = await Order.find({
-    takerTokenAddress: quoteTokenAddress,
-    makerTokenAddress: baseTokenAddress,
-    expirationUnixTimestampSec: {
+    'data.takerTokenAddress': quoteTokenAddress,
+    'data.makerTokenAddress': baseTokenAddress,
+    'data.expirationUnixTimestampSec': {
       $gte: currentTs
     }
   })
