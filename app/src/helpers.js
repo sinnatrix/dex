@@ -20,7 +20,6 @@ export const generateBid = ({order, baseToken, quoteToken}) => {
     }
   }, {...order.data})
   order = {...order, data: orderData}
-  console.log('order: ', order)
 
   const makerAmount = order.data.makerTokenAmount.dividedBy(
     Math.pow(10, makerToken.decimals)
