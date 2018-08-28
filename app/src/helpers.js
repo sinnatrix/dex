@@ -65,7 +65,7 @@ export const getEthBalance = address => {
 
 export const getTokenBalance = (walletAddr, tokenAddr) => {
   return new Promise((resolve, reject) => {
-    const methodHex = window.web3js.sha3('balanceOf(address)').substr(0, '0x'.length + 8)
+    const methodHex = window.web3js.utils.sha3('balanceOf(address)').substr(0, '0x'.length + 8)
     const params = walletAddr.substr(2).padStart(32 * 2, '0')
     const data = methodHex + params
 
@@ -78,8 +78,8 @@ export const getTokenBalance = (walletAddr, tokenAddr) => {
         return
       }
 
-      const wei = window.web3js.toBigNumber(result).toString()
-      const tokenBalance = parseFloat(window.web3js.fromWei(wei))
+      const wei = new BigNumber(result).toString()
+      const tokenBalance = parseFloat(window.web3js.utils.fromWei(wei))
 
       resolve(tokenBalance)
     })

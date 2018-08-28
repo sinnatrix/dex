@@ -79,9 +79,9 @@ const setTokenBalance = (symbol, value) => ({type: SET_TOKEN_BALANCE, payload: {
 const setEthBalance = payload => ({type: SET_ETH_BALANCE, payload})
 const setTokenAllowance = (symbol, value) => ({type: SET_TOKEN_ALLOWANCE, payload: {symbol, value}})
 
-const getZeroEx = () => {
-  const networkId = parseInt(window.web3.version.network, 10)
-  const zeroEx = new ZeroEx(window.web3.currentProvider, {networkId})
+const getZeroEx = async () => {
+  const networkId = await window.web3js.eth.net.getId()
+  const zeroEx = new ZeroEx(window.web3js.currentProvider, {networkId})
   return zeroEx
 }
 
@@ -95,7 +95,7 @@ export const loadEthBalance = () => async (dispatch, getState) => {
 export const loadTokenAllowance = token => async (dispatch, getState) => {
   const {account} = getState()
 
-  const zeroEx = getZeroEx()
+  const zeroEx = await getZeroEx()
 
   const result = await zeroEx.token.getProxyAllowanceAsync(
     token.address,
@@ -108,7 +108,7 @@ export const loadTokenAllowance = token => async (dispatch, getState) => {
 export const setUnlimitedTokenAllowance = token => async (dispatch, getState) => {
   const {account} = getState()
 
-  const zeroEx = getZeroEx()
+  const zeroEx = await getZeroEx()
 
   const txHash = await zeroEx.token.setUnlimitedProxyAllowanceAsync(
     token.address,
@@ -125,7 +125,7 @@ export const setUnlimitedTokenAllowance = token => async (dispatch, getState) =>
 export const setZeroTokenAllowance = token => async (dispatch, getState) => {
   const {account} = getState()
 
-  const zeroEx = getZeroEx()
+  const zeroEx = await getZeroEx()
 
   const txHash = await zeroEx.token.setProxyAllowanceAsync(
     token.address,
@@ -230,7 +230,7 @@ export const loadTokenBalance = token => async (dispatch, getState) => {
 }
 
 export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getState) => {
-  const {marketplaceToken, currentToken} = getState()
+  const {marketplaceToken, currentToken, account} = getState()
 
   let data
 
@@ -250,9 +250,9 @@ export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getSta
     }
   }
 
-  const makerAddress = window.web3js.eth.accounts[0]
+  const makerAddress = account
 
-  const zeroEx = getZeroEx()
+  const zeroEx = await getZeroEx()
 
   const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress()
 
@@ -273,7 +273,7 @@ export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getSta
 
   const orderHash = ZeroEx.getOrderHashHex(order)
 
-  const shouldAddPersonalMessagePrefix = window.web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
+  const shouldAddPersonalMessagePrefix = window.web3js.currentProvider.constructor.name === 'MetamaskInpageProvider'
 
   const ecSignature = await zeroEx.signOrderHashAsync(orderHash, makerAddress, shouldAddPersonalMessagePrefix)
 
@@ -290,7 +290,7 @@ export const makeMarketOrder = ({type, amount}) => async (dispatch, getState) =>
   console.log('market order: ', {type, amount})
   const {bids, asks, account} = getState()
 
-  const zeroEx = getZeroEx()
+  const zeroEx = await getZeroEx()
 
   const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order.data)
 
@@ -329,7 +329,7 @@ const sendTransaction = tx => {
 }
 
 const awaitTransaction = async txHash => {
-  const zeroEx = getZeroEx()
+  const zeroEx = await getZeroEx()
   await zeroEx.awaitTransactionMinedAsync(txHash)
 }
 
@@ -347,7 +347,7 @@ export const wrapEth = amount => async (dispatch, getState) => {
   const rawTx = {
     to: wethToken.address,
     from: account,
-    value: window.web3js.toWei(amount),
+    value: window.web3js.utils.toWei(amount.toString()),
     gas: 21000 * 2
   }
 
@@ -371,18 +371,18 @@ export const unwrapWeth = amount => async (dispatch, getState) => {
 
   const {account} = getState()
 
-  const contract = window.web3js.eth.contract(wethToken.abi)
-  const contractInstance = contract.at(wethToken.address)
+  const contract = new window.web3js.eth.Contract(wethToken.abi, wethToken.address)
 
   const rawTx = {
     from: account,
     gas: 21000 * 2
   }
-  const value = window.web3js.toWei(amount)
+  const value = window.web3js.utils.toWei(amount.toString())
 
   const txHash = await new Promise((resolve, reject) => {
-    contractInstance.withdraw.sendTransaction(value, rawTx, (err, result) => {
+    contract.methods.withdraw(value).send(rawTx, (err, result) => {
       if (err) {
+        console.error(err)
         reject(err)
         return
       }

@@ -33,7 +33,7 @@ class UnwrapWethForm extends React.Component {
   }
 
   handleClick = async () => {
-    const amount = parseFloat(this.state.value, 10)
+    const amount = parseFloat(this.state.value || 0, 10)
 
     await this.props.unwrapWeth(amount)
 

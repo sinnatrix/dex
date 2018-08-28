@@ -12,8 +12,8 @@
     "migrate:kovan": "source .env.kovan && DATABASE_URL=$DATABASE_URL db-migrate up"
   },
   "dependencies": {
-    "0x.js": "^0.38.4",
-    "@0xproject/utils": "^0.7.1",
+    "0x.js": "^0.38.6",
+    "@0xproject/utils": "^1.0.7",
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
     "db-migrate": "^0.11.1",
@@ -21,21 +21,21 @@
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "keythereum": "^1.0.4",
-    "mongodb": "^3.1.0",
+    "mongodb": "^3.1.4",
     "mongoose": "^5.1.7",
     "mongoose-unique-validator": "^2.0.1",
     "ramda": "^0.25.0",
-    "request": "^2.87.0",
+    "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
-    "web3": "^1.0.0-beta.34",
-    "ws": "^5.2.1"
+    "web3": "^1.0.0-beta.35",
+    "ws": "^6.0.0"
   },
   "devDependencies": {
-    "babel-eslint": "^8.2.5",
-    "ganache-cli": "^6.1.4",
-    "nodemon": "^1.17.5",
+    "babel-eslint": "^9.0.0",
+    "ganache-cli": "^6.1.8",
+    "nodemon": "^1.18.3",
     "standard": "^11.0.1",
-    "webpack": "^4.13.0"
+    "webpack": "^4.17.1"
   },
   "standard": {
     "parser": "babel-eslint"

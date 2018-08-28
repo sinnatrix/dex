@@ -47,9 +47,10 @@ class ConnectionWidget extends React.Component {
     clearInterval(this.interval)
   }
 
-  updateAccountData = () => {
-    const account = window.web3js.eth.accounts[0]
-    const networkId = window.web3js.version.network
+  updateAccountData = async () => {
+    const accounts = await window.web3js.eth.getAccounts()
+    const account = accounts[0].toLowerCase()
+    const networkId = await window.web3js.eth.net.getId()
     const network = networkNamesByIds[networkId]
 
     if (account !== this.props.account) {
@@ -60,13 +61,14 @@ class ConnectionWidget extends React.Component {
       this.props.setNetwork(network)
     }
   }
+
   render () {
     const {account, network, classes} = this.props
 
     if (!account) {
       return (
         <div className={classes.error}>
-          <a target='_blank' href='https://metamask.io/' rel='noopener noreferrer'>Metamask</a>
+          <a target='_blank' href='https://metamask.io/' rel='noopener noreferrer' style={{marginRight: 5}}>Metamask</a>
           account is not connected
         </div>
       )

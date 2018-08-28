@@ -20,6 +20,7 @@ class TokenBalance extends React.Component {
         loaded: true
       })
     } catch (e) {
+      console.error(e)
       this.setState({
         error: true
       })

@@ -9,7 +9,7 @@ const http = require('http')
 // const wsRelayerServer = require('./wsRelayerServer')
 const wsOwnServer = require('./wsOwnServer')
 
-mongoose.connect(`mongodb://localhost/${process.env.DB_NAME}`).then(Config.init).catch(console.error)
+mongoose.connect(`mongodb://localhost:27017/${process.env.DB_NAME}`, {useNewUrlParser: true}).then(Config.init).catch(console.error)
 
 const app = express()
 

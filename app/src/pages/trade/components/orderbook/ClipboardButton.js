@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import IconButton from '@material-ui/core/IconButton'
-import CopyIcon from '@material-ui/icons/ContentCopy'
+import CopyIcon from '@material-ui/icons/FileCopy'
 
 const copyToClipboard = str => {
   const el = document.createElement('textarea')
