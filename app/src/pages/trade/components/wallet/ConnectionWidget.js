@@ -49,7 +49,7 @@ class ConnectionWidget extends React.Component {
 
   updateAccountData = async () => {
     const accounts = await window.web3js.eth.getAccounts()
-    const account = accounts[0].toLowerCase()
+    const account = (accounts[0] || '').toLowerCase()
     const networkId = await window.web3js.eth.net.getId()
     const network = networkNamesByIds[networkId]
 
