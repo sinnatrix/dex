@@ -8,7 +8,7 @@ class OrdersList extends React.Component {
   }
 
   async componentDidMount () {
-    const {data: orders} = await axios.get('/api/relayer/v0/orders')
+    const { data: orders } = await axios.get('/api/relayer/v0/orders')
 
     this.setState({
       orders
@@ -17,7 +17,7 @@ class OrdersList extends React.Component {
 
   render () {
     return (
-      <div style={{width: 700}}>
+      <div style={{ width: 700 }}>
         <header>Orders</header>
         <div>
           {this.state.orders.map(this.renderOneOrder)}

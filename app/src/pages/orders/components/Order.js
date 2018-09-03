@@ -33,8 +33,8 @@ class Order extends React.Component {
       error: ''
     })
 
-    const {order} = this.state
-    const {data: {error}} = await axios.post(`/api/v1/orders/${order.data.orderHash}/validate`)
+    const { order } = this.state
+    const { data: { error } } = await axios.post(`/api/v1/orders/${order.data.orderHash}/validate`)
 
     this.setState({
       error
@@ -42,7 +42,7 @@ class Order extends React.Component {
   }
 
   async loadOrder (hash) {
-    const {data: order} = await axios.get(`/api/relayer/v0/orders/${hash}`)
+    const { data: order } = await axios.get(`/api/relayer/v0/orders/${hash}`)
 
     this.setState({
       order
@@ -50,8 +50,8 @@ class Order extends React.Component {
   }
 
   render () {
-    const {classes} = this.props
-    const {order, error} = this.state
+    const { classes } = this.props
+    const { order, error } = this.state
 
     if (!order) {
       return null

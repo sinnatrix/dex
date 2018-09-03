@@ -1,6 +1,6 @@
-import {BigNumber} from '@0xproject/utils'
+import { BigNumber } from '@0xproject/utils'
 
-export const generateBid = ({order, baseToken, quoteToken}) => {
+export const generateBid = ({ order, baseToken, quoteToken }) => {
   const makerToken = order.data.makerTokenAddress === baseToken.address ? baseToken : quoteToken
   const takerToken = order.data.takerTokenAddress === baseToken.address ? baseToken : quoteToken
 
@@ -18,8 +18,8 @@ export const generateBid = ({order, baseToken, quoteToken}) => {
       ...agg,
       [key]: new BigNumber(order.data[key])
     }
-  }, {...order.data})
-  order = {...order, data: orderData}
+  }, { ...order.data })
+  order = { ...order, data: orderData }
 
   const makerAmount = order.data.makerTokenAmount.dividedBy(
     Math.pow(10, makerToken.decimals)

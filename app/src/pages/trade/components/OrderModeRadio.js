@@ -14,7 +14,7 @@ class OrderModeRadio extends React.Component {
   }
 
   render () {
-    const {mode} = this.props
+    const { mode } = this.props
 
     return (
       <RadioGroup

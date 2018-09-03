@@ -15,12 +15,12 @@ const decorate = jss({
   }
 })
 
-const EtherscanLink = ({classes, children, network, address}) => {
+const EtherscanLink = ({ classes, children, network, address }) => {
   return (
     <Button
       variant='outlined'
       className={classes.root}
-      classes={{label: classes.label}}
+      classes={{ label: classes.label }}
       target='_blank'
       href={`https://${network}.etherscan.io/address/${address}`}
     >

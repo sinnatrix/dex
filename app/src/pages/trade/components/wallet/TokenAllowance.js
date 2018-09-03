@@ -1,15 +1,15 @@
 import React from 'react'
 import jss from 'react-jss'
 import Switch from '@material-ui/core/Switch'
-import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
-import {setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance} from 'modules/index'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance } from 'modules/index'
 
 const connector = connect(
   (state, ownProps) => ({
     allowance: state.tokenAllowances[ownProps.token.symbol]
   }),
-  dispatch => bindActionCreators({setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance}, dispatch)
+  dispatch => bindActionCreators({ setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance }, dispatch)
 )
 
 const decorate = jss({
@@ -25,8 +25,8 @@ class TokenAllowance extends React.Component {
   }
 
   handleChange = e => {
-    const {token} = this.props
-    const {checked} = e.target
+    const { token } = this.props
+    const { checked } = e.target
 
     if (checked) {
       this.props.setUnlimitedTokenAllowance(token)
@@ -36,7 +36,7 @@ class TokenAllowance extends React.Component {
   }
 
   render () {
-    const {allowance, classes} = this.props
+    const { allowance, classes } = this.props
     return (
       <Switch
         className={classes.root}

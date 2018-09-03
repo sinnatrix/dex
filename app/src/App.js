@@ -7,14 +7,14 @@ import { MuiThemeProvider } from '@material-ui/core/styles'
 import { Provider } from 'react-redux'
 import theme from './theme'
 import store from './store'
-import {setOrderbook, addOrder} from './modules/index'
-import {socket} from './ws'
+import { setOrderbook, addOrder } from './modules/index'
+import { socket } from './ws'
 
 class App extends React.Component {
   componentDidMount () {
     socket.addEventListener('message', message => {
       const data = JSON.parse(message.data)
-      const {type, channel, payload} = data
+      const { type, channel, payload } = data
 
       if (type === 'snapshot' && channel === 'orderbook') {
         store.dispatch(setOrderbook(payload))

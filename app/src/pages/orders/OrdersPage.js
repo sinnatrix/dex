@@ -12,7 +12,7 @@ const decorate = jss({
   }
 })
 
-const OrdersPage = ({classes}) => {
+const OrdersPage = ({ classes }) => {
   return (
     <Layout>
       <div className={classes.root}>

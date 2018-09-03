@@ -11,7 +11,7 @@ const decorate = jss(theme => ({
   })
 }))
 
-const Panel = ({classes, className, children}) => {
+const Panel = ({ classes, className, children }) => {
   return (
     <Paper className={cx(classes.root, className)}>{children}</Paper>
   )

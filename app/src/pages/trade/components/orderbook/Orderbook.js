@@ -1,6 +1,6 @@
 import React from 'react'
 import jss from 'react-jss'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import Typography from '@material-ui/core/Typography'
 import Toolbar from '@material-ui/core/Toolbar'
 import compose from 'ramda/es/compose'
@@ -22,7 +22,7 @@ const decorate = jss({
   }
 })
 
-const Orderbook = ({classes, bids, asks}) => {
+const Orderbook = ({ classes, bids, asks }) => {
   let orders = bids
   if (bids.length && asks.length) {
     const minBidPrice = bids[bids.length - 1].price
@@ -30,7 +30,7 @@ const Orderbook = ({classes, bids, asks}) => {
     const spread = {
       value: minBidPrice.minus(maxAskPrice)
     }
-    orders = orders.concat({spread})
+    orders = orders.concat({ spread })
   }
   orders = orders.concat(asks)
 

@@ -25,12 +25,12 @@ exports.up = async function (db) {
       continue
     }
 
-    const {_id, __v, ...data} = item
-    const newItem = {data, __v}
-    await coll.update({_id}, newItem)
+    const { _id, __v, ...data } = item
+    const newItem = { data, __v }
+    await coll.update({ _id }, newItem)
   }
 
-  await coll.createIndex({'data.orderHash': 1}, {unique: true})
+  await coll.createIndex({ 'data.orderHash': 1 }, { unique: true })
 
   conn.close()
 

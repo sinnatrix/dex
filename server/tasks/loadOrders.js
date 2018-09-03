@@ -4,17 +4,17 @@ const Relayer = require('../models/Relayer')
 const Order = require('../models/Order')
 
 runner(async () => {
-  const relayer = await Relayer.findOne({name: 'Radar Relay'})
+  const relayer = await Relayer.findOne({ name: 'Radar Relay' })
 
   const orders = await relayer.loadOrders()
 
-  log.info({count: orders.length}, 'loaded')
+  log.info({ count: orders.length }, 'loaded')
 
   for (let order of orders) {
-    const model = new Order({data: order})
+    const model = new Order({ data: order })
     try {
       await model.save()
-      log.info({order}, 'saved')
+      log.info({ order }, 'saved')
     } catch (e) {
       log.info(e)
     }

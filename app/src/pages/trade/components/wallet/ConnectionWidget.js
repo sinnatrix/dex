@@ -2,9 +2,9 @@ import React from 'react'
 import jss from 'react-jss'
 import EtherscanLink from 'components/EtherscanLink'
 import Web3 from 'web3'
-import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
-import {setAccount, setNetwork, loadTokens} from 'modules/index'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import { setAccount, setNetwork, loadTokens } from 'modules/index'
 
 const networkNamesByIds = {
   42: 'kovan'
@@ -15,7 +15,7 @@ const connector = connect(
     network: state.network,
     account: state.account
   }),
-  dispatch => bindActionCreators({setAccount, setNetwork, loadTokens}, dispatch)
+  dispatch => bindActionCreators({ setAccount, setNetwork, loadTokens }, dispatch)
 )
 
 const decorate = jss({
@@ -63,12 +63,12 @@ class ConnectionWidget extends React.Component {
   }
 
   render () {
-    const {account, network, classes} = this.props
+    const { account, network, classes } = this.props
 
     if (!account) {
       return (
         <div className={classes.error}>
-          <a target='_blank' href='https://metamask.io/' rel='noopener noreferrer' style={{marginRight: 5}}>Metamask</a>
+          <a target='_blank' href='https://metamask.io/' rel='noopener noreferrer' style={{ marginRight: 5 }}>Metamask</a>
           account is not connected
         </div>
       )

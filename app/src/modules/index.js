@@ -1,9 +1,9 @@
 import axios from 'axios'
 import * as R from 'ramda'
-import {BigNumber} from '@0xproject/utils'
-import {ZeroEx} from '0x.js'
-import {generateBid, getTokenBalance, getEthBalance} from '../helpers'
-import {getToken} from 'selectors'
+import { BigNumber } from '@0xproject/utils'
+import { ZeroEx } from '0x.js'
+import { generateBid, getTokenBalance, getEthBalance } from '../helpers'
+import { getToken } from 'selectors'
 
 const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
@@ -29,22 +29,22 @@ const initialState = {
   tokens: []
 }
 
-export default (state = initialState, {type, payload}) => {
+export default (state = initialState, { type, payload }) => {
   switch (type) {
     case SET_BIDS:
-      return {...state, bids: payload}
+      return { ...state, bids: payload }
     case SET_ASKS:
-      return {...state, asks: payload}
+      return { ...state, asks: payload }
     case SET_MARKETPLACE_TOKEN:
-      return {...state, marketplaceToken: payload}
+      return { ...state, marketplaceToken: payload }
     case SET_CURRENT_TOKEN:
-      return {...state, currentToken: payload}
+      return { ...state, currentToken: payload }
     case SET_ACCOUNT:
-      return {...state, account: payload}
+      return { ...state, account: payload }
     case SET_NETWORK:
-      return {...state, network: payload}
+      return { ...state, network: payload }
     case SET_ETH_BALANCE:
-      return {...state, ethBalance: payload}
+      return { ...state, ethBalance: payload }
     case SET_TOKEN_BALANCE:
       return {
         ...state,
@@ -62,38 +62,38 @@ export default (state = initialState, {type, payload}) => {
         }
       }
     case SET_TOKENS:
-      return {...state, tokens: payload}
+      return { ...state, tokens: payload }
     default:
       return state
   }
 }
 
-const setBids = payload => ({type: SET_BIDS, payload})
-const setAsks = payload => ({type: SET_ASKS, payload})
-const setMarketplaceToken = payload => ({type: SET_MARKETPLACE_TOKEN, payload})
-const setCurrentToken = payload => ({type: SET_CURRENT_TOKEN, payload})
-const setTokens = payload => ({type: SET_TOKENS, payload})
-export const setAccount = payload => ({type: SET_ACCOUNT, payload})
-export const setNetwork = payload => ({type: SET_NETWORK, payload})
-const setTokenBalance = (symbol, value) => ({type: SET_TOKEN_BALANCE, payload: {symbol, value}})
-const setEthBalance = payload => ({type: SET_ETH_BALANCE, payload})
-const setTokenAllowance = (symbol, value) => ({type: SET_TOKEN_ALLOWANCE, payload: {symbol, value}})
+const setBids = payload => ({ type: SET_BIDS, payload })
+const setAsks = payload => ({ type: SET_ASKS, payload })
+const setMarketplaceToken = payload => ({ type: SET_MARKETPLACE_TOKEN, payload })
+const setCurrentToken = payload => ({ type: SET_CURRENT_TOKEN, payload })
+const setTokens = payload => ({ type: SET_TOKENS, payload })
+export const setAccount = payload => ({ type: SET_ACCOUNT, payload })
+export const setNetwork = payload => ({ type: SET_NETWORK, payload })
+const setTokenBalance = (symbol, value) => ({ type: SET_TOKEN_BALANCE, payload: { symbol, value } })
+const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
+const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
 
 const getZeroEx = async () => {
   const networkId = await window.web3js.eth.net.getId()
-  const zeroEx = new ZeroEx(window.web3js.currentProvider, {networkId})
+  const zeroEx = new ZeroEx(window.web3js.currentProvider, { networkId })
   return zeroEx
 }
 
 export const loadEthBalance = () => async (dispatch, getState) => {
-  const {account} = getState()
+  const { account } = getState()
   const balance = await getEthBalance(account)
 
   dispatch(setEthBalance(balance))
 }
 
 export const loadTokenAllowance = token => async (dispatch, getState) => {
-  const {account} = getState()
+  const { account } = getState()
 
   const zeroEx = await getZeroEx()
 
@@ -106,7 +106,7 @@ export const loadTokenAllowance = token => async (dispatch, getState) => {
 }
 
 export const setUnlimitedTokenAllowance = token => async (dispatch, getState) => {
-  const {account} = getState()
+  const { account } = getState()
 
   const zeroEx = await getZeroEx()
 
@@ -123,7 +123,7 @@ export const setUnlimitedTokenAllowance = token => async (dispatch, getState) =>
 }
 
 export const setZeroTokenAllowance = token => async (dispatch, getState) => {
-  const {account} = getState()
+  const { account } = getState()
 
   const zeroEx = await getZeroEx()
 
@@ -143,34 +143,34 @@ export const setZeroTokenAllowance = token => async (dispatch, getState) => {
 export const resetHighlighting = () => async (dispatch, getState) => {
   await new Promise(resolve => setTimeout(resolve, 2000))
 
-  const {bids, asks} = getState()
+  const { bids, asks } = getState()
 
   dispatch(setBids(bids.map(R.dissoc('highlight'))))
   dispatch(setAsks(asks.map(R.dissoc('highlight'))))
 }
 
-export const setOrderbook = ({bids: bidOrders, asks: askOrders}) => (dispatch, getState) => {
-  const {marketplaceToken, currentToken} = getState()
+export const setOrderbook = ({ bids: bidOrders, asks: askOrders }) => (dispatch, getState) => {
+  const { marketplaceToken, currentToken } = getState()
 
   const bids = bidOrders.map(
-    order => generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken})
+    order => generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken })
   )
   const bidsSorted = R.sort(R.descend(R.path(['data', 'price'])), bids)
   dispatch(setBids(bidsSorted))
 
   const asks = askOrders.map(
-    order => generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken})
+    order => generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken })
   )
   const asksSorted = R.sort(R.descend(R.path(['data', 'price'])), asks)
   dispatch(setAsks(asksSorted))
 }
 
 export const addOrder = order => (dispatch, getState) => {
-  const {marketplaceToken, currentToken, bids, asks} = getState()
+  const { marketplaceToken, currentToken, bids, asks } = getState()
 
   if (order.makerTokenAddress === currentToken.address && order.takerTokenAddress === marketplaceToken.address) {
     const bid = {
-      ...generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken}),
+      ...generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken }),
       highlight: true
     }
     const bidsSorted = R.sort(R.descend(R.path(['data', 'price'])), [...bids, bid])
@@ -178,7 +178,7 @@ export const addOrder = order => (dispatch, getState) => {
     dispatch(setBids(bidsSorted))
   } else {
     const ask = {
-      ...generateBid({order, baseToken: marketplaceToken, quoteToken: currentToken}),
+      ...generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken }),
       highlight: true
     }
     const asksSorted = R.sort(R.descend(R.path(['data', 'price'])), [...asks, ask])
@@ -189,8 +189,8 @@ export const addOrder = order => (dispatch, getState) => {
   dispatch(resetHighlighting())
 }
 
-export const loadOrderbook = () => async (dispatch, getState, {send}) => {
-  const {marketplaceToken, currentToken} = getState()
+export const loadOrderbook = () => async (dispatch, getState, { send }) => {
+  const { marketplaceToken, currentToken } = getState()
 
   const request = {
     type: 'subscribe',
@@ -208,29 +208,29 @@ export const loadOrderbook = () => async (dispatch, getState, {send}) => {
 }
 
 export const loadMarketplaceToken = symbol => async dispatch => {
-  const {data} = await axios(`/api/v1/tokens/${symbol}`)
+  const { data } = await axios(`/api/v1/tokens/${symbol}`)
   dispatch(setMarketplaceToken(data))
 }
 
 export const loadCurrentToken = symbol => async dispatch => {
-  const {data} = await axios(`/api/v1/tokens/${symbol}`)
+  const { data } = await axios(`/api/v1/tokens/${symbol}`)
   dispatch(setCurrentToken(data))
 }
 
 export const loadTokens = tokens => async dispatch => {
-  const {data} = await axios.get('/api/v1/tokens')
+  const { data } = await axios.get('/api/v1/tokens')
   dispatch(setTokens(data))
 }
 
 export const loadTokenBalance = token => async (dispatch, getState) => {
-  const {account} = getState()
+  const { account } = getState()
   const balance = await getTokenBalance(account, token.address)
 
   dispatch(setTokenBalance(token.symbol, balance))
 }
 
-export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getState) => {
-  const {marketplaceToken, currentToken, account} = getState()
+export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState) => {
+  const { marketplaceToken, currentToken, account } = getState()
 
   let data
 
@@ -286,9 +286,9 @@ export const makeLimitOrder = ({type, amount, price}) => async (dispatch, getSta
   await axios.post('/api/relayer/v0/order', signedOrder)
 }
 
-export const makeMarketOrder = ({type, amount}) => async (dispatch, getState) => {
-  console.log('market order: ', {type, amount})
-  const {bids, asks, account} = getState()
+export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState) => {
+  console.log('market order: ', { type, amount })
+  const { bids, asks, account } = getState()
 
   const zeroEx = await getZeroEx()
 
@@ -342,7 +342,7 @@ export const wrapEth = amount => async (dispatch, getState) => {
     return
   }
 
-  const {account} = getState()
+  const { account } = getState()
 
   const rawTx = {
     to: wethToken.address,
@@ -369,7 +369,7 @@ export const unwrapWeth = amount => async (dispatch, getState) => {
     return
   }
 
-  const {account} = getState()
+  const { account } = getState()
 
   const contract = new window.web3js.eth.Contract(wethToken.abi, wethToken.address)
 

@@ -29,7 +29,7 @@ const decorate = jss({
 
 class ClipboardButton extends React.Component {
   handleClick = () => {
-    const {order} = this.props
+    const { order } = this.props
     copyToClipboard(JSON.stringify({
       signedOrder: order.order.data,
       metadata: {
@@ -48,10 +48,10 @@ class ClipboardButton extends React.Component {
   }
 
   render () {
-    const {classes} = this.props
+    const { classes } = this.props
     return (
-      <IconButton className={classes.root} onClick={this.handleClick} classes={{root: classes.button}}>
-        <CopyIcon classes={{root: classes.icon}} />
+      <IconButton className={classes.root} onClick={this.handleClick} classes={{ root: classes.button }}>
+        <CopyIcon classes={{ root: classes.icon }} />
       </IconButton>
     )
   }

@@ -3,7 +3,7 @@ import cx from 'classnames'
 import SpreadRow from './SpreadRow'
 
 const createTrComponent = DefaultRowComponent =>
-  ({spread, className, highlightClassName, ...props}) => {
+  ({ spread, className, highlightClassName, ...props }) => {
     if (spread) {
       return <SpreadRow spread={spread} />
     }

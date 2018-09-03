@@ -28,8 +28,8 @@ class TokenBalance extends React.Component {
   }
 
   render () {
-    const {loaded, error} = this.state
-    const {balance = 0} = this.props
+    const { loaded, error } = this.state
+    const { balance = 0 } = this.props
 
     if (loaded) {
       return <span>{balance.toFixed(6)}</span>

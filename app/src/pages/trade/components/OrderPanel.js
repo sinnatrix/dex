@@ -22,8 +22,8 @@ class OrderPanel extends React.Component {
   }
 
   render () {
-    const {classes} = this.props
-    const {type} = this.state
+    const { classes } = this.props
+    const { type } = this.state
 
     return (
       <Panel className={classes.root}>

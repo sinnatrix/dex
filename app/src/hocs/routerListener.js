@@ -1,21 +1,21 @@
 import React from 'react'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
 
-const makeConnector = ({onEnter, onLeave}) => connect(
+const makeConnector = ({ onEnter, onLeave }) => connect(
   null,
   (dispatch, ownProps) => ({
     onEnter (params) {
       if (!onEnter) {
         return
       }
-      return onEnter({dispatch, params, history: ownProps.history})
+      return onEnter({ dispatch, params, history: ownProps.history })
     },
     onLeave (params) {
       if (!onLeave) {
         return
       }
-      return onLeave({dispatch, params, history: ownProps.history})
+      return onLeave({ dispatch, params, history: ownProps.history })
     }
   })
 )
@@ -46,8 +46,8 @@ const wrap = WrappedComponent => {
   }
 }
 
-export default ({onEnter, onLeave}) => WrappedComponent =>
+export default ({ onEnter, onLeave }) => WrappedComponent =>
   compose(
-    makeConnector({onEnter, onLeave}),
+    makeConnector({ onEnter, onLeave }),
     wrap
   )(WrappedComponent)

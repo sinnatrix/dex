@@ -9,7 +9,7 @@ const decorate = jss({
 
 class WethToken extends React.Component {
   render () {
-    const {classes, token} = this.props
+    const { classes, token } = this.props
     return (
       <div className={classes.root}>
         <Token token={token} />

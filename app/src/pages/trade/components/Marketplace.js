@@ -14,7 +14,7 @@ const decorate = jss({
   }
 })
 
-const Marketplace = ({classes}) =>
+const Marketplace = ({ classes }) =>
   <Panel className={classes.root}>
     <div className={classes.wrapper}>
       <MarketplaceChooser />

@@ -2,13 +2,13 @@ import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import SmartButton from 'material-ui-smart-button'
-import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
-import {unwrapWeth} from 'modules/index'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import { unwrapWeth } from 'modules/index'
 
 const connector = connect(
   null,
-  dispatch => bindActionCreators({unwrapWeth}, dispatch)
+  dispatch => bindActionCreators({ unwrapWeth }, dispatch)
 )
 
 const decorate = jss({
@@ -43,8 +43,8 @@ class UnwrapWethForm extends React.Component {
   }
 
   render () {
-    const {classes} = this.props
-    const {value} = this.state
+    const { classes } = this.props
+    const { value } = this.state
     return (
       <div className={classes.root}>
         <TextField value={value} onChange={this.handleChange} />

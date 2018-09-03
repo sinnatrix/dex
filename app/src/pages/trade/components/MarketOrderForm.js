@@ -3,16 +3,16 @@ import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import SmartButton from 'material-ui-smart-button'
 import OrderModeRadio from './OrderModeRadio'
-import {makeMarketOrder} from 'modules/index'
-import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
+import { makeMarketOrder } from 'modules/index'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
 
 const connector = connect(
   state => ({
     marketplaceToken: state.marketplaceToken,
     currentToken: state.currentToken
   }),
-  dispatch => bindActionCreators({makeMarketOrder}, dispatch)
+  dispatch => bindActionCreators({ makeMarketOrder }, dispatch)
 )
 
 const decorate = jss({
@@ -45,7 +45,7 @@ class MarketOrderForm extends React.Component {
   }
 
   handlePlaceOrder = async () => {
-    const {mode, amount} = this.state
+    const { mode, amount } = this.state
 
     try {
       await this.props.makeMarketOrder({
@@ -59,8 +59,8 @@ class MarketOrderForm extends React.Component {
   }
 
   render () {
-    const {classes, marketplaceToken, currentToken} = this.props
-    const {amount, mode} = this.state
+    const { classes, marketplaceToken, currentToken } = this.props
+    const { amount, mode } = this.state
 
     const symbol = mode === 'buy' ? marketplaceToken.symbol : currentToken.symbol
 

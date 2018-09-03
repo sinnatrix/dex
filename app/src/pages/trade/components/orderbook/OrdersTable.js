@@ -3,7 +3,7 @@ import jss from 'react-jss'
 import format from 'date-fns/format'
 import ClipboardButton from './ClipboardButton'
 import createTrComponent from './createTrComponent'
-import ReactTable, {ReactTableDefaults} from 'react-table'
+import ReactTable, { ReactTableDefaults } from 'react-table'
 import 'react-table/react-table.css'
 import red from '@material-ui/core/colors/red'
 
@@ -39,7 +39,7 @@ class OrdersTable extends React.Component {
   }
 
   render () {
-    const {classes, orders} = this.props
+    const { classes, orders } = this.props
     return (
       <ReactTable
         data={orders}
@@ -82,7 +82,7 @@ class OrdersTable extends React.Component {
           {
             Header: '',
             id: 'clipboard',
-            Cell: ({original: order}) => order.spread ? null : <ClipboardButton order={order} />,
+            Cell: ({ original: order }) => order.spread ? null : <ClipboardButton order={order} />,
             width: 50,
             className: classes.clipboardColumn
           }

@@ -16,13 +16,13 @@ const decorate = jss({
 
 class TokenChooser extends React.Component {
   handleChange = e => {
-    const {marketplace = 'WETH'} = this.props.match.params
+    const { marketplace = 'WETH' } = this.props.match.params
     this.props.history.push(`/${marketplace}/${e.target.value}`)
   }
 
   render () {
-    const {classes} = this.props
-    const {token = 'ZRX'} = this.props.match.params
+    const { classes } = this.props
+    const { token = 'ZRX' } = this.props.match.params
     return (
       <FormControl className={classes.root}>
         <InputLabel htmlFor='age-native-simple'>Token</InputLabel>

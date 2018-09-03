@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 const uniqueValidator = require('mongoose-unique-validator')
 const blockchain = require('../api/blockchain')
-const {ZeroEx} = require('0x.js')
-const {BigNumber} = require('@0xproject/utils')
+const { ZeroEx } = require('0x.js')
+const { BigNumber } = require('@0xproject/utils')
 
 const Schema = mongoose.Schema
 
@@ -36,7 +36,7 @@ const orderSchema = new Schema({
 orderSchema.plugin(uniqueValidator)
 
 orderSchema.methods.toZeroExOrder = function () {
-  const {data} = this.toObject()
+  const { data } = this.toObject()
 
   const fields = [
     'expirationUnixTimestampSec',
@@ -96,14 +96,14 @@ orderSchema.methods.fillInBlockchain = async function () {
   const WETH_ADDRESS = wethTokenInfo.address
   const ZRX_ADDRESS = zrxTokenInfo.address
 
-  console.log('tokens: ', {WETH_ADDRESS, ZRX_ADDRESS})
+  console.log('tokens: ', { WETH_ADDRESS, ZRX_ADDRESS })
 
   await this.validateInBlockchain()
 }
 
 const Order = mongoose.model('Order', orderSchema)
 
-Order.generateOrderbook = async ({baseTokenAddress, quoteTokenAddress}) => {
+Order.generateOrderbook = async ({ baseTokenAddress, quoteTokenAddress }) => {
   const currentTs = (Date.now() / 1000).toFixed(0)
 
   const bids = await Order.find({
@@ -121,7 +121,7 @@ Order.generateOrderbook = async ({baseTokenAddress, quoteTokenAddress}) => {
     }
   })
 
-  return {bids, asks}
+  return { bids, asks }
 }
 
 module.exports = Order

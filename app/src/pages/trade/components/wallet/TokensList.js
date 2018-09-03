@@ -3,7 +3,7 @@ import jss from 'react-jss'
 import EthToken from './EthToken'
 import Token from './Token'
 import WethToken from './WethToken'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 
 const connector = connect(
   state => ({
@@ -20,7 +20,7 @@ const decorate = jss({
   }
 })
 
-const TokensList = ({classes, tokens, account}) => {
+const TokensList = ({ classes, tokens, account }) => {
   if (tokens.length === 0 || !account) {
     return null
   }

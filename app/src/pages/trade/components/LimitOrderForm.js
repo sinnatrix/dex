@@ -2,11 +2,11 @@ import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import SmartButton from 'material-ui-smart-button'
-import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
 import compose from 'ramda/es/compose'
-import {makeLimitOrder} from 'modules/index'
-import {BigNumber} from '@0xproject/utils'
+import { makeLimitOrder } from 'modules/index'
+import { BigNumber } from '@0xproject/utils'
 import OrderModeRadio from './OrderModeRadio'
 
 const connector = connect(
@@ -14,7 +14,7 @@ const connector = connect(
     marketplaceToken: state.marketplaceToken,
     currentToken: state.currentToken
   }),
-  dispatch => bindActionCreators({makeLimitOrder}, dispatch)
+  dispatch => bindActionCreators({ makeLimitOrder }, dispatch)
 )
 
 const decorate = jss({
@@ -54,7 +54,7 @@ class LimitOrderForm extends React.Component {
   }
 
   handlePlaceOrder = async () => {
-    const {mode, amount, price} = this.state
+    const { mode, amount, price } = this.state
 
     await this.props.makeLimitOrder({
       type: mode,
@@ -64,9 +64,9 @@ class LimitOrderForm extends React.Component {
   }
 
   render () {
-    const {classes} = this.props
-    const {marketplaceToken, currentToken} = this.props
-    const {mode, amount, price} = this.state
+    const { classes } = this.props
+    const { marketplaceToken, currentToken } = this.props
+    const { mode, amount, price } = this.state
 
     return (
       <div className={classes.root}>

@@ -9,7 +9,8 @@
     "dev": "nodemon index.js",
     "test": "standard",
     "rpc": "ganache-cli",
-    "migrate:kovan": "source .env.kovan && DATABASE_URL=$DATABASE_URL db-migrate up"
+    "migrate:kovan": "source .env.kovan && DATABASE_URL=$DATABASE_URL db-migrate up",
+    "lint": "standard"
   },
   "dependencies": {
     "0x.js": "^0.38.6",

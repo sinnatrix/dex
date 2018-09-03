@@ -15,11 +15,11 @@ module.exports = function (path, server) {
 
     ws.on('message', async function incoming (rawMessage) {
       const message = JSON.parse(rawMessage)
-      const {type, channel, requestId, payload} = message
+      const { type, channel, requestId, payload } = message
 
       if (type === 'subscribe' && channel === 'orderbook') {
-        const {baseTokenAddress, quoteTokenAddress} = payload
-        const {asks, bids} = await Order.generateOrderbook({baseTokenAddress, quoteTokenAddress})
+        const { baseTokenAddress, quoteTokenAddress } = payload
+        const { asks, bids } = await Order.generateOrderbook({ baseTokenAddress, quoteTokenAddress })
 
         const reply = {
           type: 'snapshot',

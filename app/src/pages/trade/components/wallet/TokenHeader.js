@@ -12,7 +12,7 @@ const decorate = jss({
   }
 })
 
-const TokenHeader = ({symbol, name, classes}) => {
+const TokenHeader = ({ symbol, name, classes }) => {
   return (
     <div className={classes.root}>
       <span className={classes.symbol}>{symbol}</span>

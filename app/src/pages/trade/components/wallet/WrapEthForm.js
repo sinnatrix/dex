@@ -1,14 +1,14 @@
 import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
-import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
-import {wrapEth} from 'modules/index'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import { wrapEth } from 'modules/index'
 import SmartButton from 'material-ui-smart-button'
 
 const connector = connect(
   null,
-  dispatch => bindActionCreators({wrapEth}, dispatch)
+  dispatch => bindActionCreators({ wrapEth }, dispatch)
 )
 
 const decorate = jss({
@@ -43,8 +43,8 @@ class WrapEthForm extends React.Component {
   }
 
   render () {
-    const {classes} = this.props
-    const {value} = this.state
+    const { classes } = this.props
+    const { value } = this.state
 
     return (
       <div className={classes.root}>

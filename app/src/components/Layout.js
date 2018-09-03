@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import cx from 'classnames'
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
@@ -51,7 +51,7 @@ const decorate = jss({
   }
 })
 
-const Layout = ({classes, children, contentClassName}) => {
+const Layout = ({ classes, children, contentClassName }) => {
   return (
     <div className={classes.root}>
       <AppBar position='static' color='default'>

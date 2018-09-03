@@ -12,7 +12,7 @@ const decorate = jss({
   }
 })
 
-const SpreadRow = ({classes, spread}) => {
+const SpreadRow = ({ classes, spread }) => {
   return (
     <div className={classes.root} id='orderbook-spread'>
       Spread: {spread.value.toFixed(6)}

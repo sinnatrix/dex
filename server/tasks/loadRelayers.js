@@ -5,7 +5,7 @@ const Relayer = require('../models/Relayer')
 
 runner(async () => {
   const items = await registry.load()
-  log.info({count: items.length}, 'loaded')
+  log.info({ count: items.length }, 'loaded')
 
   await Relayer.remove({}).exec()
 

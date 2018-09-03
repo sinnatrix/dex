@@ -20,7 +20,7 @@ const relayerSchema = new Schema({
   networks: [networkSchema]
 })
 
-relayerSchema.methods.loadOrderbook = async function ({baseTokenAddress, quoteTokenAddress}) {
+relayerSchema.methods.loadOrderbook = async function ({ baseTokenAddress, quoteTokenAddress }) {
   if (!baseTokenAddress) {
     throw new Error('baseTokenAddress is a required parameter')
   }
@@ -31,7 +31,7 @@ relayerSchema.methods.loadOrderbook = async function ({baseTokenAddress, quoteTo
   const network = this.getNetwork()
 
   const uri = `${network.sra_http_endpoint}/v0/orderbook?baseTokenAddress=${baseTokenAddress}&quoteTokenAddress=${quoteTokenAddress}`
-  const result = await rp({uri, json: true})
+  const result = await rp({ uri, json: true })
 
   return result
 }
@@ -40,7 +40,7 @@ relayerSchema.methods.loadOrders = async function () {
   const network = this.getNetwork()
 
   const uri = `${network.sra_http_endpoint}/v0/orders`
-  const result = await rp({uri, json: true})
+  const result = await rp({ uri, json: true })
 
   return result
 }

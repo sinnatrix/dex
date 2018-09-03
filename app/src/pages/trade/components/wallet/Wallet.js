@@ -14,7 +14,7 @@ const decorate = jss({
   }
 })
 
-const Wallet = ({classes}) =>
+const Wallet = ({ classes }) =>
   <Panel className={classes.root}>
     <ConnectionWidget />
 
