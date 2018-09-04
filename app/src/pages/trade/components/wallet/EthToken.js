@@ -1,17 +1,21 @@
 import React from 'react'
 import jss from 'react-jss'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import { loadEthBalance } from 'modules/index'
 import WrapEthForm from './WrapEthForm'
 import TokenHeader from './TokenHeader'
 import TokenBalance from './TokenBalance'
+import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   state => ({
     ethBalance: state.ethBalance
   }),
-  dispatch => bindActionCreators({ loadEthBalance }, dispatch)
+  (dispatch, ownProps) => ({
+    loadEthBalance () {
+      return dispatch(loadEthBalance(ownProps.web3))
+    }
+  })
 )
 
 const decorate = jss({
@@ -23,7 +27,7 @@ const decorate = jss({
   }
 })
 
-class EthBalance extends React.Component {
+class EthToken extends React.Component {
   render () {
     const { classes, ethBalance } = this.props
     return (
@@ -38,4 +42,4 @@ class EthBalance extends React.Component {
   }
 }
 
-export default connector(decorate(EthBalance))
+export default withWeb3(connector(decorate(EthToken)))

@@ -79,23 +79,23 @@ const setTokenBalance = (symbol, value) => ({ type: SET_TOKEN_BALANCE, payload: 
 const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
 const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
 
-const getZeroEx = async () => {
-  const networkId = await window.web3js.eth.net.getId()
-  const zeroEx = new ZeroEx(window.web3js.currentProvider, { networkId })
+const getZeroEx = async web3 => {
+  const networkId = await web3.eth.net.getId()
+  const zeroEx = new ZeroEx(web3.currentProvider, { networkId })
   return zeroEx
 }
 
-export const loadEthBalance = () => async (dispatch, getState) => {
+export const loadEthBalance = web3 => async (dispatch, getState) => {
   const { account } = getState()
-  const balance = await getEthBalance(account)
+  const balance = await getEthBalance(web3, account)
 
   dispatch(setEthBalance(balance))
 }
 
-export const loadTokenAllowance = token => async (dispatch, getState) => {
+export const loadTokenAllowance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
 
-  const zeroEx = await getZeroEx()
+  const zeroEx = await getZeroEx(web3)
 
   const result = await zeroEx.token.getProxyAllowanceAsync(
     token.address,
@@ -105,10 +105,10 @@ export const loadTokenAllowance = token => async (dispatch, getState) => {
   dispatch(setTokenAllowance(token.symbol, !result.isZero()))
 }
 
-export const setUnlimitedTokenAllowance = token => async (dispatch, getState) => {
+export const setUnlimitedTokenAllowance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
 
-  const zeroEx = await getZeroEx()
+  const zeroEx = await getZeroEx(web3)
 
   const txHash = await zeroEx.token.setUnlimitedProxyAllowanceAsync(
     token.address,
@@ -122,10 +122,10 @@ export const setUnlimitedTokenAllowance = token => async (dispatch, getState) =>
   await dispatch(loadTokenAllowance(token))
 }
 
-export const setZeroTokenAllowance = token => async (dispatch, getState) => {
+export const setZeroTokenAllowance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
 
-  const zeroEx = await getZeroEx()
+  const zeroEx = await getZeroEx(web3)
 
   const txHash = await zeroEx.token.setProxyAllowanceAsync(
     token.address,
@@ -189,7 +189,7 @@ export const addOrder = order => (dispatch, getState) => {
   dispatch(resetHighlighting())
 }
 
-export const loadOrderbook = () => async (dispatch, getState, { send }) => {
+export const loadOrderbook = socket => async (dispatch, getState) => {
   const { marketplaceToken, currentToken } = getState()
 
   const request = {
@@ -204,7 +204,7 @@ export const loadOrderbook = () => async (dispatch, getState, { send }) => {
     }
   }
 
-  send(JSON.stringify(request))
+  socket.send(JSON.stringify(request))
 }
 
 export const loadMarketplaceToken = symbol => async dispatch => {
@@ -222,14 +222,14 @@ export const loadTokens = tokens => async dispatch => {
   dispatch(setTokens(data))
 }
 
-export const loadTokenBalance = token => async (dispatch, getState) => {
+export const loadTokenBalance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
-  const balance = await getTokenBalance(account, token.address)
+  const balance = await getTokenBalance(web3, account, token.address)
 
   dispatch(setTokenBalance(token.symbol, balance))
 }
 
-export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState) => {
+export const makeLimitOrder = (web3, { type, amount, price }) => async (dispatch, getState) => {
   const { marketplaceToken, currentToken, account } = getState()
 
   let data
@@ -252,7 +252,7 @@ export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getS
 
   const makerAddress = account
 
-  const zeroEx = await getZeroEx()
+  const zeroEx = await getZeroEx(web3)
 
   const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress()
 
@@ -273,7 +273,7 @@ export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getS
 
   const orderHash = ZeroEx.getOrderHashHex(order)
 
-  const shouldAddPersonalMessagePrefix = window.web3js.currentProvider.constructor.name === 'MetamaskInpageProvider'
+  const shouldAddPersonalMessagePrefix = web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
 
   const ecSignature = await zeroEx.signOrderHashAsync(orderHash, makerAddress, shouldAddPersonalMessagePrefix)
 
@@ -286,11 +286,11 @@ export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getS
   await axios.post('/api/relayer/v0/order', signedOrder)
 }
 
-export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState) => {
+export const makeMarketOrder = (web3, { type, amount }) => async (dispatch, getState) => {
   console.log('market order: ', { type, amount })
   const { bids, asks, account } = getState()
 
-  const zeroEx = await getZeroEx()
+  const zeroEx = await getZeroEx(web3)
 
   const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order.data)
 
@@ -316,9 +316,9 @@ export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState) 
   console.log('fillTxHash: ', fillTxHash)
 }
 
-const sendTransaction = tx => {
+const sendTransaction = (web3, tx) => {
   return new Promise((resolve, reject) => {
-    window.web3js.eth.sendTransaction(tx, (err, txHash) => {
+    web3.eth.sendTransaction(tx, (err, txHash) => {
       if (err) {
         reject(err)
         return
@@ -328,14 +328,14 @@ const sendTransaction = tx => {
   })
 }
 
-const awaitTransaction = async txHash => {
-  const zeroEx = await getZeroEx()
+const awaitTransaction = async (web3, txHash) => {
+  const zeroEx = await getZeroEx(web3)
   await zeroEx.awaitTransactionMinedAsync(txHash)
 }
 
 const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
 
-export const wrapEth = amount => async (dispatch, getState) => {
+export const wrapEth = (web3, amount) => async (dispatch, getState) => {
   const wethToken = getToken('WETH', getState())
   if (!wethToken) {
     console.error('WETH token is not found')
@@ -347,22 +347,22 @@ export const wrapEth = amount => async (dispatch, getState) => {
   const rawTx = {
     to: wethToken.address,
     from: account,
-    value: window.web3js.utils.toWei(amount.toString()),
+    value: web3.utils.toWei(amount.toString()),
     gas: 21000 * 2
   }
 
-  const txHash = await sendTransaction(rawTx)
+  const txHash = await sendTransaction(web3, rawTx)
 
   await awaitTransaction(txHash)
 
   await delay(2000)
-  dispatch(loadTokenBalance(wethToken))
+  dispatch(loadTokenBalance(web3, wethToken))
 
   await delay(3000)
   dispatch(loadEthBalance())
 }
 
-export const unwrapWeth = amount => async (dispatch, getState) => {
+export const unwrapWeth = (web3, amount) => async (dispatch, getState) => {
   const wethToken = getToken('WETH', getState())
   if (!wethToken) {
     console.error('WETH token is not found')
@@ -371,13 +371,13 @@ export const unwrapWeth = amount => async (dispatch, getState) => {
 
   const { account } = getState()
 
-  const contract = new window.web3js.eth.Contract(wethToken.abi, wethToken.address)
+  const contract = new web3.eth.Contract(wethToken.abi, wethToken.address)
 
   const rawTx = {
     from: account,
     gas: 21000 * 2
   }
-  const value = window.web3js.utils.toWei(amount.toString())
+  const value = web3.utils.toWei(amount.toString())
 
   const txHash = await new Promise((resolve, reject) => {
     contract.methods.withdraw(value).send(rawTx, (err, result) => {
@@ -393,7 +393,7 @@ export const unwrapWeth = amount => async (dispatch, getState) => {
   await awaitTransaction(txHash)
 
   await delay(2000)
-  dispatch(loadTokenBalance(wethToken))
+  dispatch(loadTokenBalance(web3, wethToken))
 
   await delay(3000)
   dispatch(loadEthBalance())

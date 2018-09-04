@@ -1,10 +1,8 @@
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 
-const send = () => {}
-
 const mockStore = configureMockStore([
-  thunk.withExtraArgument({ send })
+  thunk
 ])
 
 const store = mockStore()

@@ -8,6 +8,7 @@ import Orderbook from './components/orderbook/Orderbook'
 import routerListener from 'hocs/routerListener'
 import compose from 'ramda/es/compose'
 import { loadMarketplaceToken, loadCurrentToken, loadOrderbook } from 'modules/index'
+import withSocket from 'hocs/withSocket'
 
 const decorate = jss({
   root: {
@@ -56,13 +57,16 @@ const TradePage = ({ classes }) =>
   </Layout>
 
 export default compose(
+  withSocket,
   routerListener({
-    onEnter ({ params, dispatch }) {
+    onEnter (params, dispatch, ownProps) {
+      console.log('ownProps: ', ownProps)
+
       Promise.all([
         dispatch(loadMarketplaceToken(params.marketplace)),
         dispatch(loadCurrentToken(params.token))
       ]).then(() => {
-        dispatch(loadOrderbook())
+        dispatch(loadOrderbook(ownProps.socket))
       })
     }
   }),

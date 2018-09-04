@@ -9,13 +9,13 @@ const makeConnector = ({ onEnter, onLeave }) => connect(
       if (!onEnter) {
         return
       }
-      return onEnter({ dispatch, params, history: ownProps.history })
+      return onEnter(params, dispatch, ownProps)
     },
     onLeave (params) {
       if (!onLeave) {
         return
       }
-      return onLeave({ dispatch, params, history: ownProps.history })
+      return onLeave(params, dispatch, ownProps)
     }
   })
 )

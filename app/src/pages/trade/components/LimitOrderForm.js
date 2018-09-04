@@ -3,18 +3,18 @@ import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import SmartButton from 'material-ui-smart-button'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import compose from 'ramda/es/compose'
 import { makeLimitOrder } from 'modules/index'
 import { BigNumber } from '@0xproject/utils'
 import OrderModeRadio from './OrderModeRadio'
+import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   state => ({
     marketplaceToken: state.marketplaceToken,
     currentToken: state.currentToken
   }),
-  dispatch => bindActionCreators({ makeLimitOrder }, dispatch)
+  { makeLimitOrder }
 )
 
 const decorate = jss({
@@ -55,8 +55,9 @@ class LimitOrderForm extends React.Component {
 
   handlePlaceOrder = async () => {
     const { mode, amount, price } = this.state
+    const { web3, makeLimitOrder } = this.props
 
-    await this.props.makeLimitOrder({
+    await makeLimitOrder(web3, {
       type: mode,
       amount: new BigNumber(amount),
       price: new BigNumber(price)
@@ -101,6 +102,7 @@ class LimitOrderForm extends React.Component {
 }
 
 export default compose(
+  withWeb3,
   connector,
   decorate
 )(LimitOrderForm)

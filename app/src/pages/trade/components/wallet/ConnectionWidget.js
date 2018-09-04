@@ -1,10 +1,9 @@
 import React from 'react'
 import jss from 'react-jss'
 import EtherscanLink from 'components/EtherscanLink'
-import Web3 from 'web3'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import { setAccount, setNetwork, loadTokens } from 'modules/index'
+import withWeb3 from 'hocs/withWeb3'
 
 const networkNamesByIds = {
   42: 'kovan'
@@ -15,7 +14,7 @@ const connector = connect(
     network: state.network,
     account: state.account
   }),
-  dispatch => bindActionCreators({ setAccount, setNetwork, loadTokens }, dispatch)
+  { setAccount, setNetwork, loadTokens }
 )
 
 const decorate = jss({
@@ -29,28 +28,36 @@ const decorate = jss({
 })
 
 class ConnectionWidget extends React.Component {
-  interval
+  timeout
 
   async componentDidMount () {
-    if (window.web3) {
-      window.web3js = new Web3(window.web3.currentProvider)
-
-      this.interval = setInterval(() => {
-        this.updateAccountData()
-      }, 100)
+    if (this.props.web3) {
+      this.updateAccountDataWithTimeout()
     }
 
     this.props.loadTokens()
   }
 
   componentWillUnmount () {
-    clearInterval(this.interval)
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
+  }
+
+  updateAccountDataWithTimeout = async () => {
+    try {
+      await this.updateAccountData()
+    } catch (e) {
+    }
+
+    this.timeout = setTimeout(this.updateAccountDataWithTimeout, 100)
   }
 
   updateAccountData = async () => {
-    const accounts = await window.web3js.eth.getAccounts()
+    const { web3 } = this.props
+    const accounts = await web3.eth.getAccounts()
     const account = (accounts[0] || '').toLowerCase()
-    const networkId = await window.web3js.eth.net.getId()
+    const networkId = await web3.eth.net.getId()
     const network = networkNamesByIds[networkId]
 
     if (account !== this.props.account) {
@@ -82,4 +89,4 @@ class ConnectionWidget extends React.Component {
   }
 }
 
-export default connector(decorate(ConnectionWidget))
+export default withWeb3(connector(decorate(ConnectionWidget)))
