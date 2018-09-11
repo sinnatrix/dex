@@ -1,9 +1,19 @@
 import axios from 'axios'
 import * as R from 'ramda'
 import { BigNumber } from '@0xproject/utils'
-import { ZeroEx } from '0x.js'
-import { generateBid, getTokenBalance, getEthBalance } from '../helpers'
+import * as ZeroEx from '0x.js'
+import {
+  generateBid,
+  getTokenBalance,
+  getEthBalance,
+  awaitTransaction,
+  sendTransaction,
+  setUnlimitedTokenAllowanceAsync,
+  delay
+} from '../helpers'
 import { getToken } from 'selectors'
+
+// console.log('ZeroEx: ', ZeroEx)
 
 const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
@@ -108,16 +118,7 @@ export const loadTokenAllowance = (web3, token) => async (dispatch, getState) =>
 export const setUnlimitedTokenAllowance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
 
-  const zeroEx = await getZeroEx(web3)
-
-  const txHash = await zeroEx.token.setUnlimitedProxyAllowanceAsync(
-    token.address,
-    account
-  )
-
-  await awaitTransaction(txHash)
-
-  delay(200)
+  await setUnlimitedTokenAllowanceAsync(web3, token, account)
 
   await dispatch(loadTokenAllowance(token))
 }
@@ -315,25 +316,6 @@ export const makeMarketOrder = (web3, { type, amount }) => async (dispatch, getS
 
   console.log('fillTxHash: ', fillTxHash)
 }
-
-const sendTransaction = (web3, tx) => {
-  return new Promise((resolve, reject) => {
-    web3.eth.sendTransaction(tx, (err, txHash) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve(txHash)
-    })
-  })
-}
-
-const awaitTransaction = async (web3, txHash) => {
-  const zeroEx = await getZeroEx(web3)
-  await zeroEx.awaitTransactionMinedAsync(txHash)
-}
-
-const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
 
 export const wrapEth = (web3, amount) => async (dispatch, getState) => {
   const wethToken = getToken('WETH', getState())

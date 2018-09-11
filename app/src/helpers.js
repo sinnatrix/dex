@@ -1,4 +1,12 @@
 import { BigNumber } from '@0xproject/utils'
+import { Web3Wrapper } from '@0xproject/web3-wrapper'
+import { ContractWrappers } from '0x.js'
+
+export const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
+
+const getWeb3Wrapper = (web3) => {
+  return new Web3Wrapper(web3.currentProvider)
+}
 
 export const generateBid = ({ order, baseToken, quoteToken }) => {
   const makerToken = order.data.makerTokenAddress === baseToken.address ? baseToken : quoteToken
@@ -84,4 +92,41 @@ export const getTokenBalance = (web3, walletAddr, tokenAddr) => {
       resolve(tokenBalance)
     })
   })
+}
+
+export const sendTransaction = (web3, tx) => {
+  return new Promise((resolve, reject) => {
+    web3.eth.sendTransaction(tx, (err, txHash) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve(txHash)
+    })
+  })
+}
+
+export const awaitTransaction = async (web3, txHash) => {
+  const web3Wrapper = await getWeb3Wrapper(web3)
+  await web3Wrapper.awaitTransactionMinedAsync(txHash)
+}
+
+export const setUnlimitedTokenAllowanceAsync = async (web3, token, account) => {
+  const networkId = await web3.eth.net.getId()
+  // const web3Wrapper = await getWeb3Wrapper(web3)
+  const contractWrappers = new ContractWrappers(web3.currentProvider, { networkId })
+
+  const txHash = await contractWrappers.erc20Token.setUnlimitedProxyAllowanceAsync(
+    token.address,
+    account
+  )
+
+  await awaitTransaction(txHash)
+
+  delay(200)
+}
+
+export const getTransaction = async (web3, txHash) => {
+  const result = await web3.eth.getTransaction(txHash)
+  return result
 }

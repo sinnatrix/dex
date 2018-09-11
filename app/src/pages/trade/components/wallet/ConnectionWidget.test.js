@@ -37,7 +37,7 @@ test('should render etherscan link', async () => {
     </Provider>
   )
 
-  await delay(100)
+  await delay(200)
   wrapper.update()
 
   expect(
