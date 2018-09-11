@@ -4,7 +4,7 @@ import { ContractWrappers } from '0x.js'
 
 export const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
 
-const getWeb3Wrapper = (web3) => {
+const getWeb3Wrapper = web3 => {
   return new Web3Wrapper(web3.currentProvider)
 }
 
@@ -111,22 +111,48 @@ export const awaitTransaction = async (web3, txHash) => {
   await web3Wrapper.awaitTransactionMinedAsync(txHash)
 }
 
-export const setUnlimitedTokenAllowanceAsync = async (web3, token, account) => {
+export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddress) => {
   const networkId = await web3.eth.net.getId()
-  // const web3Wrapper = await getWeb3Wrapper(web3)
   const contractWrappers = new ContractWrappers(web3.currentProvider, { networkId })
 
   const txHash = await contractWrappers.erc20Token.setUnlimitedProxyAllowanceAsync(
-    token.address,
+    tokenAddress,
     account
   )
 
-  await awaitTransaction(txHash)
+  await awaitTransaction(web3, txHash)
 
   delay(200)
+}
+
+export const getTokenAllowance = async (web3, account, tokenAddress) => {
+  const networkId = await web3.eth.net.getId()
+  const contractWrappers = new ContractWrappers(web3.currentProvider, { networkId })
+
+  const allowance = await contractWrappers.erc20Token.getProxyAllowanceAsync(
+    tokenAddress,
+    account
+  )
+
+  return allowance
 }
 
 export const getTransaction = async (web3, txHash) => {
   const result = await web3.eth.getTransaction(txHash)
   return result
+}
+
+export const setZeroTokenAllowanceAsync = async (web3, account, tokenAddress) => {
+  const networkId = await web3.eth.net.getId()
+  const contractWrappers = new ContractWrappers(web3.currentProvider, { networkId })
+
+  const txHash = await contractWrappers.erc20Token.setProxyAllowanceAsync(
+    tokenAddress,
+    account,
+    new BigNumber(0)
+  )
+
+  await awaitTransaction(web3, txHash)
+
+  delay(200)
 }

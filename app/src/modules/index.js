@@ -9,6 +9,8 @@ import {
   awaitTransaction,
   sendTransaction,
   setUnlimitedTokenAllowanceAsync,
+  getTokenAllowance,
+  setZeroTokenAllowanceAsync,
   delay
 } from '../helpers'
 import { getToken } from 'selectors'
@@ -105,12 +107,7 @@ export const loadEthBalance = web3 => async (dispatch, getState) => {
 export const loadTokenAllowance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
 
-  const zeroEx = await getZeroEx(web3)
-
-  const result = await zeroEx.token.getProxyAllowanceAsync(
-    token.address,
-    account
-  )
+  const result = await getTokenAllowance(web3, account, token.address)
 
   dispatch(setTokenAllowance(token.symbol, !result.isZero()))
 }
@@ -118,7 +115,7 @@ export const loadTokenAllowance = (web3, token) => async (dispatch, getState) =>
 export const setUnlimitedTokenAllowance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
 
-  await setUnlimitedTokenAllowanceAsync(web3, token, account)
+  await setUnlimitedTokenAllowanceAsync(web3, account, token.address)
 
   await dispatch(loadTokenAllowance(token))
 }
@@ -126,17 +123,7 @@ export const setUnlimitedTokenAllowance = (web3, token) => async (dispatch, getS
 export const setZeroTokenAllowance = (web3, token) => async (dispatch, getState) => {
   const { account } = getState()
 
-  const zeroEx = await getZeroEx(web3)
-
-  const txHash = await zeroEx.token.setProxyAllowanceAsync(
-    token.address,
-    account,
-    new BigNumber(0)
-  )
-
-  await awaitTransaction(txHash)
-
-  delay(200)
+  await setZeroTokenAllowanceAsync(web3, account, token.address)
 
   await dispatch(loadTokenAllowance(token))
 }

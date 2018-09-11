@@ -1,11 +1,47 @@
 import Web3 from 'web3'
 import Chance from 'chance'
 import ganache from 'ganache-cli'
-import { getEthBalance, getTokenBalance, sendTransaction, awaitTransaction, getTransaction } from './helpers'
+import {
+  getEthBalance,
+  getTokenBalance,
+  sendTransaction,
+  awaitTransaction,
+  getTransaction,
+  setUnlimitedTokenAllowanceAsync,
+  getTokenAllowance,
+  setZeroTokenAllowanceAsync
+} from './helpers'
 import { txMinedSchema } from './schemas'
 import Joi from 'joi'
 
 const wethToken = require('./fixtures/wethToken.json')
+
+const initWeb3 = (opts = {}) => {
+  return new Web3(ganache.provider({
+    network_id: 50, // setUnlimitedTokenAllowanceAsync works with fixed set of network ids: https://github.com/0xProject/0x-monorepo/blob/083319786fad31dfde16cb9e06e893bfeb23785d/packages/contract-wrappers/src/schemas/contract_wrappers_public_network_config_schema.ts
+    ...opts
+  }))
+}
+
+const initWeb3ByBalance = balance => {
+  return initWeb3({
+    accounts: [
+      { balance }
+    ]
+  })
+}
+
+const deployWethContract = async (web3, from) => {
+  const rawTx = {
+    from,
+    data: wethToken.code,
+    gas: 21000 * 100
+  }
+
+  const txHash = await sendTransaction(web3, rawTx)
+  const { contractAddress } = await web3.eth.getTransactionReceipt(txHash)
+  return contractAddress
+}
 
 /* eslint-env jest */
 
@@ -13,11 +49,8 @@ test('getEthBalance', async () => {
   const chance = new Chance()
   const balance = chance.integer({ min: 0, max: 10000 })
 
-  const web3 = new Web3(ganache.provider({
-    accounts: [
-      { balance }
-    ]
-  }))
+  const web3 = initWeb3ByBalance(balance)
+
   const accounts = await web3.eth.getAccounts()
 
   const balanceInEth = await getEthBalance(web3, accounts[0])
@@ -28,12 +61,12 @@ test('getEthBalance', async () => {
 test('sendTransaction', async () => {
   const balance = Math.pow(10, 18).toString()
 
-  const web3 = new Web3(ganache.provider({
+  const web3 = initWeb3({
     accounts: [
       { balance },
       { balance: 0 }
     ]
-  }))
+  })
   const accounts = await web3.eth.getAccounts()
 
   const rawTx = {
@@ -52,12 +85,12 @@ test('sendTransaction', async () => {
 test('awaitTransaction', async () => {
   const balance = Math.pow(10, 18).toString()
 
-  const web3 = new Web3(ganache.provider({
+  const web3 = initWeb3({
     accounts: [
       { balance }
     ],
     blockTime: 0.5 // seconds
-  }))
+  })
   const accounts = await web3.eth.getAccounts()
 
   const rawTx = {
@@ -83,23 +116,47 @@ test('awaitTransaction', async () => {
 test('getTokenBalance', async () => {
   const balance = Math.pow(10, 18).toString()
 
-  const web3 = new Web3(ganache.provider({
-    accounts: [
-      { balance }
-    ]
-  }))
+  const web3 = initWeb3ByBalance(balance)
   const accounts = await web3.eth.getAccounts()
 
-  const rawTx = {
-    from: accounts[0],
-    data: wethToken.code,
-    gas: 21000 * 100
-  }
+  const wethAddress = await deployWethContract(web3, accounts[0])
 
-  const txHash = await sendTransaction(web3, rawTx)
-  const { contractAddress } = await web3.eth.getTransactionReceipt(txHash)
-
-  const result = await getTokenBalance(web3, accounts[0], contractAddress)
+  const result = await getTokenBalance(web3, accounts[0], wethAddress)
 
   expect(result).toBe(0)
+})
+
+test('setUnlimitedTokenAllowanceAsync', async () => {
+  const balance = Math.pow(10, 18).toString()
+
+  const web3 = initWeb3ByBalance(balance)
+  const accounts = await web3.eth.getAccounts()
+
+  const wethAddress = await deployWethContract(web3, accounts[0])
+
+  await setUnlimitedTokenAllowanceAsync(web3, accounts[0], wethAddress)
+})
+
+test('getTokenAllowance', async () => {
+  const balance = Math.pow(10, 18).toString()
+
+  const web3 = initWeb3ByBalance(balance)
+  const accounts = await web3.eth.getAccounts()
+
+  const wethAddress = await deployWethContract(web3, accounts[0])
+
+  const allowance = await getTokenAllowance(web3, accounts[0], wethAddress)
+
+  expect(allowance.isZero()).toBe(true)
+})
+
+test('setZeroTokenAllowanceAsync', async () => {
+  const balance = Math.pow(10, 18).toString()
+
+  const web3 = initWeb3ByBalance(balance)
+  const accounts = await web3.eth.getAccounts()
+
+  const wethAddress = await deployWethContract(web3, accounts[0])
+
+  await setZeroTokenAllowanceAsync(web3, accounts[0], wethAddress)
 })
