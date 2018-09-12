@@ -1,11 +1,18 @@
 import { BigNumber } from '@0xproject/utils'
 import { Web3Wrapper } from '@0xproject/web3-wrapper'
-import { ContractWrappers } from '0x.js'
+import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils } from '0x.js'
+
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
 
 const getWeb3Wrapper = web3 => {
   return new Web3Wrapper(web3.currentProvider)
+}
+
+const getContractWrappers = async web3 => {
+  const networkId = await web3.eth.net.getId()
+  return new ContractWrappers(web3.currentProvider, { networkId })
 }
 
 export const generateBid = ({ order, baseToken, quoteToken }) => {
@@ -112,8 +119,7 @@ export const awaitTransaction = async (web3, txHash) => {
 }
 
 export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddress) => {
-  const networkId = await web3.eth.net.getId()
-  const contractWrappers = new ContractWrappers(web3.currentProvider, { networkId })
+  const contractWrappers = await getContractWrappers(web3)
 
   const txHash = await contractWrappers.erc20Token.setUnlimitedProxyAllowanceAsync(
     tokenAddress,
@@ -126,8 +132,7 @@ export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddres
 }
 
 export const getTokenAllowance = async (web3, account, tokenAddress) => {
-  const networkId = await web3.eth.net.getId()
-  const contractWrappers = new ContractWrappers(web3.currentProvider, { networkId })
+  const contractWrappers = await getContractWrappers(web3)
 
   const allowance = await contractWrappers.erc20Token.getProxyAllowanceAsync(
     tokenAddress,
@@ -143,8 +148,7 @@ export const getTransaction = async (web3, txHash) => {
 }
 
 export const setZeroTokenAllowanceAsync = async (web3, account, tokenAddress) => {
-  const networkId = await web3.eth.net.getId()
-  const contractWrappers = new ContractWrappers(web3.currentProvider, { networkId })
+  const contractWrappers = await getContractWrappers(web3)
 
   const txHash = await contractWrappers.erc20Token.setProxyAllowanceAsync(
     tokenAddress,
@@ -155,4 +159,102 @@ export const setZeroTokenAllowanceAsync = async (web3, account, tokenAddress) =>
   await awaitTransaction(web3, txHash)
 
   delay(200)
+}
+
+export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmount, takerToken, takerAmount }) => {
+  const makerAddress = account
+
+  const contractWrappers = await getContractWrappers(web3)
+
+  const EXCHANGE_ADDRESS = contractWrappers.erc20Token.getContractAddress()
+
+  const order = {
+    maker: makerAddress,
+    taker: NULL_ADDRESS,
+    feeRecipient: NULL_ADDRESS,
+    makerTokenAddress: makerToken.address,
+    takerTokenAddress: takerToken.address,
+    exchangeContractAddress: EXCHANGE_ADDRESS,
+    salt: generatePseudoRandomSalt(),
+    makerFee: new BigNumber(0),
+    takerFee: new BigNumber(0),
+    makerTokenAmount: Web3Wrapper.toBaseUnitAmount(makerAmount, makerToken.decimals),
+    takerTokenAmount: Web3Wrapper.toBaseUnitAmount(takerAmount, takerToken.decimals),
+    expirationUnixTimestampSec: new BigNumber(parseInt(Date.now() / 1000 + 3600 * 24, 10)) // Valid for up to a day
+  }
+
+  const orderHash = orderHashUtils.getOrderHashHex(order)
+
+  // const shouldAddPersonalMessagePrefix = web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
+
+  const ecSignature = await signatureUtils.ecSignOrderHashAsync(web3.currentProvider, orderHash, makerAddress)
+
+  const signedOrder = {
+    ...order,
+    orderHash,
+    ecSignature
+  }
+
+  return signedOrder
+}
+
+export const makeMarkerOrderAsync = async (web3, account, ordersToCheck, amount) => {
+  const contractWrappers = await getContractWrappers(web3)
+
+  const ordersToFill = []
+  for (const order of ordersToCheck) {
+    try {
+      await contractWrappers.exchange.validateOrderFillableOrThrowAsync(order)
+      ordersToFill.push(order)
+    } catch (e) {
+      console.warn('order: ', order.orderHash, ' is not fillable')
+    }
+  }
+
+  const amountToFill = Web3Wrapper.toBaseUnitAmount(new BigNumber(amount), 18)
+
+  const fillTxHash = await contractWrappers.exchange.fillOrdersUpToAsync(
+    ordersToFill,
+    amountToFill,
+    true,
+    account
+  )
+
+  return fillTxHash
+}
+
+export const sendWrapWethTx = async (web3, account, wethToken, amount) => {
+  const rawTx = {
+    to: wethToken.address,
+    from: account,
+    value: web3.utils.toWei(amount.toString()),
+    gas: 21000 * 2
+  }
+
+  const txHash = await sendTransaction(web3, rawTx)
+
+  return txHash
+}
+
+export const sendUnwrapWethTx = async (web3, account, wethToken, amount) => {
+  const contract = new web3.eth.Contract(wethToken.abi, wethToken.address)
+
+  const value = web3.utils.toWei(amount.toString())
+
+  const txHash = await new Promise((resolve, reject) => {
+    const rawTx = {
+      from: account,
+      gas: 21000 * 2
+    }
+    contract.methods.withdraw(value).send(rawTx, (err, result) => {
+      if (err) {
+        console.error(err)
+        reject(err)
+        return
+      }
+      resolve(result)
+    })
+  })
+
+  return txHash
 }

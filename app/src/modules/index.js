@@ -1,21 +1,20 @@
 import axios from 'axios'
 import * as R from 'ramda'
-import { BigNumber } from '@0xproject/utils'
-import * as ZeroEx from '0x.js'
 import {
   generateBid,
   getTokenBalance,
   getEthBalance,
   awaitTransaction,
-  sendTransaction,
   setUnlimitedTokenAllowanceAsync,
   getTokenAllowance,
   setZeroTokenAllowanceAsync,
-  delay
+  delay,
+  makeLimitOrderAsync,
+  makeMarketOrderAsync,
+  sendUnwrapWethTx,
+  sendWrapWethTx
 } from '../helpers'
 import { getToken } from 'selectors'
-
-// console.log('ZeroEx: ', ZeroEx)
 
 const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
@@ -90,12 +89,6 @@ export const setNetwork = payload => ({ type: SET_NETWORK, payload })
 const setTokenBalance = (symbol, value) => ({ type: SET_TOKEN_BALANCE, payload: { symbol, value } })
 const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
 const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
-
-const getZeroEx = async web3 => {
-  const networkId = await web3.eth.net.getId()
-  const zeroEx = new ZeroEx(web3.currentProvider, { networkId })
-  return zeroEx
-}
 
 export const loadEthBalance = web3 => async (dispatch, getState) => {
   const { account } = getState()
@@ -238,38 +231,7 @@ export const makeLimitOrder = (web3, { type, amount, price }) => async (dispatch
     }
   }
 
-  const makerAddress = account
-
-  const zeroEx = await getZeroEx(web3)
-
-  const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress()
-
-  const order = {
-    maker: makerAddress,
-    taker: ZeroEx.NULL_ADDRESS,
-    feeRecipient: ZeroEx.NULL_ADDRESS,
-    makerTokenAddress: data.makerToken.address,
-    takerTokenAddress: data.takerToken.address,
-    exchangeContractAddress: EXCHANGE_ADDRESS,
-    salt: ZeroEx.generatePseudoRandomSalt(),
-    makerFee: new BigNumber(0),
-    takerFee: new BigNumber(0),
-    makerTokenAmount: ZeroEx.toBaseUnitAmount(data.makerAmount, data.makerToken.decimals),
-    takerTokenAmount: ZeroEx.toBaseUnitAmount(data.takerAmount, data.takerToken.decimals),
-    expirationUnixTimestampSec: new BigNumber(parseInt(Date.now() / 1000 + 3600 * 24, 10)) // Valid for up to a day
-  }
-
-  const orderHash = ZeroEx.getOrderHashHex(order)
-
-  const shouldAddPersonalMessagePrefix = web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
-
-  const ecSignature = await zeroEx.signOrderHashAsync(orderHash, makerAddress, shouldAddPersonalMessagePrefix)
-
-  const signedOrder = {
-    ...order,
-    orderHash,
-    ecSignature
-  }
+  const signedOrder = await makeLimitOrderAsync(web3, account, data)
 
   await axios.post('/api/relayer/v0/order', signedOrder)
 }
@@ -278,28 +240,9 @@ export const makeMarketOrder = (web3, { type, amount }) => async (dispatch, getS
   console.log('market order: ', { type, amount })
   const { bids, asks, account } = getState()
 
-  const zeroEx = await getZeroEx(web3)
-
   const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order.data)
 
-  const ordersToFill = []
-  for (const order of ordersToCheck) {
-    try {
-      await zeroEx.exchange.validateOrderFillableOrThrowAsync(order)
-      ordersToFill.push(order)
-    } catch (e) {
-      console.warn('order: ', order.orderHash, ' is not fillable')
-    }
-  }
-
-  const amountToFill = ZeroEx.toBaseUnitAmount(new BigNumber(amount), 18)
-
-  const fillTxHash = await zeroEx.exchange.fillOrdersUpToAsync(
-    ordersToFill,
-    amountToFill,
-    true,
-    account
-  )
+  const fillTxHash = await makeMarketOrderAsync(web3, account, ordersToCheck, amount)
 
   console.log('fillTxHash: ', fillTxHash)
 }
@@ -313,14 +256,7 @@ export const wrapEth = (web3, amount) => async (dispatch, getState) => {
 
   const { account } = getState()
 
-  const rawTx = {
-    to: wethToken.address,
-    from: account,
-    value: web3.utils.toWei(amount.toString()),
-    gas: 21000 * 2
-  }
-
-  const txHash = await sendTransaction(web3, rawTx)
+  const txHash = await sendWrapWethTx(web3, account, wethToken, amount)
 
   await awaitTransaction(txHash)
 
@@ -340,24 +276,7 @@ export const unwrapWeth = (web3, amount) => async (dispatch, getState) => {
 
   const { account } = getState()
 
-  const contract = new web3.eth.Contract(wethToken.abi, wethToken.address)
-
-  const rawTx = {
-    from: account,
-    gas: 21000 * 2
-  }
-  const value = web3.utils.toWei(amount.toString())
-
-  const txHash = await new Promise((resolve, reject) => {
-    contract.methods.withdraw(value).send(rawTx, (err, result) => {
-      if (err) {
-        console.error(err)
-        reject(err)
-        return
-      }
-      resolve(result)
-    })
-  })
+  const txHash = await sendUnwrapWethTx(web3, account, wethToken, amount)
 
   await awaitTransaction(txHash)
 
