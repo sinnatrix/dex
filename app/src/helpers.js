@@ -1,8 +1,10 @@
 import { BigNumber } from '@0xproject/utils'
 import { Web3Wrapper } from '@0xproject/web3-wrapper'
-import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils } from '0x.js'
+import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils, SignerType } from '0x.js'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
+
+console.log('SignerType: ', SignerType)
 
 export const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
 
@@ -165,29 +167,35 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
   const makerAddress = account
 
   const contractWrappers = await getContractWrappers(web3)
+  // console.log('contractWrappers: ', contractWrappers)
 
-  const EXCHANGE_ADDRESS = contractWrappers.erc20Token.getContractAddress()
+  // console.log('contractWrappers.erc20Token: ', contractWrappers.erc20Token)
+  // console.log('contractWrappers.exchange: ', contractWrappers.exchange)
+
+  const EXCHANGE_ADDRESS = contractWrappers.exchange.getContractAddress()
 
   const order = {
-    maker: makerAddress,
-    taker: NULL_ADDRESS,
-    feeRecipient: NULL_ADDRESS,
-    makerTokenAddress: makerToken.address,
-    takerTokenAddress: takerToken.address,
-    exchangeContractAddress: EXCHANGE_ADDRESS,
+    makerAddress: makerAddress.toLowerCase(),
+    takerAddress: NULL_ADDRESS,
+    senderAddress: NULL_ADDRESS,
+    feeRecipientAddress: NULL_ADDRESS,
+    makerAssetData: makerToken.address.toLowerCase(),
+    takerAssetData: takerToken.address.toLowerCase(),
+    exchangeAddress: EXCHANGE_ADDRESS,
     salt: generatePseudoRandomSalt(),
     makerFee: new BigNumber(0),
     takerFee: new BigNumber(0),
-    makerTokenAmount: Web3Wrapper.toBaseUnitAmount(makerAmount, makerToken.decimals),
-    takerTokenAmount: Web3Wrapper.toBaseUnitAmount(takerAmount, takerToken.decimals),
-    expirationUnixTimestampSec: new BigNumber(parseInt(Date.now() / 1000 + 3600 * 24, 10)) // Valid for up to a day
+    makerAssetAmount: Web3Wrapper.toBaseUnitAmount(makerAmount, makerToken.decimals),
+    takerAssetAmount: Web3Wrapper.toBaseUnitAmount(takerAmount, takerToken.decimals),
+    expirationTimeSeconds: new BigNumber(parseInt(Date.now() / 1000 + 3600 * 24, 10)) // Valid for up to a day
   }
 
   const orderHash = orderHashUtils.getOrderHashHex(order)
 
-  // const shouldAddPersonalMessagePrefix = web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
+  const isMetamask = web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
+  const signatureType = isMetamask ? SignerType.Metamask : SignerType.Default
 
-  const ecSignature = await signatureUtils.ecSignOrderHashAsync(web3.currentProvider, orderHash, makerAddress)
+  const ecSignature = await signatureUtils.ecSignOrderHashAsync(web3.currentProvider, orderHash, makerAddress, signatureType)
 
   const signedOrder = {
     ...order,
@@ -198,7 +206,7 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
   return signedOrder
 }
 
-export const makeMarkerOrderAsync = async (web3, account, ordersToCheck, amount) => {
+export const makeMarketOrderAsync = async (web3, account, ordersToCheck, amount) => {
   const contractWrappers = await getContractWrappers(web3)
 
   const ordersToFill = []

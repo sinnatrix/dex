@@ -9,10 +9,12 @@ import {
   getTransaction,
   setUnlimitedTokenAllowanceAsync,
   getTokenAllowance,
-  setZeroTokenAllowanceAsync
+  setZeroTokenAllowanceAsync,
+  makeLimitOrderAsync
 } from './helpers'
 import { txMinedSchema } from './schemas'
 import Joi from 'joi'
+import { BigNumber } from '@0xproject/utils'
 
 const wethToken = require('./fixtures/wethToken.json')
 
@@ -159,4 +161,37 @@ test('setZeroTokenAllowanceAsync', async () => {
   const wethAddress = await deployWethContract(web3, accounts[0])
 
   await setZeroTokenAllowanceAsync(web3, accounts[0], wethAddress)
+})
+
+test('makeLimitOrderAsync', async () => {
+  const balance = Math.pow(10, 18).toString()
+
+  const web3 = initWeb3ByBalance(balance)
+  const accounts = await web3.eth.getAccounts()
+
+  const wethAddress = await deployWethContract(web3, accounts[0])
+  const wethAddress2 = await deployWethContract(web3, accounts[0])
+
+  const makerToken = {
+    ...wethToken,
+    address: wethAddress
+  }
+
+  const takerToken = {
+    ...wethToken,
+    address: wethAddress2
+  }
+
+  const signedOrder = await makeLimitOrderAsync(
+    web3,
+    accounts[0],
+    {
+      makerToken,
+      makerAmount: new BigNumber(0.01),
+      takerToken,
+      takerAmount: new BigNumber(0.01)
+    }
+  )
+
+  expect(signedOrder.ecSignature).toBeDefined()
 })
