@@ -5,7 +5,17 @@
 .vscode
 .idea
 
+# Configuration
+.env
+
+# About code
 node_modules
 
 # LOGS
 *.log
+
+# Docker
+docker/_data
+
+# Misc
+!.gitkeep
