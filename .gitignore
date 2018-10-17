@@ -15,7 +15,7 @@ node_modules
 *.log
 
 # Docker
-docker/_data
+_data
 
 # Misc
 !.gitkeep

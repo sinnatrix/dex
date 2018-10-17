@@ -14,7 +14,7 @@ services:
       - ./_data/postgres:${PGDATA}
 
   mongodb:
-    image: mongo:3.4-jessie
+    image: mongo:4.0-xenial
     ports:
       - 127.0.0.1:${MONGODB_OUTER_PORT}:27017
     volumes:
