@@ -1,3 +1,21 @@
-node_modules
-*.log
+# OS
+.DS_Store
+
+# IDE
 .vscode
+.idea
+
+# Configuration
+.env
+
+# About code
+node_modules
+
+# LOGS
+*.log
+
+# Docker
+_data
+
+# Misc
+!.gitkeep
