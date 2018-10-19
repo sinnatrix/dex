@@ -11,135 +11,137 @@ const config = require('../config')
 class V0RelayerController {
   constructor ({ application, connection, wsOwnServer, wsRelayerServer }) {
     this.application = application
-    this.connection = connection
     this.wsOwnServer = wsOwnServer
     this.wsRelayerServer = wsRelayerServer
+
+    this.tokenRepository = connection.getRepository(Token)
+    this.tokenPairRepository = connection.getRepository(TokenPair)
+    this.orderRepository = connection.getCustomRepository(OrderRepository)
   }
 
   attach () {
-    const router = this.create()
+    const router = Router()
+
+    router.get('/token_pairs', this.getTokenPairs.bind(this))
+    router.get('/orderbook', this.getOrderbook.bind(this))
+    router.get('/orders', this.getOrders.bind(this))
+    router.get('/orders/:orderHash', this.getOrderByHash.bind(this))
+    router.post('/order', this.createOrder.bind(this))
+    router.post('/fees', this.checkFees.bind(this))
+
     this.application.use(config.RELAYER_API_PATH, router)
   }
 
-  create () {
-    const tokenRepository = this.connection.getRepository(Token)
-    const tokenPairRepository = this.connection.getRepository(TokenPair)
-    const orderRepository = this.connection.getCustomRepository(OrderRepository)
+  async getTokenPairs (req, res) {
+    const tokenPairs = await this.tokenPairRepository.find()
 
-    const router = Router()
+    log.info({ tokenPairs })
 
-    router.get('/token_pairs', async (req, res) => {
-      const tokenPairs = await tokenPairRepository.find()
+    const result = []
 
-      log.info({ tokenPairs })
+    const toSRAObject = token => {
+      return R.pick([
+        'address',
+        'minAmount',
+        'maxAmount',
+        'precision'
+      ], token)
+    }
 
-      const result = []
+    for (const one of tokenPairs) {
+      const tokenA = await this.tokenRepository.findOne({ address: one.tokenAAddress })
+      const tokenB = await this.tokenRepository.findOne({ address: one.tokenBAddress })
 
-      const toSRAObject = token => {
-        return R.pick([
-          'address',
-          'minAmount',
-          'maxAmount',
-          'precision'
-        ], token)
-      }
-
-      for (const one of tokenPairs) {
-        const tokenA = await tokenRepository.findOne({ address: one.tokenAAddress })
-        const tokenB = await tokenRepository.findOne({ address: one.tokenBAddress })
-
-        result.push({
-          tokenA: toSRAObject(tokenA),
-          tokenB: toSRAObject(tokenB)
-        })
-      }
-
-      res.send(result)
-    })
-
-    router.get('/orderbook', async (req, res) => {
-      log.info('HTTP: GET orderbook')
-
-      const { baseTokenAddress, quoteTokenAddress } = req.query
-      if (!baseTokenAddress) {
-        res.status(400).send('baseTokenAddress is a required param')
-        return
-      }
-
-      if (!quoteTokenAddress) {
-        res.status(400).send('quouteTokenAddress is a required param')
-        return
-      }
-
-      const orderbook = await orderRepository.generateOrderbook({ baseTokenAddress, quoteTokenAddress })
-
-      res.send(orderbook)
-    })
-
-    router.get('/orders', async (req, res) => {
-      const orders = await orderRepository.find({
-        order: {
-          expirationUnixTimestampSec: 'DESC'
-        }
+      result.push({
+        tokenA: toSRAObject(tokenA),
+        tokenB: toSRAObject(tokenB)
       })
+    }
 
-      res.send(orders)
-    })
+    res.send(result)
+  }
 
-    router.get('/orders/:orderHash', async (req, res) => {
-      const { orderHash } = req.params
-      const order = await orderRepository.findOne({ orderHash })
-      if (!order) {
-        res.status(404).send('not found')
-        return
+  async getOrderbook (req, res) {
+    log.info('HTTP: GET orderbook')
+
+    const { baseTokenAddress, quoteTokenAddress } = req.query
+    if (!baseTokenAddress) {
+      res.status(400).send('baseTokenAddress is a required param')
+      return
+    }
+
+    if (!quoteTokenAddress) {
+      res.status(400).send('quouteTokenAddress is a required param')
+      return
+    }
+
+    const orderbook = await this.orderRepository.generateOrderbook({ baseTokenAddress, quoteTokenAddress })
+
+    res.send(orderbook)
+  }
+
+  async getOrders (req, res) {
+    const orders = await this.orderRepository.find({
+      order: {
+        expirationUnixTimestampSec: 'DESC'
       }
-      res.send(order)
     })
 
-    router.post('/order', async (req, res) => {
-      const order = req.body
-      log.info({ order }, 'HTTP: POST order')
+    res.send(orders)
+  }
 
-      await orderRepository.save(order)
+  async getOrderByHash (req, res) {
+    const { orderHash } = req.params
+    const order = await this.orderRepository.findOne({ orderHash })
+    if (!order) {
+      res.status(404).send('not found')
+      return
+    }
 
-      res.status(201).end()
+    res.send(order)
+  }
 
-      this.wsRelayerServer.clients.forEach(client => {
-        const msg = {
-          type: 'update',
-          channel: 'orderbook',
-          requestId: 1,
-          payload: order
-        }
+  async createOrder (req, res) {
+    const order = req.body
+    log.info({ order }, 'HTTP: POST order')
 
-        client.send(JSON.stringify(msg))
-      })
+    await this.orderRepository.save(order)
 
-      this.wsOwnServer.clients.forEach(client => {
-        const msg = {
-          type: 'update',
-          channel: 'orderbook',
-          payload: order
-        }
+    res.status(201).end()
 
-        client.send(JSON.stringify(msg))
-      })
+    this.wsRelayerServer.clients.forEach(client => {
+      const msg = {
+        type: 'update',
+        channel: 'orderbook',
+        requestId: 1,
+        payload: order
+      }
+
+      client.send(JSON.stringify(msg))
     })
 
-    router.post('/fees', (req, res) => {
-      log.info('HTTP: POST fees')
+    this.wsOwnServer.clients.forEach(client => {
+      const msg = {
+        type: 'update',
+        channel: 'orderbook',
+        payload: order
+      }
 
-      const makerFee = new BigNumber(0).toString()
-      const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(10), 18).toString()
-
-      res.send({
-        feeRecipient: ZeroEx.NULL_ADDRESS,
-        makerFee,
-        takerFee
-      })
+      client.send(JSON.stringify(msg))
     })
+  }
 
-    return router
+  async checkFees (req, res) {
+    log.info('HTTP: POST fees')
+
+    const makerFee = new BigNumber(0).toString()
+    const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(10), 18).toString()
+
+    res.send({
+      feeRecipient: ZeroEx.NULL_ADDRESS,
+      makerFee,
+      takerFee
+    })
   }
 }
 
