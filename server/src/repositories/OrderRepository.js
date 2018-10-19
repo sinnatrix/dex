@@ -1,22 +1,22 @@
-const { EntityRepository, Repository } = require('typeorm')
-const Order = require('../entity/Order')
+const { EntityRepository, Repository, Not, LessThan } = require('typeorm')
+const Order = require('../entities/Order')
 
 @EntityRepository(Order)
 class OrderRepository extends Repository {
   async generateOrderbook ({ baseTokenAddress, quoteTokenAddress }) {
     const currentTs = (Date.now() / 1000).toFixed(0)
 
-    const bids = await this.createQueryBuilder()
-      .where('"takerTokenAddress" = :baseTokenAddress', { baseTokenAddress })
-      .andWhere('"makerTokenAddress" = :quoteTokenAddress', { quoteTokenAddress })
-      .andWhere('"expirationUnixTimestampSec" >= :currentTs', { currentTs })
-      .getMany()
+    const bids = await this.find({
+      takerTokenAddress: baseTokenAddress,
+      makerTokenAddress: quoteTokenAddress,
+      expirationUnixTimestampSec: Not(LessThan(currentTs))
+    })
 
-    const asks = await this.createQueryBuilder()
-      .where('"takerTokenAddress" = :quoteTokenAddress', { quoteTokenAddress })
-      .andWhere('"makerTokenAddress" = :baseTokenAddress', { baseTokenAddress })
-      .andWhere('"expirationUnixTimestampSec" >= :currentTs', { currentTs })
-      .getMany()
+    const asks = await this.find({
+      takerTokenAddress: quoteTokenAddress,
+      makerTokenAddress: baseTokenAddress,
+      expirationUnixTimestampSec: Not(LessThan(currentTs))
+    })
 
     return { bids, asks }
   }

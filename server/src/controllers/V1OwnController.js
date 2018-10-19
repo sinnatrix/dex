@@ -1,6 +1,6 @@
 const Router = require('express').Router
-const Relayer = require('../entity/Relayer')
-const Token = require('../entity/Token')
+const Relayer = require('../entities/Relayer')
+const Token = require('../entities/Token')
 const OrderRepository = require('../repositories/OrderRepository')
 const config = require('../config')
 
