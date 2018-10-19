@@ -26,7 +26,7 @@ class RelayerService {
     return result
   }
 
-  async getNetwork (relayer) {
+  getNetwork (relayer) {
     const network = relayer.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID, 10))
 
     if (!network) {
