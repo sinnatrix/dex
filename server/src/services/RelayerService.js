@@ -1,11 +1,7 @@
 const rp = require('request-promise-native')
 
 class RelayerService {
-  constructor ({ relayer }) {
-    this.relayer = relayer
-  }
-
-  async loadOrderbook ({ baseTokenAddress, quoteTokenAddress }) {
+  async loadOrderbook (relayer, { baseTokenAddress, quoteTokenAddress }) {
     if (!baseTokenAddress) {
       throw new Error('baseTokenAddress is a required parameter')
     }
@@ -13,7 +9,7 @@ class RelayerService {
       throw new Error('quoteTokenAddress is a required parameter')
     }
 
-    const network = this.getNetwork()
+    const network = this.getNetwork(relayer)
 
     const uri = `${network.sra_http_endpoint}/v0/orderbook?baseTokenAddress=${baseTokenAddress}&quoteTokenAddress=${quoteTokenAddress}`
     const result = await rp({ uri, json: true })
@@ -21,8 +17,8 @@ class RelayerService {
     return result
   }
 
-  async loadOrders () {
-    const network = this.getNetwork()
+  async loadOrders (relayer) {
+    const network = this.getNetwork(relayer)
 
     const uri = `${network.sra_http_endpoint}/v0/orders`
     const result = await rp({ uri, json: true })
@@ -30,8 +26,8 @@ class RelayerService {
     return result
   }
 
-  async getNetwork () {
-    const network = this.relayer.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID, 10))
+  async getNetwork (relayer) {
+    const network = relayer.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID, 10))
 
     if (!network) {
       throw new Error('network unavailable')

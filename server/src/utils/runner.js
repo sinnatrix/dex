@@ -1,18 +1,23 @@
-const Config = require('../models/Config')
-Config.initBasic()
-
+const typeorm = require('typeorm')
+const { createContainer, asValue, asClass } = require('awilix')
 const log = require('./log')
-
-const mongoose = require('mongoose')
+const ormconfig = require('../ormconfig')
+const RelayerService = require('../services/RelayerService')
+const OrderBlochainService = require('../services/OrderBlockainService')
 
 module.exports = async task => {
-  try {
-    await mongoose.connect(`mongodb://localhost/${process.env.DB_NAME}`).then(Config.init)
+  const connection = await typeorm.createConnection(ormconfig)
 
+  const container = createContainer()
+  container.register({
+    connection: asValue(connection),
+    relayerService: asClass(RelayerService).singleton(),
+    orderBlockchainService: asClass(OrderBlochainService).singleton()
+  })
+
+  try {
     await task()
   } catch (e) {
     log.error(e)
   }
-
-  mongoose.connection.close()
 }

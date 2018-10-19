@@ -1,7 +1,7 @@
 const WebSocket = require('ws')
-const OrderRepository = require('./repositories/OrderRepository')
-const log = require('./utils/log')
-const config = require('./config')
+const OrderRepository = require('../repositories/OrderRepository')
+const log = require('../utils/log')
+const config = require('../config')
 
 class WsRelayerServer {
   constructor ({ server }) {

@@ -14,12 +14,10 @@ const typeorm = require('typeorm')
 const { createContainer, asValue, asClass } = require('awilix')
 const log = require('./utils/log')
 const ormconfig = require('../ormconfig')
-const WsOwnServer = require('./WsOwnServer')
-const WsRelayerServer = require('./WsRelayerServer')
+const WsOwnServer = require('./wsServers/WsOwnServer')
+const WsRelayerServer = require('./wsServers/WsRelayerServer')
 const V1OwnController = require('./controllers/V1OwnController')
 const V0RelayerController = require('./controllers/V0RelayerController')
-
-const container = createContainer()
 
 ;(async () => {
   const connection = await typeorm.createConnection(ormconfig)
@@ -30,6 +28,7 @@ const container = createContainer()
 
   application.use(bodyParser.json())
 
+  const container = createContainer()
   container.register({
     application: asValue(application),
     server: asValue(server),

@@ -4,8 +4,8 @@ const Router = require('express').Router
 const { BigNumber } = require('@0xproject/utils')
 const { ZeroEx } = require('0x.js')
 const OrderRepository = require('../repositories/OrderRepository')
-const Token = require('../entity/Token')
-const TokenPair = require('../entity/TokenPair')
+const Token = require('../entities/Token')
+const TokenPair = require('../entities/TokenPair')
 const config = require('../config')
 
 class V0RelayerController {

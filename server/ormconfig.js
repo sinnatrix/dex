@@ -1,7 +1,7 @@
-const Token = require('./src/entity/Token')
-const TokenPair = require('./src/entity/TokenPair')
-const Order = require('./src/entity/Order')
-const Relayer = require('./src/entity/Relayer')
+const Token = require('./src/entities/Token')
+const TokenPair = require('./src/entities/TokenPair')
+const Order = require('./src/entities/Order')
+const Relayer = require('./src/entities/Relayer')
 
 const options = {
   type: 'postgres',

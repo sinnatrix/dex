@@ -1,8 +1,11 @@
-const blockchain = require('../api/blockchain')
 const { ZeroEx } = require('0x.js')
 const { BigNumber } = require('@0xproject/utils')
 
 class OrderBlockchainService {
+  constructor ({ blockchainService }) {
+    this.blockchainService = blockchainService
+  }
+
   toZeroExOrder (order) {
     const fields = [
       'expirationUnixTimestampSec',
@@ -26,20 +29,8 @@ class OrderBlockchainService {
     return result
   }
 
-  async validateInBlockchain (order) {
-    const provider = blockchain.getProvider()
-
-    const zeroEx = new ZeroEx(provider, {
-      networkId: parseInt(process.env.NETWORK_ID, 10)
-    })
-
-    const data = this.toZeroExOrder(order)
-
-    await zeroEx.exchange.validateOrderFillableOrThrowAsync(data)
-  }
-
   async fillInBlockchain (order) {
-    const provider = blockchain.getProvider()
+    const provider = this.blockchainService.getProvider()
 
     const zeroEx = new ZeroEx(provider, {
       networkId: parseInt(process.env.NETWORK_ID, 10)
@@ -61,6 +52,18 @@ class OrderBlockchainService {
     console.log('tokens: ', { WETH_ADDRESS, ZRX_ADDRESS })
 
     await this.validateInBlockchain(order)
+  }
+
+  async validateInBlockchain (order) {
+    const provider = this.blockchainService.getProvider()
+
+    const zeroEx = new ZeroEx(provider, {
+      networkId: parseInt(process.env.NETWORK_ID, 10)
+    })
+
+    const data = this.toZeroExOrder(order)
+
+    await zeroEx.exchange.validateOrderFillableOrThrowAsync(data)
   }
 }
 
