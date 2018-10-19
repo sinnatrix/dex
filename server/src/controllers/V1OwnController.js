@@ -6,75 +6,74 @@ const config = require('../config')
 
 class V1OwnController {
   constructor ({ connection, application }) {
-    this.connection = connection
     this.application = application
+
+    this.tokenRepository = connection.getRepository(Token)
+    this.relayerRepository = connection.getRepository(Relayer)
+    this.orderRepository = connection.getCustomRepository(OrderRepository)
   }
 
   attach () {
-    const router = this.create()
+    const router = Router()
+
+    router.get('/relayers', this.getRelayers.bind(this))
+    router.get('/tokens', this.getTokens.bind(this))
+    router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
+    router.post('/orders/:hash/validate', this.validateOrder.bind(this))
+    router.post('/orders', this.createOrder.bind(this))
 
     this.application.use(config.OWN_API_PATH, router)
   }
 
-  create () {
-    const tokenRepository = this.connection.getRepository(Token)
-    const relayerRepository = this.connection.getRepository(Relayer)
-    const orderRepository = this.connection.getCustomRepository(OrderRepository)
+  async getRelayers (req, res) {
+    const relayers = await this.relayerRepository.find()
+    res.json(relayers)
+  }
 
-    const router = Router()
+  async getTokens (req, res) {
+    const tokens = await this.tokenRepository.find()
+    res.json(tokens)
+  }
 
-    router.get('/relayers', async (req, res) => {
-      const relayers = await relayerRepository.find()
-      res.json(relayers)
-    })
+  async getTokenBySymbol (req, res) {
+    const { symbol } = req.params
 
-    router.get('/tokens', async (req, res) => {
-      const tokens = await tokenRepository.find()
-      res.json(tokens)
-    })
+    const token = await this.tokenRepository.findOne({ symbol })
+    if (!token) {
+      res.status(404).send('not found')
+      return
+    }
 
-    router.get('/tokens/:symbol', async (req, res) => {
-      const { symbol } = req.params
+    res.json(token)
+  }
 
-      const token = await tokenRepository.findOne({ symbol })
-      if (!token) {
-        res.status(404).send('not found')
-        return
-      }
+  async validateOrder (req, res) {
+    const { hash } = req.params
+    const order = await this.orderRepository.findOne({ orderHash: hash })
 
-      res.json(token)
-    })
+    try {
+      await order.validateInBlockchain()
+      res.send({
+        error: ''
+      })
+    } catch (e) {
+      console.error(e)
+      res.send({
+        error: e.message
+      })
+    }
+  }
 
-    router.post('/orders/:hash/validate', async (req, res) => {
-      const { hash } = req.params
-      const order = await orderRepository.findOne({ orderHash: hash })
+  async createOrder (req, res) {
+    const data = req.body
+    let order = await this.orderRepository.findOne({ orderHash: data.hash })
+    if (order) {
+      throw new Error('order already exists')
+    }
 
-      try {
-        await order.validateInBlockchain()
-        res.send({
-          error: ''
-        })
-      } catch (e) {
-        console.error(e)
-        res.send({
-          error: e.message
-        })
-      }
-    })
+    order = await this.orderRepository.save(data)
 
-    router.post('/orders', async (req, res) => {
-      const data = req.body
-      let order = await orderRepository.findOne({ orderHash: data.hash })
-      if (order) {
-        throw new Error('order already exists')
-      }
-
-      order = await orderRepository.save(data)
-
-      res.send(order)
-    })
-
-    return router
+    res.send(order)
   }
 }
 
