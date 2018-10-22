@@ -1,27 +1,28 @@
+require('@babel/register')({
+  plugins: [
+    ['@babel/plugin-proposal-decorators', { legacy: true }],
+    ['@babel/plugin-proposal-class-properties', { legacy: true }]
+  ]
+})
+
+require('dotenv/config')
 const typeorm = require('typeorm')
 const ormconfig = require('../ormconfig')
-const initDbSeeder = require('../seeders/init-db')
 
-before('global before', async function () {
+;(async () => {
   try {
     const adminConn = await typeorm.createConnection({
       ...ormconfig,
-      database: 'postgres',
       name: 'postgres',
+      database: 'postgres',
       synchronize: false
     })
 
-    await adminConn.query(`DROP DATABASE IF EXISTS ${ormconfig.database}`)
     await adminConn.query(`CREATE DATABASE ${ormconfig.database}`)
 
-    const conn = await typeorm.createConnection(ormconfig)
-
-    await initDbSeeder.up(conn)
+    await typeorm.createConnection(ormconfig)
   } catch (e) {
     console.error(e)
   }
-})
-
-after('global after', async () => {
   process.exit()
-})
+})()

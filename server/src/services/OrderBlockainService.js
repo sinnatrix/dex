@@ -1,5 +1,5 @@
 const { ZeroEx } = require('0x.js')
-const { BigNumber } = require('@0xproject/utils')
+const { BigNumber } = require('@0x/utils')
 
 class OrderBlockchainService {
   constructor ({ blockchainService }) {
