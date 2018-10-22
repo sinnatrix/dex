@@ -1,7 +1,7 @@
 const log = require('../utils/log')
 const R = require('ramda')
 const Router = require('express').Router
-const { BigNumber } = require('@0xproject/utils')
+const { BigNumber } = require('@0x/utils')
 const { ZeroEx } = require('0x.js')
 const OrderRepository = require('../repositories/OrderRepository')
 const Token = require('../entities/Token')

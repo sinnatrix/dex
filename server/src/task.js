@@ -17,26 +17,26 @@ const BlockchainService = require('./services/BlockchainService')
 const OrderBlochainService = require('./services/OrderBlockainService')
 
 ;(async () => {
-  const connection = await typeorm.createConnection(ormconfig)
-
-  const taskName = argv._[0]
-  const fullTaskName = taskName[0].toUpperCase() + taskName.slice(1) + 'Task'
-  const Task = require(`./tasks/${fullTaskName}.js`)
-
-  const container = createContainer()
-  container.register({
-    connection: asValue(connection),
-    relayerService: asClass(RelayerService).singleton(),
-    blockchainService: asClass(BlockchainService).singleton(),
-    orderBlockchainService: asClass(OrderBlochainService).singleton(),
-    [fullTaskName]: asClass(Task).singleton()
-  })
-
   try {
-    await container.resolve(fullTaskName).run()
-  } catch (e) {
-    log.error(e)
-  }
+    const connection = await typeorm.createConnection(ormconfig)
 
-  process.exit()
+    const taskName = argv._[0]
+    const fullTaskName = taskName[0].toUpperCase() + taskName.slice(1) + 'Task'
+    const Task = require(`./tasks/${fullTaskName}.js`)
+
+    const container = createContainer()
+    container.register({
+      connection: asValue(connection),
+      relayerService: asClass(RelayerService).singleton(),
+      blockchainService: asClass(BlockchainService).singleton(),
+      orderBlockchainService: asClass(OrderBlochainService).singleton(),
+      [fullTaskName]: asClass(Task).singleton()
+    })
+
+    await container.resolve(fullTaskName).run()
+    process.exit()
+  } catch (e) {
+    console.error(e)
+    process.exit(1)
+  }
 })()

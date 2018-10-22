@@ -9,6 +9,7 @@
     "dev": "nodemon",
     "test": "yarn test:one ./src/**/*.test.js",
     "test:one": "mocha --ui bdd --reporter spec --require=dotenv/config dotenv_config_path=.env.test --colors ./test/hooks.js",
+    "createDb": "node src/createDb.js",
     "seed": "yarn task seed",
     "rpc": "ganache-cli",
     "lint": "standard",
