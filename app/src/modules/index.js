@@ -110,7 +110,7 @@ export const setUnlimitedTokenAllowance = (web3, token) => async (dispatch, getS
 
   await setUnlimitedTokenAllowanceAsync(web3, account, token.address)
 
-  await dispatch(loadTokenAllowance(token))
+  await dispatch(loadTokenAllowance(web3, token))
 }
 
 export const setZeroTokenAllowance = (web3, token) => async (dispatch, getState) => {
@@ -118,7 +118,7 @@ export const setZeroTokenAllowance = (web3, token) => async (dispatch, getState)
 
   await setZeroTokenAllowanceAsync(web3, account, token.address)
 
-  await dispatch(loadTokenAllowance(token))
+  await dispatch(loadTokenAllowance(web3, token))
 }
 
 export const resetHighlighting = () => async (dispatch, getState) => {
