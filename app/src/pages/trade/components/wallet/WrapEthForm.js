@@ -51,7 +51,7 @@ class WrapEthForm extends React.Component {
     return (
       <div className={classes.root}>
         <TextField value={value} onChange={this.handleChange} />
-        <SmartButton variant='raised' onClick={this.handleClick} className={classes.button}>Wrap</SmartButton>
+        <SmartButton variant='contained' onClick={this.handleClick} className={classes.button}>Wrap</SmartButton>
       </div>
     )
   }

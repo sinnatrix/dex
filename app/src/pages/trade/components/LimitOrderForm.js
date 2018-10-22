@@ -5,7 +5,7 @@ import SmartButton from 'material-ui-smart-button'
 import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
 import { makeLimitOrder } from 'modules/index'
-import { BigNumber } from '@0xproject/utils'
+import { BigNumber } from '@0x/utils'
 import OrderModeRadio from './OrderModeRadio'
 import withWeb3 from 'hocs/withWeb3'
 
@@ -92,7 +92,7 @@ class LimitOrderForm extends React.Component {
 
         <SmartButton
           className={classes.button}
-          variant='raised'
+          variant='contained'
           color='secondary'
           onClick={this.handlePlaceOrder}
         >Place order</SmartButton>

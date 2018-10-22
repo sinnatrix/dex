@@ -14,7 +14,7 @@ import {
 } from './helpers'
 import { txMinedSchema } from './schemas'
 import Joi from 'joi'
-import { BigNumber } from '@0xproject/utils'
+import { BigNumber } from '@0x/utils'
 
 const wethToken = require('./fixtures/wethToken.json')
 

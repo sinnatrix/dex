@@ -60,8 +60,6 @@ export default compose(
   withSocket,
   routerListener({
     onEnter (params, dispatch, ownProps) {
-      console.log('ownProps: ', ownProps)
-
       Promise.all([
         dispatch(loadMarketplaceToken(params.marketplace)),
         dispatch(loadCurrentToken(params.token))

@@ -237,10 +237,10 @@ export const makeLimitOrder = (web3, { type, amount, price }) => async (dispatch
 }
 
 export const makeMarketOrder = (web3, { type, amount }) => async (dispatch, getState) => {
-  console.log('market order: ', { type, amount })
+  // console.log('market order: ', { type, amount })
   const { bids, asks, account } = getState()
 
-  const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order.data)
+  const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order)
 
   const fillTxHash = await makeMarketOrderAsync(web3, account, ordersToCheck, amount)
 
@@ -258,13 +258,13 @@ export const wrapEth = (web3, amount) => async (dispatch, getState) => {
 
   const txHash = await sendWrapWethTx(web3, account, wethToken, amount)
 
-  await awaitTransaction(txHash)
+  await awaitTransaction(web3, txHash)
 
   await delay(2000)
   dispatch(loadTokenBalance(web3, wethToken))
 
   await delay(3000)
-  dispatch(loadEthBalance())
+  dispatch(loadEthBalance(web3))
 }
 
 export const unwrapWeth = (web3, amount) => async (dispatch, getState) => {
@@ -278,11 +278,11 @@ export const unwrapWeth = (web3, amount) => async (dispatch, getState) => {
 
   const txHash = await sendUnwrapWethTx(web3, account, wethToken, amount)
 
-  await awaitTransaction(txHash)
+  await awaitTransaction(web3, txHash)
 
   await delay(2000)
   dispatch(loadTokenBalance(web3, wethToken))
 
   await delay(3000)
-  dispatch(loadEthBalance())
+  dispatch(loadEthBalance(web3))
 }

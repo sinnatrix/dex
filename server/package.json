@@ -9,15 +9,14 @@
     "dev": "nodemon",
     "test": "yarn test:one ./src/**/*.test.js",
     "test:one": "mocha --ui bdd --reporter spec --require=dotenv/config dotenv_config_path=.env.test --colors ./test/hooks.js",
-    "seed": "node tasks/seed.js",
+    "seed": "yarn task seed",
     "rpc": "ganache-cli",
     "lint": "standard",
     "task": "node src/task.js",
     "migrate": "knex-migrate"
   },
   "dependencies": {
-    "0x.js": "^0.38.6",
-    "@0xproject/utils": "^1.0.7",
+    "0x.js": "^2.0.0",
     "@babel/core": "^7.1.2",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-decorators": "^7.1.2",
@@ -25,26 +24,26 @@
     "awilix": "^4.0.0",
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
-    "dotenv": "^6.0.0",
-    "express": "^4.16.3",
+    "dotenv": "^6.1.0",
+    "express": "^4.16.4",
     "keythereum": "^1.0.4",
     "pg": "^7.5.0",
     "ramda": "^0.25.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
-    "typeorm": "^0.2.7",
-    "web3": "^1.0.0-beta.35",
-    "ws": "^6.0.0",
+    "typeorm": "^0.2.8",
+    "web3": "^1.0.0-beta.36",
+    "ws": "^6.1.0",
     "yargs": "^12.0.2"
   },
   "devDependencies": {
-    "babel-eslint": "^9.0.0",
+    "babel-eslint": "^10.0.1",
     "chai": "^4.2.0",
+    "eslint": "^5.7.0",
     "ganache-cli": "^6.1.8",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.4",
-    "standard": "^12.0.1",
-    "webpack": "^4.17.1"
+    "standard": "^12.0.1"
   },
   "standard": {
     "globals": [
