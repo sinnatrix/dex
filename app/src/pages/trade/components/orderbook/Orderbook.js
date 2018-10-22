@@ -41,7 +41,7 @@ const Orderbook = ({ classes, bids, asks }) => {
   return (
     <div className={classes.root}>
       <Toolbar>
-        <Typography variant='title'>Orderbook</Typography>
+        <Typography variant='h6'>Orderbook</Typography>
       </Toolbar>
       <OrdersTable orders={orders} />
     </div>

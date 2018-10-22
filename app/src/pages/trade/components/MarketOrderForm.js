@@ -80,7 +80,7 @@ class MarketOrderForm extends React.Component {
         />
 
         <SmartButton
-          variant='raised'
+          variant='contained'
           color='secondary'
           className={classes.button}
           onClick={this.handlePlaceOrder}

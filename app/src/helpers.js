@@ -1,10 +1,8 @@
-import { BigNumber } from '@0xproject/utils'
-import { Web3Wrapper } from '@0xproject/web3-wrapper'
+import { BigNumber } from '@0x/utils'
+import { Web3Wrapper } from '@0x/web3-wrapper'
 import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils, SignerType } from '0x.js'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
-
-console.log('SignerType: ', SignerType)
 
 export const delay = ts => new Promise(resolve => setTimeout(resolve, ts))
 
@@ -18,8 +16,8 @@ const getContractWrappers = async web3 => {
 }
 
 export const generateBid = ({ order, baseToken, quoteToken }) => {
-  const makerToken = order.data.makerTokenAddress === baseToken.address ? baseToken : quoteToken
-  const takerToken = order.data.takerTokenAddress === baseToken.address ? baseToken : quoteToken
+  const makerToken = order.makerTokenAddress === baseToken.address ? baseToken : quoteToken
+  const takerToken = order.takerTokenAddress === baseToken.address ? baseToken : quoteToken
 
   const decimalFields = [
     'expirationUnixTimestampSec',
@@ -30,23 +28,20 @@ export const generateBid = ({ order, baseToken, quoteToken }) => {
     'takerTokenAmount'
   ]
 
-  const orderData = decimalFields.reduce((agg, key) => {
-    return {
-      ...agg,
-      [key]: new BigNumber(order.data[key])
-    }
-  }, { ...order.data })
-  order = { ...order, data: orderData }
+  order = decimalFields.reduce((agg, key) => ({
+    ...agg,
+    [key]: new BigNumber(order[key])
+  }), { ...order })
 
-  const makerAmount = order.data.makerTokenAmount.dividedBy(
+  const makerAmount = order.makerTokenAmount.dividedBy(
     Math.pow(10, makerToken.decimals)
   )
-  const takerAmount = order.data.takerTokenAmount.dividedBy(
+  const takerAmount = order.takerTokenAmount.dividedBy(
     Math.pow(10, takerToken.decimals)
   )
 
   let price
-  if (order.data.takerTokenAddress === baseToken.address) {
+  if (order.takerTokenAddress === baseToken.address) {
     price = takerAmount.dividedBy(makerAmount)
   } else {
     price = makerAmount.dividedBy(takerAmount)
@@ -55,7 +50,7 @@ export const generateBid = ({ order, baseToken, quoteToken }) => {
   const bid = {
     order,
     price,
-    maker: order.data.maker,
+    maker: order.maker,
     makerToken,
     takerToken,
     makerAmount,
@@ -167,10 +162,6 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
   const makerAddress = account
 
   const contractWrappers = await getContractWrappers(web3)
-  // console.log('contractWrappers: ', contractWrappers)
-
-  // console.log('contractWrappers.erc20Token: ', contractWrappers.erc20Token)
-  // console.log('contractWrappers.exchange: ', contractWrappers.exchange)
 
   const EXCHANGE_ADDRESS = contractWrappers.exchange.getContractAddress()
 

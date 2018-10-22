@@ -56,7 +56,7 @@ const Layout = ({ classes, children, contentClassName }) => {
     <div className={classes.root}>
       <AppBar position='static' color='default'>
         <Toolbar className={classes.header}>
-          <Typography variant='title' color='inherit'>
+          <Typography variant='h6' color='inherit'>
             <Link to='/' className={classes.titleLink}>DEX</Link>
           </Typography>
           {/* <div className={classes.menu}>
