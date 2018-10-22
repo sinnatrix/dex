@@ -15,6 +15,7 @@ import {
 import { txMinedSchema } from './schemas'
 import Joi from 'joi'
 import { BigNumber } from '@0x/utils'
+import { expect } from 'chai'
 
 const wethToken = require('./fixtures/wethToken.json')
 
@@ -47,7 +48,7 @@ const deployWethContract = async (web3, from) => {
 
 /* eslint-env jest */
 
-test('getEthBalance', async () => {
+it('getEthBalance', async () => {
   const chance = new Chance()
   const balance = chance.integer({ min: 0, max: 10000 })
 
@@ -57,10 +58,10 @@ test('getEthBalance', async () => {
 
   const balanceInEth = await getEthBalance(web3, accounts[0])
 
-  expect(balanceInEth).toBe(balance / Math.pow(10, 18))
+  expect(balanceInEth).to.equal(balance / Math.pow(10, 18))
 })
 
-test('sendTransaction', async () => {
+it('sendTransaction', async () => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3({
@@ -81,10 +82,10 @@ test('sendTransaction', async () => {
   await sendTransaction(web3, rawTx)
 
   const balanceInEth = await getEthBalance(web3, accounts[1])
-  expect(balanceInEth).toBe(1 / Math.pow(10, 18))
+  expect(balanceInEth).to.equal(1 / Math.pow(10, 18))
 })
 
-test('awaitTransaction', async () => {
+it('awaitTransaction', async () => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3({
@@ -105,17 +106,17 @@ test('awaitTransaction', async () => {
   const txHash = await sendTransaction(web3, rawTx)
 
   let txInfo = await getTransaction(web3, txHash)
-  expect(txInfo).toBe(null)
+  expect(txInfo).to.equal(null)
 
   await awaitTransaction(web3, txHash)
 
   txInfo = await getTransaction(web3, txHash)
 
   const validation = Joi.validate(txInfo, txMinedSchema)
-  expect(validation.error).toBe(null)
+  expect(validation.error).to.equal(null)
 })
 
-test('getTokenBalance', async () => {
+it('getTokenBalance', async () => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
@@ -125,10 +126,10 @@ test('getTokenBalance', async () => {
 
   const result = await getTokenBalance(web3, accounts[0], wethAddress)
 
-  expect(result).toBe(0)
+  expect(result).to.equal(0)
 })
 
-test('setUnlimitedTokenAllowanceAsync', async () => {
+it('setUnlimitedTokenAllowanceAsync', async () => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
@@ -139,7 +140,7 @@ test('setUnlimitedTokenAllowanceAsync', async () => {
   await setUnlimitedTokenAllowanceAsync(web3, accounts[0], wethAddress)
 })
 
-test('getTokenAllowance', async () => {
+it('getTokenAllowance', async () => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
@@ -149,10 +150,10 @@ test('getTokenAllowance', async () => {
 
   const allowance = await getTokenAllowance(web3, accounts[0], wethAddress)
 
-  expect(allowance.isZero()).toBe(true)
+  expect(allowance.isZero()).to.equal(true)
 })
 
-test('setZeroTokenAllowanceAsync', async () => {
+it('setZeroTokenAllowanceAsync', async () => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
@@ -163,7 +164,7 @@ test('setZeroTokenAllowanceAsync', async () => {
   await setZeroTokenAllowanceAsync(web3, accounts[0], wethAddress)
 })
 
-test('makeLimitOrderAsync', async () => {
+it('makeLimitOrderAsync', async () => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
