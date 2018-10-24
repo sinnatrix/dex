@@ -1,21 +1,21 @@
-// const log = require('../utils/log')
-const { getRepository, getCustomRepository } = require('typeorm')
-const Relayer = require('../entities/Relayer')
-const TokenPair = require('../entities/TokenPair')
-const OrderRepository = require('../repositories/OrderRepository')
-const { ObjectID } = require('mongodb')
-const { ZeroEx } = require('0x.js')
+import { getRepository, getCustomRepository } from 'typeorm'
+import Relayer from '../entities/Relayer'
+import TokenPair from '../entities/TokenPair'
+import OrderRepository from '../repositories/OrderRepository'
+const ZeroEx = require('0x.js')
 
 class LoadOrderbookTask {
+  relayerService: any
+
   constructor ({ relayerService }) {
     this.relayerService = relayerService
   }
 
   async run () {
-    const relayer = await getRepository(Relayer).findOne({ name: 'Radar Relay' })
+    const relayer = await getRepository(Relayer as any).findOne({ name: 'Radar Relay' })
 
-    const tokenPair = await getRepository(TokenPair).findOne({
-      _id: ObjectID('5b128d6fca5a8b2300be99fb')
+    const tokenPair: any = await getRepository(TokenPair as any).findOne({
+      id: '5b128d6fca5a8b2300be99fb'
     })
 
     const orderbook = await this.relayerService.loadOrderbook(relayer, {
@@ -41,4 +41,4 @@ class LoadOrderbookTask {
   }
 }
 
-module.exports = LoadOrderbookTask
+export default LoadOrderbookTask

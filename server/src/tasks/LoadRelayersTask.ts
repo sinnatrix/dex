@@ -1,8 +1,10 @@
-const { getRepository } = require('typeorm')
-const log = require('../utils/log')
-const Relayer = require('../entities/Relayer')
+import { getRepository } from 'typeorm'
+import log from '../utils/log'
+import Relayer from '../entities/Relayer'
 
 class LoadRelayersTask {
+  relayerRegistryService: any
+
   constructor ({ relayerRegistryService }) {
     this.relayerRegistryService = relayerRegistryService
   }
@@ -11,7 +13,7 @@ class LoadRelayersTask {
     const items = await this.relayerRegistryService.loadRelayers()
     log.info({ count: items.length }, 'loaded')
 
-    const repository = getRepository(Relayer)
+    const repository = getRepository(Relayer as any)
 
     await repository.clear()
     await repository.save(items)
@@ -20,4 +22,4 @@ class LoadRelayersTask {
   }
 }
 
-module.exports = LoadRelayersTask
+export default LoadRelayersTask

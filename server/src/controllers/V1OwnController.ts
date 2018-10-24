@@ -1,10 +1,15 @@
-const Router = require('express').Router
-const Relayer = require('../entities/Relayer')
-const Token = require('../entities/Token')
-const OrderRepository = require('../repositories/OrderRepository')
-const config = require('../config')
+import * as express from 'express'
+import Relayer from '../entities/Relayer'
+import Token from '../entities/Token'
+import OrderRepository from '../repositories/OrderRepository'
+import config from '../config'
 
 class V1OwnController {
+  application: any
+  tokenRepository: any
+  relayerRepository: any
+  orderRepository: any
+
   constructor ({ connection, application }) {
     this.application = application
 
@@ -14,7 +19,7 @@ class V1OwnController {
   }
 
   attach () {
-    const router = Router()
+    const router = express.Router()
 
     router.get('/relayers', this.getRelayers.bind(this))
     router.get('/tokens', this.getTokens.bind(this))
@@ -77,4 +82,4 @@ class V1OwnController {
   }
 }
 
-module.exports = V1OwnController
+export default V1OwnController

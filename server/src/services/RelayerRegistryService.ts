@@ -1,4 +1,4 @@
-const rp = require('request-promise-native')
+import * as rp from 'request-promise-native'
 
 class RelayerRegistryService {
   async loadRelayers () {
@@ -15,4 +15,4 @@ class RelayerRegistryService {
   }
 }
 
-module.exports = RelayerRegistryService
+export default RelayerRegistryService

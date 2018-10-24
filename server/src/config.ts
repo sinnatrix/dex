@@ -4,4 +4,4 @@ const config = {
   OWN_API_PATH: '/api/v1'
 }
 
-module.exports = config
+export default config
