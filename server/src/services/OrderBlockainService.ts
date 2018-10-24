@@ -1,7 +1,9 @@
-const { ZeroEx } = require('0x.js')
-const { BigNumber } = require('@0x/utils')
+import { BigNumber } from '@0x/utils'
+const ZeroEx = require('0x.js')
 
 class OrderBlockchainService {
+  blockchainService: any
+
   constructor ({ blockchainService }) {
     this.blockchainService = blockchainService
   }
@@ -33,7 +35,7 @@ class OrderBlockchainService {
     const provider = this.blockchainService.getProvider()
 
     const zeroEx = new ZeroEx(provider, {
-      networkId: parseInt(process.env.NETWORK_ID, 10)
+      networkId: parseInt(process.env.NETWORK_ID as string, 10)
     })
 
     // Get token information
@@ -58,7 +60,7 @@ class OrderBlockchainService {
     const provider = this.blockchainService.getProvider()
 
     const zeroEx = new ZeroEx(provider, {
-      networkId: parseInt(process.env.NETWORK_ID, 10)
+      networkId: parseInt(process.env.NETWORK_ID as string, 10)
     })
 
     const data = this.toZeroExOrder(order)
@@ -67,4 +69,4 @@ class OrderBlockchainService {
   }
 }
 
-module.exports = OrderBlockchainService
+export default OrderBlockchainService

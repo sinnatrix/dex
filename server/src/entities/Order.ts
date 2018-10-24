@@ -1,4 +1,4 @@
-const { EntitySchema } = require('typeorm')
+import { EntitySchema } from 'typeorm'
 
 const Order = new EntitySchema({
   name: 'Order',
@@ -54,4 +54,4 @@ const Order = new EntitySchema({
   }
 })
 
-module.exports = Order
+export default Order

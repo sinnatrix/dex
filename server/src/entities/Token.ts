@@ -1,4 +1,4 @@
-const { EntitySchema } = require('typeorm')
+import { EntitySchema } from 'typeorm'
 
 const Token = new EntitySchema({
   name: 'Token',
@@ -37,4 +37,4 @@ const Token = new EntitySchema({
   }
 })
 
-module.exports = Token
+export default Token

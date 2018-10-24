@@ -1,26 +1,19 @@
-require('@babel/register')({
-  plugins: [
-    ['@babel/plugin-proposal-decorators', { legacy: true }],
-    ['@babel/plugin-proposal-class-properties', { legacy: true }]
-  ]
-})
+import 'dotenv/config'
 
-require('dotenv/config')
-
-const express = require('express')
-const bodyParser = require('body-parser')
-const http = require('http')
-const typeorm = require('typeorm')
+import * as express from 'express'
+import * as bodyParser from 'body-parser'
+import * as http from 'http'
+import { createConnection } from 'typeorm'
+import log from './utils/log'
+import ormconfig from '../ormconfig'
+import WsOwnServer from './wsServers/WsOwnServer'
+import WsRelayerServer from './wsServers/WsRelayerServer'
+import V1OwnController from './controllers/V1OwnController'
+import V0RelayerController from './controllers/V0RelayerController'
 const { createContainer, asValue, asClass } = require('awilix')
-const log = require('./utils/log')
-const ormconfig = require('../ormconfig')
-const WsOwnServer = require('./wsServers/WsOwnServer')
-const WsRelayerServer = require('./wsServers/WsRelayerServer')
-const V1OwnController = require('./controllers/V1OwnController')
-const V0RelayerController = require('./controllers/V0RelayerController')
 
 ;(async () => {
-  const connection = await typeorm.createConnection(ormconfig)
+  const connection = await createConnection(ormconfig as any)
 
   const application = express()
 
@@ -46,4 +39,4 @@ const V0RelayerController = require('./controllers/V0RelayerController')
   container.resolve('server').listen(process.env.PORT, () => {
     log.info('started server on port', process.env.PORT)
   })
-})()
+})().catch(console.error)

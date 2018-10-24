@@ -1,4 +1,4 @@
-const { EntitySchema } = require('typeorm')
+import { EntitySchema } from 'typeorm'
 
 // const networkSchema = new Schema({
 //   networkId: Number,
@@ -46,4 +46,4 @@ const Relayer = new EntitySchema({
   }
 })
 
-module.exports = Relayer
+export default Relayer

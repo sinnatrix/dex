@@ -1,4 +1,4 @@
-const rp = require('request-promise-native')
+import * as rp from 'request-promise-native'
 
 class RelayerService {
   async loadOrderbook (relayer, { baseTokenAddress, quoteTokenAddress }) {
@@ -27,7 +27,7 @@ class RelayerService {
   }
 
   getNetwork (relayer) {
-    const network = relayer.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID, 10))
+    const network = relayer.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID as string, 10))
 
     if (!network) {
       throw new Error('network unavailable')
@@ -37,4 +37,4 @@ class RelayerService {
   }
 }
 
-module.exports = RelayerService
+export default RelayerService

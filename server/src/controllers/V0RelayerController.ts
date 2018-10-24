@@ -1,14 +1,21 @@
-const log = require('../utils/log')
-const R = require('ramda')
-const Router = require('express').Router
-const { BigNumber } = require('@0x/utils')
-const { ZeroEx } = require('0x.js')
-const OrderRepository = require('../repositories/OrderRepository')
-const Token = require('../entities/Token')
-const TokenPair = require('../entities/TokenPair')
-const config = require('../config')
+import * as R from 'ramda'
+import * as express from 'express'
+import { BigNumber } from '@0x/utils'
+import log from '../utils/log'
+import OrderRepository from '../repositories/OrderRepository'
+import Token from '../entities/Token'
+import TokenPair from '../entities/TokenPair'
+import config from '../config'
+const ZeroEx = require('0x.js')
 
 class V0RelayerController {
+  application: any
+  wsOwnServer: any
+  wsRelayerServer: any
+  tokenRepository: any
+  tokenPairRepository: any
+  orderRepository: any
+
   constructor ({ application, connection, wsOwnServer, wsRelayerServer }) {
     this.application = application
     this.wsOwnServer = wsOwnServer
@@ -20,7 +27,7 @@ class V0RelayerController {
   }
 
   attach () {
-    const router = Router()
+    const router = express.Router()
 
     router.get('/token_pairs', this.getTokenPairs.bind(this))
     router.get('/orderbook', this.getOrderbook.bind(this))
@@ -37,7 +44,7 @@ class V0RelayerController {
 
     log.info({ tokenPairs })
 
-    const result = []
+    const result: any[] = []
 
     const toSRAObject = token => {
       return R.pick([
@@ -145,4 +152,4 @@ class V0RelayerController {
   }
 }
 
-module.exports = V0RelayerController
+export default V0RelayerController

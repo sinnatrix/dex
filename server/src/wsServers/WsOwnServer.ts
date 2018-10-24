@@ -1,18 +1,23 @@
-const WebSocket = require('ws')
-const OrderRepository = require('../repositories/OrderRepository')
-const log = require('../utils/log')
-const config = require('../config')
+import * as WebSocket from 'ws'
+import OrderRepository from '../repositories/OrderRepository'
+import log from '../utils/log'
+import config from '../config'
 
-class WsRelayerServer {
-  constructor ({ server }) {
+class WsOwnServer {
+  clients: any[]
+  server: any
+  connection: any
+
+  constructor ({ server, connection }) {
     this.clients = []
     this.server = server
+    this.connection = connection
   }
 
   attach () {
     const wss = new WebSocket.Server({
       server: this.server,
-      path: config.RELAYER_API_PATH
+      path: config.OWN_API_PATH
     })
 
     wss.on('connection', ws => {
@@ -25,6 +30,7 @@ class WsRelayerServer {
 
         if (type === 'subscribe' && channel === 'orderbook') {
           const { baseTokenAddress, quoteTokenAddress } = payload
+
           const repository = this.connection.getCustomRepository(OrderRepository)
           const { asks, bids } = await repository.generateOrderbook({ baseTokenAddress, quoteTokenAddress })
 
@@ -32,10 +38,7 @@ class WsRelayerServer {
             type: 'snapshot',
             channel: 'orderbook',
             requestId,
-            payload: {
-              asks: asks.map(one => one.data),
-              bids: bids.map(one => one.data)
-            }
+            payload: { asks, bids }
           }
 
           ws.send(JSON.stringify(reply))
@@ -51,4 +54,4 @@ class WsRelayerServer {
   }
 }
 
-module.exports = WsRelayerServer
+export default WsOwnServer

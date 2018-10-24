@@ -1,14 +1,14 @@
-const Token = require('../src/entities/Token')
-const TokenPair = require('../src/entities/TokenPair')
-const Order = require('../src/entities/Order')
-const Relayer = require('../src/entities/Relayer')
+import Token from '../src/entities/Token'
+import TokenPair from '../src/entities/TokenPair'
+import Order from '../src/entities/Order'
+import Relayer from '../src/entities/Relayer'
 
 const tokens = require('./tokens.json')
 const tokenPairs = require('./tokenPairs.json')
 const relayers = require('./relayers.json')
 const orders = require('./orders.json')
 
-exports.up = async connection => {
+export const up = async connection => {
   const tokensRepo = connection.getRepository(Token)
   await tokensRepo.save(tokens)
 
@@ -28,5 +28,4 @@ exports.up = async connection => {
   await connection.getRepository(Order).save(orders)
 }
 
-exports.down = async () => {
-}
+export const down = async () => {}

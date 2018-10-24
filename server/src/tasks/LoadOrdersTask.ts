@@ -1,15 +1,17 @@
-const { getRepository, getCustomRepository } = require('typeorm')
-const log = require('../utils/log')
-const Relayer = require('../entities/Relayer')
-const OrderRepository = require('../repositories/OrderRepository')
+import { getRepository, getCustomRepository } from 'typeorm'
+import log from '../utils/log'
+import Relayer from '../entities/Relayer'
+import OrderRepository from '../repositories/OrderRepository'
 
 class LoadOrdersTask {
+  relayerService: any
+
   constructor ({ relayerService }) {
     this.relayerService = relayerService
   }
 
   async run () {
-    const relayer = await getRepository(Relayer).findOne({ name: 'Radar Relay' })
+    const relayer = await getRepository(Relayer as any).findOne({ name: 'Radar Relay' })
 
     const orders = await this.relayerService.loadOrders(relayer)
 
@@ -30,4 +32,4 @@ class LoadOrdersTask {
   }
 }
 
-module.exports = LoadOrdersTask
+export default LoadOrdersTask

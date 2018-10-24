@@ -1,8 +1,10 @@
-const { getCustomRepository } = require('typeorm')
-const log = require('../utils/log')
-const OrderRepository = require('../repositories/OrderRepository')
+import { getCustomRepository } from 'typeorm'
+import log from '../utils/log'
+import OrderRepository from '../repositories/OrderRepository'
 
 class ValidateOrderTask {
+  orderBlockchainService: any
+
   constructor ({ orderBlockchainService }) {
     this.orderBlockchainService = orderBlockchainService
   }
@@ -14,10 +16,10 @@ class ValidateOrderTask {
 
     const order = await orderRepository.findOne({
       orderHash: '0xc1123c89af3980a497a461422ec280610ced7eebec00f00a002cc5ab27a325b7'
-    })
+    } as any)
 
     await this.orderBlockchainService.validateInBlockchain(order)
   }
 }
 
-module.exports = ValidateOrderTask
+export default ValidateOrderTask

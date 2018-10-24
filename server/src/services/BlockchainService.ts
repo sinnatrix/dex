@@ -1,5 +1,5 @@
-const log = require('../utils/log')
-const Web3 = require('web3')
+import log from '../utils/log'
+import * as Web3 from 'web3'
 
 class BlockchainService {
   getProvider () {
@@ -58,4 +58,4 @@ class BlockchainService {
   }
 }
 
-module.exports = BlockchainService
+export default BlockchainService

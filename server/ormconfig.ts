@@ -1,9 +1,9 @@
-const Token = require('./src/entities/Token')
-const TokenPair = require('./src/entities/TokenPair')
-const Order = require('./src/entities/Order')
-const Relayer = require('./src/entities/Relayer')
+import Token from './src/entities/Token'
+import TokenPair from './src/entities/TokenPair'
+import Order from './src/entities/Order'
+import Relayer from './src/entities/Relayer'
 
-const options = {
+const ormconfig = {
   type: 'postgres',
   host: process.env.PSQL_HOST,
   port: process.env.PSQL_PORT,
@@ -20,4 +20,4 @@ const options = {
   ]
 }
 
-module.exports = options
+export default ormconfig

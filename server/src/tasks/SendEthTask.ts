@@ -1,6 +1,8 @@
-const log = require('../utils/log')
+import log from '../utils/log'
 
 class SendEthTask {
+  blockchainService: any
+
   constructor ({ blockchainService }) {
     this.blockchainService = blockchainService
   }
@@ -18,4 +20,4 @@ class SendEthTask {
   }
 }
 
-module.exports = SendEthTask
+export default SendEthTask
