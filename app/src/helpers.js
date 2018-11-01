@@ -91,6 +91,11 @@ export const getTokenBalance = (web3, walletAddr, tokenAddr) => {
         return
       }
 
+      // FIXME tech debt
+      if (result === '0x') {
+        result = 0
+      }
+
       const wei = new BigNumber(result).toString()
       const tokenBalance = parseFloat(web3.utils.fromWei(wei))
 
