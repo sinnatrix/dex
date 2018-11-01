@@ -7,7 +7,7 @@ const ormconfig = {
   type: 'postgres',
   host: process.env.PSQL_HOST,
   port: process.env.PSQL_PORT,
-  user: process.env.PSQL_USER,
+  username: process.env.PSQL_USER,
   password: process.env.PSQL_PASSWORD,
   database: process.env.PSQL_DBNAME,
   timezone: 'UTC',
