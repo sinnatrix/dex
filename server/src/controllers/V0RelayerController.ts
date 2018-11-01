@@ -90,7 +90,7 @@ class V0RelayerController {
   async getOrders (req, res) {
     const orders = await this.orderRepository.find({
       order: {
-        expirationUnixTimestampSec: 'DESC'
+        expirationTimeSeconds: 'DESC'
       }
     })
 

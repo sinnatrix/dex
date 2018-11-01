@@ -149,7 +149,7 @@ export const setOrderbook = ({ bids: bidOrders, asks: askOrders }) => (dispatch,
 export const addOrder = order => (dispatch, getState) => {
   const { marketplaceToken, currentToken, bids, asks } = getState()
 
-  if (order.makerTokenAddress === currentToken.address && order.takerTokenAddress === marketplaceToken.address) {
+  if (order.makerAssetAddress === currentToken.address && order.takerAssetAddress === marketplaceToken.address) {
     const bid = {
       ...generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken }),
       highlight: true

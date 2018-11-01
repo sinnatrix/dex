@@ -92,7 +92,7 @@ class OrdersTable extends React.Component {
   }
 
   renderExpiresAt = order => {
-    const date = new Date(parseInt(order.order.expirationUnixTimestampSec, 0) * 1000)
+    const date = new Date(parseInt(order.order.expirationTimeSeconds, 0) * 1000)
     return format(date, 'MM/DD HH:ss')
   }
 }

@@ -10,12 +10,12 @@ class OrderBlockchainService {
 
   toZeroExOrder (order) {
     const fields = [
-      'expirationUnixTimestampSec',
+      'expirationTimeSeconds',
       'makerFee',
-      'makerTokenAmount',
+      'makerAssetAmount',
       'salt',
       'takerFee',
-      'takerTokenAmount'
+      'takerAssetAmount'
     ]
 
     const result = {}
