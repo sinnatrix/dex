@@ -57,7 +57,7 @@ class Order extends React.Component {
       return null
     }
 
-    const d = new Date(parseInt(order.expirationUnixTimestampSec, 0) * 1000)
+    const d = new Date(parseInt(order.expirationTimeSeconds, 0) * 1000)
 
     return (
       <div className={classes.root}>

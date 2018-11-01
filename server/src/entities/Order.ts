@@ -10,33 +10,30 @@ const Order = new EntitySchema({
       generated: true
     },
     ecSignature: {
-      type: 'jsonb'
+      type: 'varchar'
     },
     orderHash: {
       type: 'varchar'
     },
-    exchangeContractAddress: {
+    exchangeAddress: {
       type: 'varchar'
     },
-    maker: {
+    makerAddress: {
       type: 'varchar'
     },
-    taker: {
+    takerAddress: {
       type: 'varchar'
     },
-    makerTokenAddress: {
+    senderAddress: {
       type: 'varchar'
     },
-    takerTokenAddress: {
+    feeRecipientAddress: {
       type: 'varchar'
     },
-    feeRecipient: {
+    makerAssetAmount: {
       type: 'varchar'
     },
-    makerTokenAmount: {
-      type: 'varchar'
-    },
-    takerTokenAmount: {
+    takerAssetAmount: {
       type: 'varchar'
     },
     makerFee: {
@@ -45,7 +42,13 @@ const Order = new EntitySchema({
     takerFee: {
       type: 'varchar'
     },
-    expirationUnixTimestampSec: {
+    expirationTimeSeconds: {
+      type: 'varchar'
+    },
+    makerAssetData: {
+      type: 'varchar'
+    },
+    takerAssetData: {
       type: 'varchar'
     },
     salt: {

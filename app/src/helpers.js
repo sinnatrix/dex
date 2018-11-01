@@ -1,6 +1,7 @@
 import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
-import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils, SignerType } from '0x.js'
+import { MetamaskSubprovider } from '@0x/subproviders'
+import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils } from '0x.js'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -16,16 +17,16 @@ const getContractWrappers = async web3 => {
 }
 
 export const generateBid = ({ order, baseToken, quoteToken }) => {
-  const makerToken = order.makerTokenAddress === baseToken.address ? baseToken : quoteToken
-  const takerToken = order.takerTokenAddress === baseToken.address ? baseToken : quoteToken
+  const makerToken = order.makerAssetAddress === baseToken.address ? baseToken : quoteToken
+  const takerToken = order.takerAssetAddress === baseToken.address ? baseToken : quoteToken
 
   const decimalFields = [
-    'expirationUnixTimestampSec',
+    'expirationTimeSeconds',
     'makerFee',
-    'makerTokenAmount',
+    'makerAssetAmount',
     'salt',
     'takerFee',
-    'takerTokenAmount'
+    'takerAssetAmount'
   ]
 
   order = decimalFields.reduce((agg, key) => ({
@@ -33,15 +34,15 @@ export const generateBid = ({ order, baseToken, quoteToken }) => {
     [key]: new BigNumber(order[key])
   }), { ...order })
 
-  const makerAmount = order.makerTokenAmount.dividedBy(
+  const makerAmount = order.makerAssetAmount.dividedBy(
     Math.pow(10, makerToken.decimals)
   )
-  const takerAmount = order.takerTokenAmount.dividedBy(
+  const takerAmount = order.takerAssetAmount.dividedBy(
     Math.pow(10, takerToken.decimals)
   )
 
   let price
-  if (order.takerTokenAddress === baseToken.address) {
+  if (order.takerAssetAddress === baseToken.address) {
     price = takerAmount.dividedBy(makerAmount)
   } else {
     price = makerAmount.dividedBy(takerAmount)
@@ -163,7 +164,7 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
 
   const contractWrappers = await getContractWrappers(web3)
 
-  const EXCHANGE_ADDRESS = contractWrappers.exchange.getContractAddress()
+  const EXCHANGE_ADDRESS = contractWrappers.exchange.address
 
   const order = {
     makerAddress: makerAddress.toLowerCase(),
@@ -183,10 +184,7 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
 
   const orderHash = orderHashUtils.getOrderHashHex(order)
 
-  const isMetamask = web3.currentProvider.constructor.name === 'MetamaskInpageProvider'
-  const signatureType = isMetamask ? SignerType.Metamask : SignerType.Default
-
-  const ecSignature = await signatureUtils.ecSignOrderHashAsync(web3.currentProvider, orderHash, makerAddress, signatureType)
+  const ecSignature = await signatureUtils.ecSignHashAsync(new MetamaskSubprovider(web3.currentProvider), orderHash, makerAddress) //, signatureType)
 
   const signedOrder = {
     ...order,
