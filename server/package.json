@@ -12,7 +12,9 @@
     "seed": "yarn task seed",
     "rpc": "ganache-cli",
     "lint": "tslint --project ./tsconfig.json ./src/**/*.ts",
-    "task": "ts-node src/task.ts"
+    "task": "ts-node src/task.ts",
+    "docker:build": "docker build -t dex-server .",
+    "docker:run": "docker run --env-file=.env -e 'PSQL_HOST=host.docker.internal' -p 7001:7001 --rm -it dex-server"
   },
   "dependencies": {
     "0x.js": "^2.0.0",
