@@ -26,6 +26,7 @@ const SET_TOKEN_BALANCE = 'SET_TOKEN_BALANCE'
 const SET_ETH_BALANCE = 'SET_ETH_BALANCE'
 const SET_TOKENS = 'SET_TOKENS'
 const SET_TOKEN_ALLOWANCE = 'SET_TOKEN_ALLOWANCE'
+const SET_USER_ORDERS = 'SET_USER_ORDERS'
 
 const initialState = {
   bids: [],
@@ -37,7 +38,8 @@ const initialState = {
   ethBalance: 0,
   tokenBalances: {},
   tokenAllowances: {},
-  tokens: []
+  tokens: [],
+  userOrders: []
 }
 
 export default (state = initialState, { type, payload }) => {
@@ -74,6 +76,8 @@ export default (state = initialState, { type, payload }) => {
       }
     case SET_TOKENS:
       return { ...state, tokens: payload }
+    case SET_USER_ORDERS:
+      return { ...state, userOrders: payload }
     default:
       return state
   }
@@ -89,6 +93,7 @@ export const setNetwork = payload => ({ type: SET_NETWORK, payload })
 const setTokenBalance = (symbol, value) => ({ type: SET_TOKEN_BALANCE, payload: { symbol, value } })
 const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
 const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
+const setUserOrders = payload => ({ type: SET_USER_ORDERS, payload })
 
 export const loadEthBalance = web3 => async (dispatch, getState) => {
   const { account } = getState()
@@ -285,4 +290,14 @@ export const unwrapWeth = (web3, amount) => async (dispatch, getState) => {
 
   await delay(3000)
   dispatch(loadEthBalance(web3))
+}
+
+export const loadUserOrders = () => async dispatch => {
+  const { data } = await axios.get('/api/v1/user-orders')
+  dispatch(setUserOrders(data))
+}
+
+export const loadUserOrdersByMakerAddress = (makerAddress) => async dispatch => {
+  const { data } = await axios.get('/api/v1/user-orders/' + makerAddress)
+  dispatch(setUserOrders(data))
 }
