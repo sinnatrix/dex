@@ -31,21 +31,40 @@ class OrdersList extends React.Component {
         showPagination={false}
         defaultPageSize={userOrders.length}
         pageSize={userOrders.length}
+        resizable={false}
         columns={[
           {
             Header: 'S',
             id: 'selling',
-            accessor: order => `${this.formatAssetAmount(order.makerAssetAmount)}`
+            minWidth: 80,
+            accessor: order => {
+              const [makerToken] = tokens.filter(token => token.address === order.makerAssetAddress)
+              return `${this.formatAssetAmount(order.makerAssetAmount)} ${makerToken.symbol}`
+            },
+            style: {
+              fontSize: '.7em'
+            }
           },
           {
             Header: 'B',
             id: 'buying',
-            accessor: order => `${this.formatAssetAmount(order.takerAssetAmount)}`
+            minWidth: 80,
+            accessor: order => {
+              const [takerToken] = tokens.filter(token => token.address === order.takerAssetAddress)
+              return `${this.formatAssetAmount(order.takerAssetAmount)} ${takerToken.symbol}`
+            },
+            style: {
+              fontSize: '.7em'
+            }
           },
           {
             Header: 'EXP',
             id: 'expires',
-            accessor: order => this.renderExpiresAt(order)
+            minWidth: 80,
+            accessor: order => this.renderExpiresAt(order),
+            style: {
+              fontSize: '.7em'
+            }
           }
         ]}
       />
