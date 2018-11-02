@@ -8,7 +8,9 @@
     "eject": "react-scripts eject",
     "lint": "standard",
     "lint:fix": "standard --fix",
-    "test": "NODE_ENV=test NODE_PATH=src/ tape -r @babel/register -r regenerator-runtime/runtime -r jsdom-global/register ./src/**/*.test.js | tap-spec"
+    "test": "NODE_ENV=test NODE_PATH=src/ tape -r @babel/register -r regenerator-runtime/runtime -r jsdom-global/register ./src/**/*.test.js | tap-spec",
+    "docker:build": "docker build -t dex-app .",
+    "docker:run": "docker run -p 3000:80 --rm -it dex-app"
   },
   "dependencies": {
     "0x.js": "^2.0.0",
