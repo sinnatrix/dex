@@ -43,7 +43,6 @@ class OrdersTable extends React.Component {
     return (
       <ReactTable
         data={orders}
-        resolveData={data => data.map(row => row)}
         showPagination={false}
         defaultPageSize={orders.length}
         pageSize={orders.length}
@@ -93,7 +92,7 @@ class OrdersTable extends React.Component {
 
   renderExpiresAt = order => {
     const date = new Date(parseInt(order.order.expirationTimeSeconds, 0) * 1000)
-    return format(date, 'MM/DD HH:ss')
+    return format(date, 'MM/DD HH:mm')
   }
 }
 

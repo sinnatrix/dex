@@ -88,8 +88,14 @@ class V1OwnController {
     const currentUnixtime = Math.trunc((new Date().getTime())/1000)
 
     const userOrders = await this.orderRepository.find({
-      makerAddress,
-      expirationTimeSeconds: MoreThan(currentUnixtime)
+      where: {
+        makerAddress,
+        expirationTimeSeconds: MoreThan(currentUnixtime)
+      },
+      order: {
+        expirationTimeSeconds: "ASC",
+        id: "DESC"
+      }
     });
 
     res.json(userOrders)
