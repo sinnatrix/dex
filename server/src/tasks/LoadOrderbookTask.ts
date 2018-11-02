@@ -19,8 +19,8 @@ class LoadOrderbookTask {
     })
 
     const orderbook = await this.relayerService.loadOrderbook(relayer, {
-      baseTokenAddress: tokenPair.tokenAAddress,
-      quoteTokenAddress: tokenPair.tokenBAddress
+      baseAssetAddress: tokenPair.tokenAAddress,
+      quoteAssetAddress: tokenPair.tokenBAddress
     })
 
     const orders = orderbook.bids.concat(orderbook.asks)

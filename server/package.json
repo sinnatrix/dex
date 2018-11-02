@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "nodemon -x ts-node ./src/index.ts",
+    "dev": "nodemon --watch 'src/**/*.ts' -x ts-node src/index.ts",
     "test": "ts-node ./node_modules/.bin/tape ./test/before.ts ./src/**/*.test.ts ./test/after.ts | tap-spec",
     "createDb": "ts-node src/createDb.ts",
     "seed": "yarn task seed",
