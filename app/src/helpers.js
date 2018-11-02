@@ -189,7 +189,9 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
   const signedOrder = {
     ...order,
     orderHash,
-    ecSignature
+    ecSignature,
+    makerAssetAddress: makerToken.address,
+    takerAssetAddress: takerToken.address
   }
 
   return signedOrder

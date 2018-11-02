@@ -29,9 +29,9 @@ class WsRelayerServer {
         const { type, channel, requestId, payload } = message
 
         if (type === 'subscribe' && channel === 'orderbook') {
-          const { baseTokenAddress, quoteTokenAddress } = payload
+          const { baseAssetAddress, quoteAssetAddress } = payload
           const repository = this.connection.getCustomRepository(OrderRepository)
-          const { asks, bids } = await repository.generateOrderbook({ baseTokenAddress, quoteTokenAddress })
+          const { asks, bids } = await repository.generateOrderbook({ baseAssetAddress, quoteAssetAddress })
 
           const reply = {
             type: 'snapshot',

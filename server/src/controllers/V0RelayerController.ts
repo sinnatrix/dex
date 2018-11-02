@@ -71,18 +71,18 @@ class V0RelayerController {
   async getOrderbook (req, res) {
     log.info('HTTP: GET orderbook')
 
-    const { baseTokenAddress, quoteTokenAddress } = req.query
-    if (!baseTokenAddress) {
-      res.status(400).send('baseTokenAddress is a required param')
+    const { baseAssetAddress, quoteAssetAddress } = req.query
+    if (!baseAssetAddress) {
+      res.status(400).send('baseAssetAddress is a required param')
       return
     }
 
-    if (!quoteTokenAddress) {
+    if (!quoteAssetAddress) {
       res.status(400).send('quouteTokenAddress is a required param')
       return
     }
 
-    const orderbook = await this.orderRepository.generateOrderbook({ baseTokenAddress, quoteTokenAddress })
+    const orderbook = await this.orderRepository.generateOrderbook({ baseAssetAddress, quoteAssetAddress })
 
     res.send(orderbook)
   }

@@ -1,17 +1,17 @@
 import * as rp from 'request-promise-native'
 
 class RelayerService {
-  async loadOrderbook (relayer, { baseTokenAddress, quoteTokenAddress }) {
-    if (!baseTokenAddress) {
-      throw new Error('baseTokenAddress is a required parameter')
+  async loadOrderbook (relayer, { baseAssetAddress, quoteAssetAddress }) {
+    if (!baseAssetAddress) {
+      throw new Error('baseAssetAddress is a required parameter')
     }
-    if (!quoteTokenAddress) {
-      throw new Error('quoteTokenAddress is a required parameter')
+    if (!quoteAssetAddress) {
+      throw new Error('quoteAssetAddress is a required parameter')
     }
 
     const network = this.getNetwork(relayer)
 
-    const uri = `${network.sra_http_endpoint}/v0/orderbook?baseTokenAddress=${baseTokenAddress}&quoteTokenAddress=${quoteTokenAddress}`
+    const uri = `${network.sra_http_endpoint}/v0/orderbook?baseAssetAddress=${baseAssetAddress}&quoteAssetAddress=${quoteAssetAddress}`
     const result = await rp({ uri, json: true })
 
     return result

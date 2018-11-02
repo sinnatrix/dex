@@ -178,8 +178,8 @@ export const loadOrderbook = socket => async (dispatch, getState) => {
     channel: 'orderbook',
     requestId: 1,
     payload: {
-      baseTokenAddress: marketplaceToken.address,
-      quoteTokenAddress: currentToken.address,
+      baseAssetAddress: marketplaceToken.address,
+      quoteAssetAddress: currentToken.address,
       snapshot: true,
       limit: 100
     }
