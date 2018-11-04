@@ -85,7 +85,7 @@ class V1OwnController {
 
   async getActiveUserOrders (req, res) {
     const { makerAddress } = req.params
-    const currentUnixtime = Math.trunc((new Date().getTime())/1000)
+    const currentUnixtime = Math.trunc((new Date().getTime()) / 1000)
 
     const userOrders = await this.orderRepository.find({
       where: {
@@ -96,7 +96,7 @@ class V1OwnController {
         expirationTimeSeconds: "ASC",
         id: "DESC"
       }
-    });
+    })
 
     res.json(userOrders)
   }

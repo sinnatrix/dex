@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { loadUserOrdersByMakerAddress } from 'modules/index'
+import { loadUserOrders } from 'modules/index'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
 import { BigNumber } from '@0x/utils'
@@ -11,7 +11,7 @@ const connector = connect(
     account: state.account,
     tokens: state.tokens
   }),
-  { loadUserOrdersByMakerAddress }
+  { loadUserOrders }
 )
 
 class OrdersList extends React.Component {
@@ -19,14 +19,18 @@ class OrdersList extends React.Component {
   tokenDecimals = 18
 
   componentDidMount () {
-    this.props.loadUserOrdersByMakerAddress(this.props.account)
+    this.props.loadUserOrders(this.props.account)
   }
 
   render () {
     const { userOrders, tokens } = this.props
 
+    if (userOrders.length === 0) {
+      return null
+    }
+
     return (
-      userOrders.length > 0 && <ReactTable
+      <ReactTable
         data={userOrders}
         showPagination={false}
         defaultPageSize={userOrders.length}
@@ -76,7 +80,7 @@ class OrdersList extends React.Component {
     return format(date, 'MM/DD HH:mm')
   }
 
-  formatAssetAmount = (assetAmount) => {
+  formatAssetAmount = assetAmount => {
     return new BigNumber(assetAmount)
       .dividedBy(Math.pow(10, this.tokenDecimals))
       .toFixed(6)

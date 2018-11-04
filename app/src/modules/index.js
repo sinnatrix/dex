@@ -292,12 +292,7 @@ export const unwrapWeth = (web3, amount) => async (dispatch, getState) => {
   dispatch(loadEthBalance(web3))
 }
 
-export const loadUserOrders = () => async dispatch => {
-  const { data } = await axios.get('/api/v1/user-orders')
-  dispatch(setUserOrders(data))
-}
-
-export const loadUserOrdersByMakerAddress = (makerAddress) => async dispatch => {
+export const loadUserOrders = (makerAddress) => async dispatch => {
   const { data } = await axios.get('/api/v1/user-orders/' + makerAddress)
   dispatch(setUserOrders(data))
 }
