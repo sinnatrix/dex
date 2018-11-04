@@ -5,9 +5,6 @@
 .vscode
 .idea
 
-# Configuration
-.env
-
 # About code
 node_modules
 
