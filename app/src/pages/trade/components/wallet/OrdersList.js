@@ -1,17 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { loadUserOrders } from 'modules/index'
+import { loadActiveAccountOrders } from 'modules/index'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
 import { BigNumber } from '@0x/utils'
 
 const connector = connect(
   state => ({
-    userOrders: state.userOrders,
+    accountOrders: state.accountOrders,
     account: state.account,
     tokens: state.tokens
   }),
-  { loadUserOrders }
+  { loadActiveAccountOrders }
 )
 
 class OrdersList extends React.Component {
@@ -19,22 +19,22 @@ class OrdersList extends React.Component {
   tokenDecimals = 18
 
   componentDidMount () {
-    this.props.loadUserOrders(this.props.account)
+    this.props.loadActiveAccountOrders(this.props.account)
   }
 
   render () {
-    const { userOrders, tokens } = this.props
+    const { accountOrders, tokens } = this.props
 
-    if (userOrders.length === 0) {
+    if (accountOrders.length === 0) {
       return null
     }
 
     return (
       <ReactTable
-        data={userOrders}
+        data={accountOrders}
         showPagination={false}
-        defaultPageSize={userOrders.length}
-        pageSize={userOrders.length}
+        defaultPageSize={accountOrders.length}
+        pageSize={accountOrders.length}
         resizable={false}
         columns={[
           {

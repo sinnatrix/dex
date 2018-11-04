@@ -25,7 +25,7 @@ class V1OwnController {
     router.get('/relayers', this.getRelayers.bind(this))
     router.get('/tokens', this.getTokens.bind(this))
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
-    router.get('/user-orders/:makerAddress', this.getActiveUserOrders.bind(this))
+    router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.post('/orders', this.createOrder.bind(this))
 
@@ -83,13 +83,13 @@ class V1OwnController {
     res.send(order)
   }
 
-  async getActiveUserOrders (req, res) {
-    const { makerAddress } = req.params
+  async getActiveAccountOrders (req, res) {
+    const { address } = req.params
     const currentUnixtime = Math.trunc((new Date().getTime()) / 1000)
 
-    const userOrders = await this.orderRepository.find({
+    const accountOrders = await this.orderRepository.find({
       where: {
-        makerAddress,
+        makerAddress: address,
         expirationTimeSeconds: MoreThan(currentUnixtime)
       },
       order: {
@@ -98,7 +98,7 @@ class V1OwnController {
       }
     })
 
-    res.json(userOrders)
+    res.json(accountOrders)
   }
 }
 
