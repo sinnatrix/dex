@@ -3,6 +3,7 @@ import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
 import config from '../config'
+import { MoreThan } from 'typeorm'
 
 class V1OwnController {
   application: any
@@ -24,6 +25,7 @@ class V1OwnController {
     router.get('/relayers', this.getRelayers.bind(this))
     router.get('/tokens', this.getTokens.bind(this))
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
+    router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.post('/orders', this.createOrder.bind(this))
 
@@ -79,6 +81,24 @@ class V1OwnController {
     order = await this.orderRepository.save(data)
 
     res.send(order)
+  }
+
+  async getActiveAccountOrders (req, res) {
+    const { address } = req.params
+    const currentUnixtime = Math.trunc((new Date().getTime()) / 1000)
+
+    const accountOrders = await this.orderRepository.find({
+      where: {
+        makerAddress: address,
+        expirationTimeSeconds: MoreThan(currentUnixtime)
+      },
+      order: {
+        expirationTimeSeconds: "ASC",
+        id: "DESC"
+      }
+    })
+
+    res.json(accountOrders)
   }
 }
 
