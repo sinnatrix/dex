@@ -9,6 +9,7 @@ RUN apk add --no-cache autoconf make gcc g++ git python
 RUN yarn install --pure-lockfile --ignore-optional
 COPY . /server
 
+# production environment
 FROM node:10.12.0-alpine
 COPY --from=builder /server /server
 WORKDIR /server

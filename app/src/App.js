@@ -18,7 +18,7 @@ class App extends React.Component {
   constructor (props) {
     super(props)
 
-    this.socket = new window.WebSocket(`ws://${window.location.host}/api/v1`)
+    this.socket = new window.WebSocket(`ws://${window.location.host}/api/relayer/v0`)
   }
 
   componentDidMount () {
