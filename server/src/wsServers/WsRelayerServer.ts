@@ -38,8 +38,8 @@ class WsRelayerServer {
             channel: 'orderbook',
             requestId,
             payload: {
-              asks: asks.map(one => one.data),
-              bids: bids.map(one => one.data)
+              asks,
+              bids
             }
           }
 

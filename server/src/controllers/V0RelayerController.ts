@@ -10,15 +10,13 @@ const ZeroEx = require('0x.js')
 
 class V0RelayerController {
   application: any
-  wsOwnServer: any
   wsRelayerServer: any
   tokenRepository: any
   tokenPairRepository: any
   orderRepository: any
 
-  constructor ({ application, connection, wsOwnServer, wsRelayerServer }) {
+  constructor ({ application, connection, wsRelayerServer }) {
     this.application = application
-    this.wsOwnServer = wsOwnServer
     this.wsRelayerServer = wsRelayerServer
 
     this.tokenRepository = connection.getRepository(Token)
@@ -121,16 +119,6 @@ class V0RelayerController {
         type: 'update',
         channel: 'orderbook',
         requestId: 1,
-        payload: order
-      }
-
-      client.send(JSON.stringify(msg))
-    })
-
-    this.wsOwnServer.clients.forEach(client => {
-      const msg = {
-        type: 'update',
-        channel: 'orderbook',
         payload: order
       }
 
