@@ -1,6 +1,7 @@
 {
   "name": "dex",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "DEX monorepo.",
   "main": "index.js",
   "repository": "git@github.com:lunochkin/dex.git",
