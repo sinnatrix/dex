@@ -1,6 +1,8 @@
 
 # Docs index
 
+[Changelog](./CHANGELOG.md)
+
 [Valuable links](./VALUABLE_LINKS.md)
 
-[Changelog](./CHANGELOG.md)
+[Notes](./NOTES.md)
