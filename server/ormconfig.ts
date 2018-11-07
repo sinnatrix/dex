@@ -5,11 +5,11 @@ import Relayer from './src/entities/Relayer'
 
 const ormconfig = {
   type: 'postgres',
-  host: process.env.PSQL_HOST,
-  port: process.env.PSQL_PORT,
-  username: process.env.PSQL_USER,
-  password: process.env.PSQL_PASSWORD,
-  database: process.env.PSQL_DBNAME,
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB,
   timezone: 'UTC',
   synchronize: true,
   entities: [
