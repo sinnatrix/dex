@@ -1,6 +1,5 @@
 # OS
 .DS_Store
-.env
 
 # IDE
 .vscode
@@ -17,3 +16,6 @@ _data
 
 # Misc
 !.gitkeep
+
+# environment
+.env

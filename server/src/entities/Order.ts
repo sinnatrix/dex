@@ -9,7 +9,7 @@ const Order = new EntitySchema({
       primary: true,
       generated: true
     },
-    ecSignature: {
+    signature: {
       type: 'varchar'
     },
     orderHash: {
@@ -40,6 +40,12 @@ const Order = new EntitySchema({
       type: 'varchar'
     },
     takerAssetAddress: {
+      type: 'varchar'
+    },
+    makerAssetProxyId: {
+      type: 'varchar'
+    },
+    takerAssetProxyId: {
       type: 'varchar'
     },
     makerFee: {

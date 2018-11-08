@@ -194,5 +194,5 @@ test('makeLimitOrderAsync', async t => {
     }
   )
 
-  t.true(signedOrder.ecSignature)
+  t.true(signedOrder.signature)
 })

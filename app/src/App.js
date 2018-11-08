@@ -7,7 +7,7 @@ import { MuiThemeProvider } from '@material-ui/core/styles'
 import { Provider } from 'react-redux'
 import theme from './theme'
 import store from './store'
-import { setOrderbook, addOrder } from './modules/index'
+import { addOrders } from './modules/index'
 import Web3 from 'web3'
 import Web3Context from './contexts/Web3Context'
 import SocketContext from './contexts/SocketContext'
@@ -18,20 +18,16 @@ class App extends React.Component {
   constructor (props) {
     super(props)
 
-    this.socket = new window.WebSocket(`ws://${window.location.host}/api/relayer/v0`)
+    this.socket = new window.WebSocket(`ws://${window.location.host}/api/relayer/v2`)
   }
 
   componentDidMount () {
     this.socket.addEventListener('message', message => {
       const data = JSON.parse(message.data)
-      const { type, channel, payload } = data
+      const { type, channel, payload: orders } = data
 
-      if (type === 'snapshot' && channel === 'orderbook') {
-        store.dispatch(setOrderbook(payload))
-      }
-
-      if (type === 'update' && channel === 'orderbook') {
-        store.dispatch(addOrder(payload))
+      if (type === 'update' && channel === 'orders') {
+        store.dispatch(addOrders(orders))
       }
     })
   }

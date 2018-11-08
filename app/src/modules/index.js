@@ -15,6 +15,9 @@ import {
   sendWrapWethTx
 } from '../helpers'
 import { getToken } from 'selectors'
+import { assetDataUtils } from '@0x/order-utils'
+
+const uuidv4 = require('uuid/v4')
 
 const SET_BIDS = 'SET_BIDS'
 const SET_ASKS = 'SET_ASKS'
@@ -135,41 +138,70 @@ export const resetHighlighting = () => async (dispatch, getState) => {
   dispatch(setAsks(asks.map(R.dissoc('highlight'))))
 }
 
-export const setOrderbook = ({ bids: bidOrders, asks: askOrders }) => (dispatch, getState) => {
+const sortBids = R.sort(
+  R.descend(
+    R.path([
+      'data',
+      'price'
+    ])
+  )
+)
+
+export const setOrderbook = ({ bids, asks }) => (dispatch, getState) => {
   const { marketplaceToken, currentToken } = getState()
 
-  const bids = bidOrders.map(
-    order => generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken })
+  const formattedBids = bids.records.map(
+    order => generateBid({
+      order: order.order,
+      baseToken: marketplaceToken,
+      quoteToken: currentToken
+    })
   )
-  const bidsSorted = R.sort(R.descend(R.path(['data', 'price'])), bids)
+
+  const bidsSorted = sortBids(formattedBids)
   dispatch(setBids(bidsSorted))
 
-  const asks = askOrders.map(
-    order => generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken })
+  const formattedAsks = asks.records.map(
+    order => generateBid({
+      order: order.order,
+      baseToken: marketplaceToken,
+      quoteToken: currentToken
+    })
   )
-  const asksSorted = R.sort(R.descend(R.path(['data', 'price'])), asks)
+
+  const asksSorted = sortBids(formattedAsks)
   dispatch(setAsks(asksSorted))
 }
 
-export const addOrder = order => (dispatch, getState) => {
+export const addOrders = orders => (dispatch, getState) => {
   const { marketplaceToken, currentToken, bids, asks } = getState()
 
-  if (order.makerAssetAddress === currentToken.address && order.takerAssetAddress === marketplaceToken.address) {
-    const bid = {
-      ...generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken }),
-      highlight: true
-    }
-    const bidsSorted = R.sort(R.descend(R.path(['data', 'price'])), [...bids, bid])
+  // order is in SRA2 format { order: {}, metaData: {} }
+  const expandedOrders = orders.map(order => ({
+    ...generateBid({
+      order: order.order,
+      baseToken: marketplaceToken,
+      quoteToken: currentToken
+    }),
+    highlight: true
+  }))
 
-    dispatch(setBids(bidsSorted))
-  } else {
-    const ask = {
-      ...generateBid({ order, baseToken: marketplaceToken, quoteToken: currentToken }),
-      highlight: true
-    }
-    const asksSorted = R.sort(R.descend(R.path(['data', 'price'])), [...asks, ask])
+  const isBid = ({ order }) => order.makerAssetAddress === currentToken.address &&
+    order.takerAssetAddress === marketplaceToken.address
 
-    dispatch(setAsks(asksSorted))
+  const newBids = expandedOrders.filter(isBid)
+  const newAsks = expandedOrders.filter(R.complement(isBid))
+
+  if (newBids.length > 0) {
+    const sortedBids = sortBids([...bids, ...newBids])
+
+    dispatch(setBids(sortedBids))
+  }
+
+  if (newAsks.length > 0) {
+    const sortedAsks = sortBids([...asks, ...newAsks])
+
+    dispatch(setAsks(sortedAsks))
   }
 
   dispatch(resetHighlighting())
@@ -178,19 +210,45 @@ export const addOrder = order => (dispatch, getState) => {
 export const loadOrderbook = socket => async (dispatch, getState) => {
   const { marketplaceToken, currentToken } = getState()
 
-  const request = {
-    type: 'subscribe',
-    channel: 'orderbook',
-    requestId: 1,
-    payload: {
-      baseAssetAddress: marketplaceToken.address,
-      quoteAssetAddress: currentToken.address,
-      snapshot: true,
-      limit: 100
-    }
-  }
+  socket.send(JSON.stringify({
+    type: 'unsubscribe',
+    channel: 'orders'
+  }))
 
-  socket.send(JSON.stringify(request))
+  socket.send(JSON.stringify({
+    type: 'subscribe',
+    channel: 'orders',
+    requestId: uuidv4(),
+    payload: {
+      makerAssetAddress: marketplaceToken.address,
+      takerAssetAddress: currentToken.address
+    }
+  }))
+
+  socket.send(JSON.stringify({
+    type: 'subscribe',
+    channel: 'orders',
+    requestId: uuidv4(),
+    payload: {
+      makerAssetAddress: currentToken.address,
+      takerAssetAddress: marketplaceToken.address
+    }
+  }))
+
+  // TODO play with ERC721 tokens in future
+  const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
+  const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
+  const { data } = await axios(
+    '/api/relayer/v0/orderbook',
+    {
+      params: {
+        baseAssetData,
+        quoteAssetData
+      }
+    }
+  )
+
+  dispatch(setOrderbook(data))
 }
 
 export const loadMarketplaceToken = symbol => async dispatch => {

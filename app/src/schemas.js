@@ -15,7 +15,7 @@ export const txMinedSchema = Joi.object().keys({
 })
 
 export const signedOrderSchema = Joi.object().keys({
-  ecSignature: Joi.string(),
+  signature: Joi.string(),
   orderHash: Joi.string().required(),
   exchangeAddress: Joi.string().required(),
   maker: Joi.string().required(),

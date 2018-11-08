@@ -6,6 +6,8 @@ import OrderRepository from '../repositories/OrderRepository'
 import Token from '../entities/Token'
 import TokenPair from '../entities/TokenPair'
 import config from '../config'
+import { convertOrderToDexFormat } from '../utils/helpers'
+import { validateRequiredField, validateNetworkId } from '../validation'
 const ZeroEx = require('0x.js')
 
 class V0RelayerController {
@@ -66,21 +68,62 @@ class V0RelayerController {
     res.send(result)
   }
 
+  /**
+   * Corresponds to the Relayer 2.0.0 REST API specification
+   *
+   * @param req
+   * @param res
+   */
   async getOrderbook (req, res) {
-    log.info('HTTP: GET orderbook')
+    log.info('HTTP: GET /orderbook')
 
-    const { baseAssetAddress, quoteAssetAddress } = req.query
-    if (!baseAssetAddress) {
-      res.status(400).send('baseAssetAddress is a required param')
-      return
+    const toInt = value => parseInt(value, 10)
+
+    const params = R.evolve(
+      {
+        networkId: toInt,
+        page: toInt,
+        perPage: toInt
+      },
+      R.pick(
+        [
+          'baseAssetData',
+          'quoteAssetData',
+          'networkId',
+          'page',
+          'perPage'
+        ],
+        req.query
+      )
+    )
+
+    // TODO use limiter, controller level, middleware
+    res.set({
+      'X-RateLimit-Limit': 0,
+      'X-RateLimit-Remaining': 0,
+      'X-RateLimit-Reset': 0,
+      'Content-Type': 'application/json'
+    })
+
+    const validationErrors = [
+      validateRequiredField('quoteAssetData', params.quoteAssetData),
+      validateRequiredField('baseAssetData', params.baseAssetData),
+      validateNetworkId(params.networkId)
+    ].filter(one => !!one)
+
+
+    if (validationErrors.length > 0) {
+      res.status(400)
+      res.send(JSON.stringify({
+        code: 101,
+        reason: 'Validation failed',
+        validationErrors
+      }))
+
+      return null
     }
 
-    if (!quoteAssetAddress) {
-      res.status(400).send('quouteTokenAddress is a required param')
-      return
-    }
-
-    const orderbook = await this.orderRepository.generateOrderbook({ baseAssetAddress, quoteAssetAddress })
+    const orderbook = await this.orderRepository.getOrderbook(params)
 
     res.send(orderbook)
   }
@@ -110,20 +153,13 @@ class V0RelayerController {
     const order = req.body
     log.info({ order }, 'HTTP: POST order')
 
-    await this.orderRepository.save(order)
+    const orderToSave = convertOrderToDexFormat(order)
+
+    await this.orderRepository.save(orderToSave)
 
     res.status(201).end()
 
-    this.wsRelayerServer.clients.forEach(client => {
-      const msg = {
-        type: 'update',
-        channel: 'orderbook',
-        requestId: 1,
-        payload: order
-      }
-
-      client.send(JSON.stringify(msg))
-    })
+    this.wsRelayerServer.pushOrder(orderToSave)
   }
 
   async checkFees (req, res) {
