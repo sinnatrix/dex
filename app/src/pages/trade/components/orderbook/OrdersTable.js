@@ -76,7 +76,7 @@ class OrdersTable extends React.Component {
           {
             Header: 'maker',
             id: 'maker',
-            accessor: order => order.maker
+            accessor: order => order.spread ? null : `${order.order.makerAddress}`
           },
           {
             Header: '',

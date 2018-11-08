@@ -1,7 +1,9 @@
 import * as WebSocket from 'ws'
-import OrderRepository from '../repositories/OrderRepository'
+import * as R from 'ramda'
 import log from '../utils/log'
 import config from '../config'
+import { convertOrderToSRA2Format } from '../utils/helpers'
+import { validateNetworkId, validateRequiredField } from '../validation'
 
 class WsRelayerServer {
   clients: any[]
@@ -17,42 +19,107 @@ class WsRelayerServer {
   attach () {
     const wss = new WebSocket.Server({
       server: this.server,
-      path: config.RELAYER_API_PATH
+      path: config.RELAYER_API_V2_PATH
     })
 
     wss.on('connection', ws => {
       log.info('connection')
-      this.clients.push(ws)
 
       ws.on('message', async rawMessage => {
         const message = JSON.parse(rawMessage)
         const { type, channel, requestId, payload } = message
 
-        if (type === 'subscribe' && channel === 'orderbook') {
-          const { baseAssetAddress, quoteAssetAddress } = payload
-          const repository = this.connection.getCustomRepository(OrderRepository)
-          const { asks, bids } = await repository.generateOrderbook({ baseAssetAddress, quoteAssetAddress })
+        if (type === 'subscribe' && channel === 'orders') {
+          const validationErrors = [
+            validateNetworkId(payload.networkId),
+            validateRequiredField('requestId', requestId)
+          ].filter(one => !!one)
 
-          const reply = {
-            type: 'snapshot',
-            channel: 'orderbook',
-            requestId,
-            payload: {
-              asks,
-              bids
-            }
+          if (validationErrors.length) {
+            ws.send(JSON.stringify({
+              code: 100,
+              reason: 'Validation failed',
+              validationErrors
+            }))
+            return
           }
 
-          ws.send(JSON.stringify(reply))
+          this.subscribeClient({ ws, payload, requestId })
+        }
+
+        if (type === 'unsubscribe') {
+          this.unsubscribeClient(ws)
         }
       })
 
       ws.on('close', () => {
-        log.info('close')
-        const index = this.clients.indexOf(ws)
-        this.clients.splice(index, 1)
+        this.unsubscribeClient(ws)
       })
     })
+  }
+
+  subscribeClient ({ ws, payload, requestId }) {
+    const found = !!this.clients.filter(one => one.ws === ws)[0]
+
+    if (!found) {
+      this.clients = [
+        ...this.clients,
+        { ws, subscriptions: [] }
+      ]
+    }
+
+    this.clients = this.clients.map(one => {
+      if (one.ws !== ws) {
+        return one
+      }
+
+      return {
+        ...one,
+        subscriptions: [
+          ...one.subscriptions,
+          { payload, requestId }
+        ]
+      }
+    })
+  }
+
+  unsubscribeClient (ws) {
+    this.clients = this.clients.filter(one => one.ws !== ws)
+  }
+
+  pushOrder (order) {
+    const clients = this.findClientSubscriptionsForOrder(order)
+    const sra2Order = convertOrderToSRA2Format(order)
+
+    clients.forEach(client => {
+      client.subscriptions.forEach(subscription => {
+        client.ws.send(JSON.stringify(
+          {
+            type: 'update',
+            channel: 'orders',
+            requestId: subscription.requestId,
+            payload: [{ order: sra2Order }]
+          }
+        ))
+      })
+    })
+  }
+
+  findClientSubscriptionsForOrder (order) {
+    return this.clients
+      .map(client => ({
+        ...client,
+        subscriptions: client.subscriptions.filter(subscription => {
+          return R.equals(
+            R.pick(
+              Object.keys(subscription.payload),
+              order
+            ),
+            subscription.payload
+          )
+        })
+      }))
+      .filter(one => one.subscriptions.length > 0)
   }
 }
 

@@ -2,6 +2,7 @@ import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import { MetamaskSubprovider } from '@0x/subproviders'
 import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils } from '0x.js'
+import { assetDataUtils } from '@0x/order-utils'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -17,6 +18,7 @@ const getContractWrappers = async web3 => {
 }
 
 export const generateBid = ({ order, baseToken, quoteToken }) => {
+  order = convertOrderToDexFormat(order)
   const makerToken = order.makerAssetAddress === baseToken.address ? baseToken : quoteToken
   const takerToken = order.takerAssetAddress === baseToken.address ? baseToken : quoteToken
 
@@ -48,17 +50,14 @@ export const generateBid = ({ order, baseToken, quoteToken }) => {
     price = makerAmount.dividedBy(takerAmount)
   }
 
-  const bid = {
+  return {
     order,
     price,
-    maker: order.maker,
     makerToken,
     takerToken,
     makerAmount,
     takerAmount
   }
-
-  return bid
 }
 
 export const getEthBalance = (web3, address) => {
@@ -176,8 +175,9 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
     takerAddress: NULL_ADDRESS,
     senderAddress: NULL_ADDRESS,
     feeRecipientAddress: NULL_ADDRESS,
-    makerAssetData: makerToken.address.toLowerCase(),
-    takerAssetData: takerToken.address.toLowerCase(),
+    // TODO Discovery encoding method, read about tokenId for encodeERC721AssetData
+    makerAssetData: assetDataUtils.encodeERC20AssetData(makerToken.address.toLowerCase()),
+    takerAssetData: assetDataUtils.encodeERC20AssetData(takerToken.address.toLowerCase()),
     exchangeAddress: EXCHANGE_ADDRESS,
     salt: generatePseudoRandomSalt(),
     makerFee: new BigNumber(0),
@@ -187,19 +187,12 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
     expirationTimeSeconds: new BigNumber(parseInt(Date.now() / 1000 + 3600 * 24, 10)) // Valid for up to a day
   }
 
-  const orderHash = orderHashUtils.getOrderHashHex(order)
-
-  const ecSignature = await signatureUtils.ecSignHashAsync(new MetamaskSubprovider(web3.currentProvider), orderHash, makerAddress) //, signatureType)
-
-  const signedOrder = {
-    ...order,
-    orderHash,
-    ecSignature,
-    makerAssetAddress: makerToken.address,
-    takerAssetAddress: takerToken.address
-  }
-
-  return signedOrder
+  // signed order
+  return signatureUtils.ecSignOrderAsync(
+    new MetamaskSubprovider(web3.currentProvider),
+    order,
+    makerAddress
+  )
 }
 
 export const makeMarketOrderAsync = async (web3, account, ordersToCheck, amount) => {
@@ -261,4 +254,19 @@ export const sendUnwrapWethTx = async (web3, account, wethToken, amount) => {
   })
 
   return txHash
+}
+
+export const convertOrderToDexFormat = order => {
+  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.makerAssetData)
+  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.takerAssetData)
+  const orderHash = orderHashUtils.getOrderHashHex(order)
+
+  return {
+    ...order,
+    orderHash,
+    makerAssetAddress: decodedMakerAssetData.tokenAddress,
+    takerAssetAddress: decodedTakerAssetData.tokenAddress,
+    makerAssetProxyId: decodedMakerAssetData.assetProxyId,
+    takerAssetProxyId: decodedTakerAssetData.assetProxyId
+  }
 }

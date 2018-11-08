@@ -93,8 +93,8 @@ class V1OwnController {
         expirationTimeSeconds: MoreThan(currentUnixtime)
       },
       order: {
-        expirationTimeSeconds: "ASC",
-        id: "DESC"
+        expirationTimeSeconds: 'ASC',
+        id: 'DESC'
       }
     })
 
