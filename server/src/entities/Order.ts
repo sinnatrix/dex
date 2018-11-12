@@ -1,75 +1,69 @@
-import { EntitySchema } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
 
-const Order = new EntitySchema({
-  name: 'Order',
-  tableName: 'orders',
-  columns: {
-    id: {
-      type: 'bigint',
-      primary: true,
-      generated: true
-    },
-    signature: {
-      type: 'varchar'
-    },
-    orderHash: {
-      type: 'varchar'
-    },
-    exchangeAddress: {
-      type: 'varchar'
-    },
-    makerAddress: {
-      type: 'varchar'
-    },
-    takerAddress: {
-      type: 'varchar'
-    },
-    senderAddress: {
-      type: 'varchar'
-    },
-    feeRecipientAddress: {
-      type: 'varchar'
-    },
-    makerAssetAmount: {
-      type: 'varchar'
-    },
-    takerAssetAmount: {
-      type: 'varchar'
-    },
-    amountFilled: {
-      type: 'varchar'
-    },
-    makerAssetAddress: {
-      type: 'varchar'
-    },
-    takerAssetAddress: {
-      type: 'varchar'
-    },
-    makerAssetProxyId: {
-      type: 'varchar'
-    },
-    takerAssetProxyId: {
-      type: 'varchar'
-    },
-    makerFee: {
-      type: 'varchar'
-    },
-    takerFee: {
-      type: 'varchar'
-    },
-    expirationTimeSeconds: {
-      type: 'varchar'
-    },
-    makerAssetData: {
-      type: 'varchar'
-    },
-    takerAssetData: {
-      type: 'varchar'
-    },
-    salt: {
-      type: 'varchar'
-    }
-  }
-})
+@Entity('orders')
+export default class Order  {
+  @PrimaryGeneratedColumn()
+  id: 'bigint'
 
-export default Order
+  /** SRA v2.0.0 order attributes */
+  @Column()
+  makerAddress: 'string'
+
+  @Column()
+  takerAddress: 'string'
+
+  @Column()
+  feeRecipientAddress: 'string'
+
+  @Column()
+  senderAddress: 'string'
+
+  @Column()
+  makerAssetAmount: 'string'
+
+  @Column()
+  takerAssetAmount: 'string'
+
+  @Column()
+  makerFee: 'string'
+
+  @Column()
+  takerFee: 'string'
+
+  @Column()
+  expirationTimeSeconds: 'string'
+
+  @Column()
+  salt: 'string'
+  
+  @Column()
+  makerAssetData: 'string'
+  
+  @Column()
+  takerAssetData: 'string'
+  
+  @Column()
+  exchangeAddress: 'string'
+  
+  @Column()
+  signature: 'string'
+  /** End of SRA v 2.0.0 order specification */
+
+  @Column()
+  orderHash: 'string'
+
+  @Column()
+  makerAssetProxyId: 'string'
+
+  @Column()
+  takerAssetProxyId: 'string'
+
+  @Column()
+  makerAssetAddress: 'string'
+
+  @Column()
+  takerAssetAddress: 'string'
+
+  @Column()
+  amountFilled: 'string'
+}
