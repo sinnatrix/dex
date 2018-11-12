@@ -36,6 +36,9 @@ const Order = new EntitySchema({
     takerAssetAmount: {
       type: 'varchar'
     },
+    amountFilled: {
+      type: 'varchar'
+    },
     makerAssetAddress: {
       type: 'varchar'
     },
