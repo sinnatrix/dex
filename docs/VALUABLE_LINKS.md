@@ -14,6 +14,7 @@
 * [https://github.com/ethereum/wiki/wiki/JavaScript-API#web3ethgetbalance](https://github.com/ethereum/wiki/wiki/JavaScript-API#web3ethgetbalance)
 * [http://mikemcl.github.io/bignumber.js/](http://mikemcl.github.io/bignumber.js/)
 * [https://app.radarrelay.com/ZRX/WETH](https://app.radarrelay.com/ZRX/WETH)
+* [0x Exchange getOrderInfo contract method, including statuses logic](https://github.com/0xProject/0x-monorepo/blob/e62458705039f6a187ff23e4e4ee1737476eb431/packages/contracts/contracts/protocol/Exchange/MixinExchangeCore.sol#L121)
 
 Get eth on kovan network:
 * [https://gitter.im/kovan-testnet/faucet](https://gitter.im/kovan-testnet/faucet)
