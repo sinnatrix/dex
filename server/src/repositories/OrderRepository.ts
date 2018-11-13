@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not, LessThan } from 'typeorm'
+import { EntityRepository, Repository, Not, LessThan, MoreThan } from 'typeorm'
 import Order from '../entities/Order'
 import { convertOrderToSRA2Format } from '../utils/helpers'
 
@@ -20,7 +20,8 @@ class OrderRepository extends Repository<any> {
       where: {
         takerAssetData: baseAssetData,
         makerAssetData: quoteAssetData,
-        expirationTimeSeconds: Not(LessThan(currentTs))
+        expirationTimeSeconds: Not(LessThan(currentTs)),
+        remainingTakerAssetAmount: MoreThan(0)
       },
       skip,
       take
@@ -30,7 +31,8 @@ class OrderRepository extends Repository<any> {
       where: {
         takerAssetData: quoteAssetData,
         makerAssetData: baseAssetData,
-        expirationTimeSeconds: Not(LessThan(currentTs))
+        expirationTimeSeconds: Not(LessThan(currentTs)),
+        remainingTakerAssetAmount: MoreThan(0)
       },
       skip,
       take

@@ -127,7 +127,7 @@ class V1OwnController {
       parseInt(filledTakerAssetAmount, 10)
 
     if (parseInt(existsOrder.remainingTakerAssetAmount, 10) === remainingTakerAssetAmount) {
-      res.send('Nothing to update')
+      res.status(200).json(existsOrder)
       return null
     }
 
