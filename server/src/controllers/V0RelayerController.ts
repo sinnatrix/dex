@@ -111,7 +111,6 @@ class V0RelayerController {
       validateNetworkId(params.networkId)
     ].filter(one => !!one)
 
-
     if (validationErrors.length > 0) {
       res.status(400)
       res.send(JSON.stringify({

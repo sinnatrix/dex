@@ -1,7 +1,6 @@
 import { EntityRepository, Repository, Not, LessThan } from 'typeorm'
 import Order from '../entities/Order'
 import { convertOrderToSRA2Format } from '../utils/helpers'
-import * as R from 'ramda'
 
 @EntityRepository(Order as any)
 class OrderRepository extends Repository<any> {

@@ -1,8 +1,14 @@
 import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import { MetamaskSubprovider } from '@0x/subproviders'
-import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils } from '0x.js'
+import {
+  ContractWrappers,
+  orderHashUtils,
+  generatePseudoRandomSalt,
+  signatureUtils
+} from '0x.js'
 import { assetDataUtils } from '@0x/order-utils'
+import pick from 'ramda/es/pick'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -117,7 +123,7 @@ export const sendTransaction = (web3, tx) => {
 
 export const awaitTransaction = async (web3, txHash) => {
   const web3Wrapper = await getWeb3Wrapper(web3)
-  await web3Wrapper.awaitTransactionMinedAsync(txHash)
+  return web3Wrapper.awaitTransactionMinedAsync(txHash)
 }
 
 export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddress) => {
@@ -256,12 +262,30 @@ export const sendUnwrapWethTx = async (web3, account, wethToken, amount) => {
   return txHash
 }
 
+export const convertOrderToSRA2Format = pick([
+  'makerAddress',
+  'takerAddress',
+  'feeRecipientAddress',
+  'senderAddress',
+  'makerAssetAmount',
+  'takerAssetAmount',
+  'makerFee',
+  'takerFee',
+  'expirationTimeSeconds',
+  'salt',
+  'makerAssetData',
+  'takerAssetData',
+  'exchangeAddress',
+  'signature'
+])
+
 export const convertOrderToDexFormat = order => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.makerAssetData)
   const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.takerAssetData)
   const orderHash = orderHashUtils.getOrderHashHex(order)
 
   return {
+    remainingTakerAssetAmount: order.takerAssetAmount,
     ...order,
     orderHash,
     makerAssetAddress: decodedMakerAssetData.tokenAddress,
@@ -269,4 +293,34 @@ export const convertOrderToDexFormat = order => {
     makerAssetProxyId: decodedMakerAssetData.assetProxyId,
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
+}
+
+/**
+ *
+ * @param web3
+ * @param account string Taker Address HexString leaded by 0x
+ * @param order {Object} Signed order or DexOrder
+ * @param amount number Will be converted to BigNumber and then to BaseUnitAmount
+ * @returns {Promise<void>}
+ */
+export const fillOrderAsync = async (web3, account, order, amount) => {
+  const contractWrappers = await getContractWrappers(web3)
+
+  try {
+    await contractWrappers.exchange.validateOrderFillableOrThrowAsync(order)
+  } catch (e) {
+    console.warn('Order cannot be fulfilled')
+    return null
+  }
+
+  // TODO remove magic number '18' and get value from database token decimals
+  const takerAssetFillAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(amount), 18)
+
+  const fillingResult = await contractWrappers.exchange.fillOrderAsync(
+    order,
+    takerAssetFillAmount,
+    account
+  )
+
+  return fillingResult
 }

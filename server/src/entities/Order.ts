@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
 
 @Entity('orders')
-export default class Order  {
+export default class Order {
   @PrimaryGeneratedColumn()
   id: 'bigint'
 
@@ -35,16 +35,16 @@ export default class Order  {
 
   @Column()
   salt: 'string'
-  
+
   @Column()
   makerAssetData: 'string'
-  
+
   @Column()
   takerAssetData: 'string'
-  
+
   @Column()
   exchangeAddress: 'string'
-  
+
   @Column()
   signature: 'string'
 

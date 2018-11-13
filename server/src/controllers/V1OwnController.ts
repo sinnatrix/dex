@@ -10,13 +10,17 @@ class V1OwnController {
   tokenRepository: any
   relayerRepository: any
   orderRepository: any
+  orderBlockchainService: any
+  wsRelayerServer: any
 
-  constructor ({ connection, application }) {
+  constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
     this.application = application
 
     this.tokenRepository = connection.getRepository(Token)
     this.relayerRepository = connection.getRepository(Relayer)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
+    this.orderBlockchainService = orderBlockchainService
+    this.wsRelayerServer = wsRelayerServer
   }
 
   attach () {
@@ -25,6 +29,7 @@ class V1OwnController {
     router.get('/relayers', this.getRelayers.bind(this))
     router.get('/tokens', this.getTokens.bind(this))
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
+    router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.post('/orders', this.createOrder.bind(this))
@@ -99,6 +104,45 @@ class V1OwnController {
     })
 
     res.json(accountOrders)
+  }
+
+  async refreshOrder (req, res) {
+    const { hash: orderHash } = req.params
+
+    const existsOrder = await this.orderRepository.findOne({ orderHash })
+
+    if (!existsOrder) {
+      res.status(404).send('Not found')
+      throw new Error('Order not found')
+    }
+
+    // request order from blockchain
+    // get remainingTakerAssetAmount
+    // compare remaining values & update order in DB
+    // push updated order via WsRealayerServer
+
+    const filledTakerAssetAmount = await this.orderBlockchainService.getFilledTakerAssetAmount(orderHash)
+
+    const remainingTakerAssetAmount = parseInt(existsOrder.takerAssetAmount, 10) -
+      parseInt(filledTakerAssetAmount, 10)
+
+    if (parseInt(existsOrder.remainingTakerAssetAmount, 10) === remainingTakerAssetAmount) {
+      res.send('Nothing to update')
+      return null
+    }
+
+    const orderForSave = {
+      ...existsOrder,
+      remainingTakerAssetAmount
+    }
+
+    await this.orderRepository.save(orderForSave)
+
+    this.wsRelayerServer.pushOrder(orderForSave)
+
+    res.status(200).json(orderForSave)
+
+    return null
   }
 }
 
