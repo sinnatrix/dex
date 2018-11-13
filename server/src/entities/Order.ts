@@ -47,6 +47,10 @@ export default class Order  {
   
   @Column()
   signature: 'string'
+
+  // usable in metaData
+  @Column()
+  remainingTakerAssetAmount: 'string'
   /** End of SRA v 2.0.0 order specification */
 
   @Column()
@@ -63,7 +67,4 @@ export default class Order  {
 
   @Column()
   takerAssetAddress: 'string'
-
-  @Column()
-  amountFilled: 'string'
 }
