@@ -193,6 +193,7 @@ export const addOrders = orders => (dispatch, getState) => {
   const askHashes = asks.map(one => one.order.orderHash)
 
   // TODO move logic to reducer
+  // TODO remove filled orders from state
   const newBids = expandedOrders.filter(isBid).filter(one => bidHashes.indexOf(one.order.orderHash) === -1)
   const newAsks = expandedOrders.filter(R.complement(isBid)).filter(one => askHashes.indexOf(one.order.orderHash) === -1)
 

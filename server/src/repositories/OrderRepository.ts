@@ -40,15 +40,9 @@ class OrderRepository extends Repository<any> {
 
     // TODO sort
 
-    const formattedBids = bids.map(bid => ({
-      order: convertOrderToSRA2Format(bid),
-      metaData: {}
-    }))
+    const formattedBids = bids.map(bid => (convertOrderToSRA2Format(bid)))
 
-    const formattedAsks = asks.map(ask => ({
-      order: convertOrderToSRA2Format(ask),
-      metaData: {}
-    }))
+    const formattedAsks = asks.map(ask => (convertOrderToSRA2Format(ask)))
 
     return {
       bids: {

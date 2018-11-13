@@ -98,7 +98,7 @@ class WsRelayerServer {
             type: 'update',
             channel: 'orders',
             requestId: subscription.requestId,
-            payload: [{ order: sra2Order }]
+            payload: [ sra2Order ]
           }
         ))
       })

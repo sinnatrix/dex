@@ -262,22 +262,28 @@ export const sendUnwrapWethTx = async (web3, account, wethToken, amount) => {
   return txHash
 }
 
-export const convertOrderToSRA2Format = pick([
-  'makerAddress',
-  'takerAddress',
-  'feeRecipientAddress',
-  'senderAddress',
-  'makerAssetAmount',
-  'takerAssetAmount',
-  'makerFee',
-  'takerFee',
-  'expirationTimeSeconds',
-  'salt',
-  'makerAssetData',
-  'takerAssetData',
-  'exchangeAddress',
-  'signature'
-])
+export const convertOrderToSRA2Format = order => ({
+  order: pick([
+    'makerAddress',
+    'takerAddress',
+    'feeRecipientAddress',
+    'senderAddress',
+    'makerAssetAmount',
+    'takerAssetAmount',
+    'makerFee',
+    'takerFee',
+    'expirationTimeSeconds',
+    'salt',
+    'makerAssetData',
+    'takerAssetData',
+    'exchangeAddress',
+    'signature'
+  ], order),
+  metaData: pick([
+    'orderHash',
+    'remainingTakerAssetAmount'
+  ], order)
+})
 
 export const convertOrderToDexFormat = order => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.makerAssetData)
