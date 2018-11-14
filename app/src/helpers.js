@@ -40,7 +40,8 @@ export const generateBid = ({ order, baseToken, quoteToken }) => {
     'makerAssetAmount',
     'salt',
     'takerFee',
-    'takerAssetAmount'
+    'takerAssetAmount',
+    'remainingTakerAssetAmount'
   ]
 
   order = decimalFields.reduce((agg, key) => ({
@@ -54,6 +55,13 @@ export const generateBid = ({ order, baseToken, quoteToken }) => {
   const takerAmount = order.takerAssetAmount.dividedBy(
     Math.pow(10, takerToken.decimals)
   )
+  const remainingTakerAmount = order.remainingTakerAssetAmount.dividedBy(
+    Math.pow(10, takerToken.decimals)
+  )
+  const coefficient = takerAmount.dividedBy(remainingTakerAmount)
+  const remainingMakerAmount = order.makerAssetAmount.dividedBy(
+    Math.pow(10, makerToken.decimals)
+  ).dividedBy(coefficient)
 
   let price
   if (order.takerAssetAddress === baseToken.address) {
@@ -68,7 +76,9 @@ export const generateBid = ({ order, baseToken, quoteToken }) => {
     makerToken,
     takerToken,
     makerAmount,
-    takerAmount
+    takerAmount,
+    remainingTakerAmount,
+    remainingMakerAmount
   }
 }
 

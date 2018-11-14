@@ -60,12 +60,16 @@ class OrdersTable extends React.Component {
           {
             Header: 'selling',
             id: 'selling',
-            accessor: order => order.spread ? null : `${order.makerAmount.toFixed(6)} ${order.makerToken.symbol}`
+            accessor: order => order.spread
+              ? null
+              : `${order.remainingMakerAmount.toFixed(6)} ${order.makerToken.symbol}`
           },
           {
             Header: 'buying',
             id: 'buying',
-            accessor: order => order.spread ? null : `${order.takerAmount.toFixed(6)} ${order.takerToken.symbol}`
+            accessor: order => order.spread
+              ? null
+              : `${order.remainingTakerAmount.toFixed(6)} ${order.takerToken.symbol}`
           },
           {
             Header: 'expires',
