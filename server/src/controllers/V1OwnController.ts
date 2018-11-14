@@ -1,10 +1,10 @@
 import * as express from 'express'
+import { BigNumber } from '@0x/utils'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
 import config from '../config'
 import { MoreThan } from 'typeorm'
-import BigNumber from 'bignumber.js'
 
 class V1OwnController {
   application: any
@@ -114,12 +114,12 @@ class V1OwnController {
 
     if (!order) {
       res.status(404).send('Not found')
-      throw new Error('Order not found')
+      return
     }
 
     const filledTakerAssetAmount = await this.orderBlockchainService.getFilledTakerAssetAmount(orderHash)
     const remainingTakerAssetAmount = (new BigNumber(order.takerAssetAmount))
-      .minus(new BigNumber(filledTakerAssetAmount))
+      .minus(new BigNumber(filledTakerAssetAmount)).toString()
 
     if (order.remainingTakerAssetAmount === remainingTakerAssetAmount) {
       res.status(200).json(order)

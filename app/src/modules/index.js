@@ -187,8 +187,8 @@ export const addOrders = orders => (dispatch, getState) => {
     highlight: true
   }))
 
-  const isBid = ({ order }) => order.makerAssetAddress === currentToken.address &&
-    order.takerAssetAddress === marketplaceToken.address
+  const isBid = ({ order }) => order.takerAssetAddress === currentToken.address &&
+    order.makerAssetAddress === marketplaceToken.address
 
   const newBids = expandedOrders.filter(isBid)
   const newAsks = expandedOrders.filter(R.complement(isBid))
@@ -197,7 +197,10 @@ export const addOrders = orders => (dispatch, getState) => {
     let newBidHashes = newBids.map(one => one.order.orderHash)
     let nextBids = bids.filter(one => newBidHashes.indexOf(one.order.orderHash) === -1)
     nextBids = [...nextBids, ...newBids]
-      .filter(one => one.order.remainingTakerAssetAmount !== '0')
+      .filter(one => {
+        console.log(one)
+        return one.order.remainingTakerAssetAmount !== '0'
+      })
     return sortBids(nextBids)
   }
 

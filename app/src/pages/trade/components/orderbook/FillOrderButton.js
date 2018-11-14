@@ -12,9 +12,9 @@ const connector = connect(
 
 class FillOrderButton extends React.Component {
   handleClick = async () => {
-    const { web3, order, fillOrder } = this.props
+    const { web3, order } = this.props
 
-    await fillOrder(web3, order)
+    await this.props.fillOrder(web3, order)
 
     await axios.get(`/api/v1/orders/${order.order.orderHash}/refresh`)
   }

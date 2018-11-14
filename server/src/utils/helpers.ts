@@ -40,4 +40,3 @@ export const convertOrderToDexFormat = order => {
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
 }
-

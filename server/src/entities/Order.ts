@@ -47,14 +47,15 @@ export default class Order {
 
   @Column()
   signature: 'string'
+  /** End of SRA v 2.0.0 order specification */
 
-  // usable in metaData
+  /** Start metaData */
   @Column()
   remainingTakerAssetAmount: 'string'
-  /** End of SRA v 2.0.0 order specification */
 
   @Column()
   orderHash: 'string'
+  /** End metaData */
 
   @Column()
   makerAssetProxyId: 'string'
