@@ -2,6 +2,7 @@ import React from 'react'
 import jss from 'react-jss'
 import format from 'date-fns/format'
 import ClipboardButton from './ClipboardButton'
+import FillOrderButton from './FillOrderButton'
 import createTrComponent from './createTrComponent'
 import ReactTable, { ReactTableDefaults } from 'react-table'
 import 'react-table/react-table.css'
@@ -11,13 +12,10 @@ ReactTableDefaults.TrComponent = createTrComponent(ReactTableDefaults.TrComponen
 
 const decorate = jss({
   root: {},
-  // row: {
-  //   transition: 'background-color 1000ms linear'
-  // },
   highlight: {
     backgroundColor: red[500]
   },
-  clipboardColumn: {
+  controlColumn: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -39,6 +37,7 @@ class OrdersTable extends React.Component {
   }
 
   render () {
+    /** @var orders array of bids */
     const { classes, orders } = this.props
     return (
       <ReactTable
@@ -83,7 +82,14 @@ class OrdersTable extends React.Component {
             id: 'clipboard',
             Cell: ({ original: order }) => order.spread ? null : <ClipboardButton order={order} />,
             width: 50,
-            className: classes.clipboardColumn
+            className: classes.controlColumn
+          },
+          {
+            Header: '',
+            id: 'fill',
+            Cell: ({ original: order }) => order.spread ? null : <FillOrderButton order={order} />,
+            width: 50,
+            className: classes.controlColumn
           }
         ]}
       />

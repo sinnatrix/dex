@@ -10,6 +10,8 @@ import ormconfig from '../ormconfig'
 import WsRelayerServer from './wsServers/WsRelayerServer'
 import V1OwnController from './controllers/V1OwnController'
 import V0RelayerController from './controllers/V0RelayerController'
+import BlockchainService from './services/BlockchainService'
+import OrderBlochainService from './services/OrderBlockainService'
 const { createContainer, asValue, asClass } = require('awilix')
 
 ;(async () => {
@@ -28,7 +30,9 @@ const { createContainer, asValue, asClass } = require('awilix')
     connection: asValue(connection),
     wsRelayerServer: asClass(WsRelayerServer).singleton(),
     v1OwnController: asClass(V1OwnController).singleton(),
-    v0RelayerController: asClass(V0RelayerController).singleton()
+    v0RelayerController: asClass(V0RelayerController).singleton(),
+    blockchainService: asClass(BlockchainService).singleton(),
+    orderBlockchainService: asClass(OrderBlochainService).singleton()
   })
 
   container.resolve('wsRelayerServer').attach()

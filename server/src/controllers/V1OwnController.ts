@@ -1,4 +1,5 @@
 import * as express from 'express'
+import { BigNumber } from '@0x/utils'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
@@ -10,13 +11,17 @@ class V1OwnController {
   tokenRepository: any
   relayerRepository: any
   orderRepository: any
+  orderBlockchainService: any
+  wsRelayerServer: any
 
-  constructor ({ connection, application }) {
+  constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
     this.application = application
 
     this.tokenRepository = connection.getRepository(Token)
     this.relayerRepository = connection.getRepository(Relayer)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
+    this.orderBlockchainService = orderBlockchainService
+    this.wsRelayerServer = wsRelayerServer
   }
 
   attach () {
@@ -25,6 +30,7 @@ class V1OwnController {
     router.get('/relayers', this.getRelayers.bind(this))
     router.get('/tokens', this.getTokens.bind(this))
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
+    router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.post('/orders', this.createOrder.bind(this))
@@ -99,6 +105,37 @@ class V1OwnController {
     })
 
     res.json(accountOrders)
+  }
+
+  async refreshOrder (req, res) {
+    const { hash: orderHash } = req.params
+
+    const order = await this.orderRepository.findOne({ orderHash })
+
+    if (!order) {
+      res.status(404).send('Not found')
+      return
+    }
+
+    const filledTakerAssetAmount = await this.orderBlockchainService.getFilledTakerAssetAmount(orderHash)
+    const remainingTakerAssetAmount = (new BigNumber(order.takerAssetAmount))
+      .minus(new BigNumber(filledTakerAssetAmount)).toString()
+
+    if (order.remainingTakerAssetAmount === remainingTakerAssetAmount) {
+      res.status(200).json(order)
+      return
+    }
+
+    const orderForSave = {
+      ...order,
+      remainingTakerAssetAmount
+    }
+
+    await this.orderRepository.save(orderForSave)
+
+    res.status(200).json(orderForSave)
+
+    this.wsRelayerServer.pushOrder(orderForSave)
   }
 }
 

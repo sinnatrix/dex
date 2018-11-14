@@ -1,7 +1,6 @@
-import { EntityRepository, Repository, Not, LessThan } from 'typeorm'
+import { EntityRepository, Repository, Not, LessThan, Equal } from 'typeorm'
 import Order from '../entities/Order'
 import { convertOrderToSRA2Format } from '../utils/helpers'
-import * as R from 'ramda'
 
 @EntityRepository(Order as any)
 class OrderRepository extends Repository<any> {
@@ -21,7 +20,8 @@ class OrderRepository extends Repository<any> {
       where: {
         takerAssetData: baseAssetData,
         makerAssetData: quoteAssetData,
-        expirationTimeSeconds: Not(LessThan(currentTs))
+        expirationTimeSeconds: Not(LessThan(currentTs)),
+        remainingTakerAssetAmount: Not(Equal('0'))
       },
       skip,
       take
@@ -31,7 +31,8 @@ class OrderRepository extends Repository<any> {
       where: {
         takerAssetData: quoteAssetData,
         makerAssetData: baseAssetData,
-        expirationTimeSeconds: Not(LessThan(currentTs))
+        expirationTimeSeconds: Not(LessThan(currentTs)),
+        remainingTakerAssetAmount: Not(Equal('0'))
       },
       skip,
       take
@@ -39,15 +40,8 @@ class OrderRepository extends Repository<any> {
 
     // TODO sort
 
-    const formattedBids = bids.map(bid => ({
-      order: convertOrderToSRA2Format(bid),
-      metaData: {}
-    }))
-
-    const formattedAsks = asks.map(ask => ({
-      order: convertOrderToSRA2Format(ask),
-      metaData: {}
-    }))
+    const formattedBids = bids.map(convertOrderToSRA2Format)
+    const formattedAsks = asks.map(convertOrderToSRA2Format)
 
     return {
       bids: {

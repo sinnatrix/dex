@@ -1,8 +1,13 @@
 import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import { MetamaskSubprovider } from '@0x/subproviders'
-import { ContractWrappers, orderHashUtils, generatePseudoRandomSalt, signatureUtils } from '0x.js'
+import {
+  ContractWrappers,
+  generatePseudoRandomSalt,
+  signatureUtils
+} from '0x.js'
 import { assetDataUtils } from '@0x/order-utils'
+import pick from 'ramda/es/pick'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -17,8 +22,15 @@ const getContractWrappers = async web3 => {
   return new ContractWrappers(web3.currentProvider, { networkId })
 }
 
+/**
+ * @param order
+ * @param baseToken
+ * @param quoteToken
+ * @returns {{order, price: BigNumber, makerToken: *, takerToken: *, makerAmount: BigNumber, takerAmount: BigNumber}}
+ */
 export const generateBid = ({ order, baseToken, quoteToken }) => {
   order = convertOrderToDexFormat(order)
+
   const makerToken = order.makerAssetAddress === baseToken.address ? baseToken : quoteToken
   const takerToken = order.takerAssetAddress === baseToken.address ? baseToken : quoteToken
 
@@ -117,7 +129,20 @@ export const sendTransaction = (web3, tx) => {
 
 export const awaitTransaction = async (web3, txHash) => {
   const web3Wrapper = await getWeb3Wrapper(web3)
-  await web3Wrapper.awaitTransactionMinedAsync(txHash)
+  let txReceipt = await web3Wrapper.awaitTransactionSuccessAsync(txHash)
+
+  let i = 1
+  while (!txReceipt.blockNumber) {
+    await delay(100 * i)
+    const result = await web3Wrapper.getTransactionReceiptAsync(txHash)
+    if (result) {
+      txReceipt = result
+    }
+
+    i++
+  }
+
+  return txReceipt
 }
 
 export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddress) => {
@@ -129,8 +154,6 @@ export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddres
   )
 
   await awaitTransaction(web3, txHash)
-
-  delay(200)
 }
 
 export const getTokenAllowance = async (web3, account, tokenAddress) => {
@@ -159,8 +182,6 @@ export const setZeroTokenAllowanceAsync = async (web3, account, tokenAddress) =>
   )
 
   await awaitTransaction(web3, txHash)
-
-  delay(200)
 }
 
 export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmount, takerToken, takerAmount }) => {
@@ -256,17 +277,67 @@ export const sendUnwrapWethTx = async (web3, account, wethToken, amount) => {
   return txHash
 }
 
+export const convertOrderToSRA2Format = order => ({
+  order: pick([
+    'makerAddress',
+    'takerAddress',
+    'feeRecipientAddress',
+    'senderAddress',
+    'makerAssetAmount',
+    'takerAssetAmount',
+    'makerFee',
+    'takerFee',
+    'expirationTimeSeconds',
+    'salt',
+    'makerAssetData',
+    'takerAssetData',
+    'exchangeAddress',
+    'signature'
+  ], order),
+  metaData: pick([
+    'orderHash',
+    'remainingTakerAssetAmount'
+  ], order)
+})
+
 export const convertOrderToDexFormat = order => {
-  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.makerAssetData)
-  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.takerAssetData)
-  const orderHash = orderHashUtils.getOrderHashHex(order)
+  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
+  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
 
   return {
-    ...order,
-    orderHash,
+    ...order.order,
+    ...order.metaData,
     makerAssetAddress: decodedMakerAssetData.tokenAddress,
     takerAssetAddress: decodedTakerAssetData.tokenAddress,
     makerAssetProxyId: decodedMakerAssetData.assetProxyId,
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
+}
+
+/**
+ *
+ * @param web3
+ * @param account string Taker Address HexString leaded by 0x
+ * @param order {Object} Signed order with metaData
+ * @param amount number Will be converted to BigNumber and then to BaseUnitAmount
+ * @returns {Promise} txHash
+ */
+export const fillOrderAsync = async (web3, account, order, amount) => {
+  const contractWrappers = await getContractWrappers(web3)
+
+  try {
+    await contractWrappers.exchange.validateOrderFillableOrThrowAsync(order)
+  } catch (e) {
+    console.warn('Order cannot be fulfilled')
+    return null
+  }
+
+  // TODO remove magic number '18' and get value from database token decimals
+  const takerAssetFillAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(amount), 18)
+
+  return contractWrappers.exchange.fillOrderAsync(
+    order,
+    takerAssetFillAmount,
+    account
+  )
 }
