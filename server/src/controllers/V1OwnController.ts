@@ -4,6 +4,7 @@ import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
 import config from '../config'
 import { MoreThan } from 'typeorm'
+import BigNumber from 'bignumber.js'
 
 class V1OwnController {
   application: any
@@ -109,23 +110,24 @@ class V1OwnController {
   async refreshOrder (req, res) {
     const { hash: orderHash } = req.params
 
-    const existsOrder = await this.orderRepository.findOne({ orderHash })
+    const order = await this.orderRepository.findOne({ orderHash })
 
-    if (!existsOrder) {
+    if (!order) {
       res.status(404).send('Not found')
       throw new Error('Order not found')
     }
 
     const filledTakerAssetAmount = await this.orderBlockchainService.getFilledTakerAssetAmount(orderHash)
-    const remainingTakerAssetAmount = existsOrder.takerAssetAmount - filledTakerAssetAmount
+    const remainingTakerAssetAmount = (new BigNumber(order.takerAssetAmount))
+      .minus(new BigNumber(filledTakerAssetAmount))
 
-    if (parseInt(existsOrder.remainingTakerAssetAmount, 10) === remainingTakerAssetAmount) {
-      res.status(200).json(existsOrder)
+    if (order.remainingTakerAssetAmount === remainingTakerAssetAmount) {
+      res.status(200).json(order)
       return
     }
 
     const orderForSave = {
-      ...existsOrder,
+      ...order,
       remainingTakerAssetAmount
     }
 

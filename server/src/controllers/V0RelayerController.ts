@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import * as express from 'express'
 import { BigNumber } from '@0x/utils'
+import { orderHashUtils } from '0x.js'
 import log from '../utils/log'
 import OrderRepository from '../repositories/OrderRepository'
 import Token from '../entities/Token'
@@ -152,7 +153,15 @@ class V0RelayerController {
     const order = req.body
     log.info({ order }, 'HTTP: POST order')
 
-    const orderToSave = convertOrderToDexFormat(order)
+    const sra2Order = {
+      order,
+      metaData: {
+        orderHash: orderHashUtils.getOrderHashHex(order),
+        remainingTakerAssetAmount: order.takerAssetAmount
+      }
+    }
+
+    const orderToSave = convertOrderToDexFormat(sra2Order)
 
     await this.orderRepository.save(orderToSave)
 

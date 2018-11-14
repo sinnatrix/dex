@@ -153,7 +153,7 @@ export const setOrderbook = ({ bids, asks }) => (dispatch, getState) => {
 
   const formattedBids = bids.records.map(
     order => generateBid({
-      order: order,
+      order,
       baseToken: marketplaceToken,
       quoteToken: currentToken
     })
@@ -164,7 +164,7 @@ export const setOrderbook = ({ bids, asks }) => (dispatch, getState) => {
 
   const formattedAsks = asks.records.map(
     order => generateBid({
-      order: order,
+      order,
       baseToken: marketplaceToken,
       quoteToken: currentToken
     })
@@ -197,7 +197,7 @@ export const addOrders = orders => (dispatch, getState) => {
     let newBidHashes = newBids.map(one => one.order.orderHash)
     let nextBids = bids.filter(one => newBidHashes.indexOf(one.order.orderHash) === -1)
     nextBids = [...nextBids, ...newBids]
-      .filter(one => one.order.remainingTakerAssetAmount > 0)
+      .filter(one => one.order.remainingTakerAssetAmount !== '0')
     return sortBids(nextBids)
   }
 

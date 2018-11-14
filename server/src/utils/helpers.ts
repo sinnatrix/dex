@@ -28,17 +28,16 @@ export const convertOrderToSRA2Format = order => ({
 })
 
 export const convertOrderToDexFormat = order => {
-  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.makerAssetData)
-  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.takerAssetData)
-  const orderHash = orderHashUtils.getOrderHashHex(order)
+  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
+  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
 
   return {
-    remainingTakerAssetAmount: order.takerAssetAmount,
-    ...order,
-    orderHash,
+    ...order.order,
+    ...order.metaData,
     makerAssetAddress: decodedMakerAssetData.tokenAddress,
     takerAssetAddress: decodedTakerAssetData.tokenAddress,
     makerAssetProxyId: decodedMakerAssetData.assetProxyId,
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
 }
+

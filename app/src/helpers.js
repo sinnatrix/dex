@@ -320,7 +320,7 @@ export const convertOrderToDexFormat = order => {
  * @param account string Taker Address HexString leaded by 0x
  * @param order {Object} Signed order with metaData
  * @param amount number Will be converted to BigNumber and then to BaseUnitAmount
- * @returns {Promise<void>}
+ * @returns {Promise} txHash
  */
 export const fillOrderAsync = async (web3, account, order, amount) => {
   const contractWrappers = await getContractWrappers(web3)
@@ -335,11 +335,9 @@ export const fillOrderAsync = async (web3, account, order, amount) => {
   // TODO remove magic number '18' and get value from database token decimals
   const takerAssetFillAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(amount), 18)
 
-  const fillingResult = await contractWrappers.exchange.fillOrderAsync(
+  return contractWrappers.exchange.fillOrderAsync(
     order,
     takerAssetFillAmount,
     account
   )
-
-  return fillingResult
 }
