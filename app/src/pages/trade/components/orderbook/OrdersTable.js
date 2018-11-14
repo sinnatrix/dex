@@ -12,9 +12,6 @@ ReactTableDefaults.TrComponent = createTrComponent(ReactTableDefaults.TrComponen
 
 const decorate = jss({
   root: {},
-  // row: {
-  //   transition: 'background-color 1000ms linear'
-  // },
   highlight: {
     backgroundColor: red[500]
   },
@@ -40,6 +37,7 @@ class OrdersTable extends React.Component {
   }
 
   render () {
+    /** @var orders array of bids */
     const { classes, orders } = this.props
     return (
       <ReactTable
@@ -89,7 +87,7 @@ class OrdersTable extends React.Component {
           {
             Header: '',
             id: 'fill',
-            Cell: ({ original: order }) => order.spread ? null : <FillOrderButton order={order.order} />,
+            Cell: ({ original: order }) => order.spread ? null : <FillOrderButton order={order} />,
             width: 50,
             className: classes.controlColumn
           }

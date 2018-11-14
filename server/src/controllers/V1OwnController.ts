@@ -116,19 +116,12 @@ class V1OwnController {
       throw new Error('Order not found')
     }
 
-    // request order from blockchain
-    // get remainingTakerAssetAmount
-    // compare remaining values & update order in DB
-    // push updated order via WsRealayerServer
-
     const filledTakerAssetAmount = await this.orderBlockchainService.getFilledTakerAssetAmount(orderHash)
-
-    const remainingTakerAssetAmount = parseInt(existsOrder.takerAssetAmount, 10) -
-      parseInt(filledTakerAssetAmount, 10)
+    const remainingTakerAssetAmount = existsOrder.takerAssetAmount - filledTakerAssetAmount
 
     if (parseInt(existsOrder.remainingTakerAssetAmount, 10) === remainingTakerAssetAmount) {
       res.status(200).json(existsOrder)
-      return null
+      return
     }
 
     const orderForSave = {
@@ -138,11 +131,9 @@ class V1OwnController {
 
     await this.orderRepository.save(orderForSave)
 
-    this.wsRelayerServer.pushOrder(orderForSave)
-
     res.status(200).json(orderForSave)
 
-    return null
+    this.wsRelayerServer.pushOrder(orderForSave)
   }
 }
 

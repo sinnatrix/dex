@@ -8,11 +8,12 @@ import {
   setUnlimitedTokenAllowanceAsync,
   getTokenAllowance,
   setZeroTokenAllowanceAsync,
-  delay,
   makeLimitOrderAsync,
   makeMarketOrderAsync,
   sendUnwrapWethTx,
-  sendWrapWethTx
+  sendWrapWethTx,
+  convertOrderToSRA2Format,
+  fillOrderAsync
 } from '../helpers'
 import { getToken } from 'selectors'
 import { assetDataUtils } from '@0x/order-utils'
@@ -152,7 +153,7 @@ export const setOrderbook = ({ bids, asks }) => (dispatch, getState) => {
 
   const formattedBids = bids.records.map(
     order => generateBid({
-      order: order.order,
+      order: order,
       baseToken: marketplaceToken,
       quoteToken: currentToken
     })
@@ -163,7 +164,7 @@ export const setOrderbook = ({ bids, asks }) => (dispatch, getState) => {
 
   const formattedAsks = asks.records.map(
     order => generateBid({
-      order: order.order,
+      order: order,
       baseToken: marketplaceToken,
       quoteToken: currentToken
     })
@@ -179,7 +180,7 @@ export const addOrders = orders => (dispatch, getState) => {
   // order is in SRA2 format { order: {}, metaData: {} }
   const expandedOrders = orders.map(order => ({
     ...generateBid({
-      order: order.order,
+      order,
       baseToken: marketplaceToken,
       quoteToken: currentToken
     }),
@@ -189,24 +190,27 @@ export const addOrders = orders => (dispatch, getState) => {
   const isBid = ({ order }) => order.makerAssetAddress === currentToken.address &&
     order.takerAssetAddress === marketplaceToken.address
 
-  const bidHashes = bids.map(one => one.order.orderHash)
-  const askHashes = asks.map(one => one.order.orderHash)
+  const newBids = expandedOrders.filter(isBid)
+  const newAsks = expandedOrders.filter(R.complement(isBid))
 
-  // TODO move logic to reducer
-  // TODO remove filled orders from state
-  const newBids = expandedOrders.filter(isBid).filter(one => bidHashes.indexOf(one.order.orderHash) === -1)
-  const newAsks = expandedOrders.filter(R.complement(isBid)).filter(one => askHashes.indexOf(one.order.orderHash) === -1)
+  const calcBids = (bids, newBids) => {
+    let newBidHashes = newBids.map(one => one.order.orderHash)
+    let nextBids = bids.filter(one => newBidHashes.indexOf(one.order.orderHash) === -1)
+    nextBids = [...nextBids, ...newBids]
+      .filter(one => one.order.remainingTakerAssetAmount > 0)
+    return sortBids(nextBids)
+  }
 
   if (newBids.length > 0) {
-    const sortedBids = sortBids([...bids, ...newBids])
-
-    dispatch(setBids(sortedBids))
+    dispatch(setBids(
+      calcBids(bids, newBids)
+    ))
   }
 
   if (newAsks.length > 0) {
-    const sortedAsks = sortBids([...asks, ...newAsks])
-
-    dispatch(setAsks(sortedAsks))
+    dispatch(setAsks(
+      calcBids(asks, newAsks)
+    ))
   }
 
   dispatch(resetHighlighting())
@@ -278,6 +282,24 @@ export const loadTokenBalance = (web3, token) => async (dispatch, getState) => {
   dispatch(setTokenBalance(token.symbol, balance))
 }
 
+export const fillOrder = (web3, order) => async (dispatch, getState) => {
+  const { account } = getState()
+  const sra2Order = convertOrderToSRA2Format(order.order)
+
+  const txHash = await fillOrderAsync(
+    web3,
+    account,
+    sra2Order.order,
+    sra2Order.order.takerAssetAmount
+  )
+
+  if (!txHash) {
+    throw new Error('txHash is invalid!')
+  }
+
+  await awaitTransaction(web3, txHash)
+}
+
 export const makeLimitOrder = (web3, { type, amount, price }) => async (dispatch, getState) => {
   const { marketplaceToken, currentToken, account } = getState()
 
@@ -327,10 +349,8 @@ export const wrapEth = (web3, amount) => async (dispatch, getState) => {
 
   await awaitTransaction(web3, txHash)
 
-  await delay(2000)
   dispatch(loadTokenBalance(web3, wethToken))
 
-  await delay(3000)
   dispatch(loadEthBalance(web3))
 }
 
@@ -347,10 +367,7 @@ export const unwrapWeth = (web3, amount) => async (dispatch, getState) => {
 
   await awaitTransaction(web3, txHash)
 
-  await delay(2000)
   dispatch(loadTokenBalance(web3, wethToken))
-
-  await delay(3000)
   dispatch(loadEthBalance(web3))
 }
 

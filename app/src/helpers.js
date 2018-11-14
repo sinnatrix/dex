@@ -3,7 +3,6 @@ import { Web3Wrapper } from '@0x/web3-wrapper'
 import { MetamaskSubprovider } from '@0x/subproviders'
 import {
   ContractWrappers,
-  orderHashUtils,
   generatePseudoRandomSalt,
   signatureUtils
 } from '0x.js'
@@ -23,8 +22,15 @@ const getContractWrappers = async web3 => {
   return new ContractWrappers(web3.currentProvider, { networkId })
 }
 
+/**
+ * @param order
+ * @param baseToken
+ * @param quoteToken
+ * @returns {{order, price: BigNumber, makerToken: *, takerToken: *, makerAmount: BigNumber, takerAmount: BigNumber}}
+ */
 export const generateBid = ({ order, baseToken, quoteToken }) => {
   order = convertOrderToDexFormat(order)
+
   const makerToken = order.makerAssetAddress === baseToken.address ? baseToken : quoteToken
   const takerToken = order.takerAssetAddress === baseToken.address ? baseToken : quoteToken
 
@@ -123,7 +129,20 @@ export const sendTransaction = (web3, tx) => {
 
 export const awaitTransaction = async (web3, txHash) => {
   const web3Wrapper = await getWeb3Wrapper(web3)
-  return web3Wrapper.awaitTransactionMinedAsync(txHash)
+  let txReceipt = await web3Wrapper.awaitTransactionSuccessAsync(txHash)
+
+  let i = 1
+  while (!txReceipt.blockNumber) {
+    await delay(100 * i)
+    const result = await web3Wrapper.getTransactionReceiptAsync(txHash)
+    if (result) {
+      txReceipt = result
+    }
+
+    i++
+  }
+
+  return txReceipt
 }
 
 export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddress) => {
@@ -135,8 +154,6 @@ export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddres
   )
 
   await awaitTransaction(web3, txHash)
-
-  delay(200)
 }
 
 export const getTokenAllowance = async (web3, account, tokenAddress) => {
@@ -165,8 +182,6 @@ export const setZeroTokenAllowanceAsync = async (web3, account, tokenAddress) =>
   )
 
   await awaitTransaction(web3, txHash)
-
-  delay(200)
 }
 
 export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmount, takerToken, takerAmount }) => {
@@ -286,14 +301,12 @@ export const convertOrderToSRA2Format = order => ({
 })
 
 export const convertOrderToDexFormat = order => {
-  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.makerAssetData)
-  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.takerAssetData)
-  const orderHash = orderHashUtils.getOrderHashHex(order)
+  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
+  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
 
   return {
-    remainingTakerAssetAmount: order.takerAssetAmount,
-    ...order,
-    orderHash,
+    ...order.order,
+    ...order.metaData,
     makerAssetAddress: decodedMakerAssetData.tokenAddress,
     takerAssetAddress: decodedTakerAssetData.tokenAddress,
     makerAssetProxyId: decodedMakerAssetData.assetProxyId,
@@ -305,7 +318,7 @@ export const convertOrderToDexFormat = order => {
  *
  * @param web3
  * @param account string Taker Address HexString leaded by 0x
- * @param order {Object} Signed order or DexOrder
+ * @param order {Object} Signed order with metaData
  * @param amount number Will be converted to BigNumber and then to BaseUnitAmount
  * @returns {Promise<void>}
  */
