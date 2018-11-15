@@ -17,6 +17,7 @@ const SET_ETH_BALANCE = 'SET_ETH_BALANCE'
 const SET_TOKENS = 'SET_TOKENS'
 const SET_TOKEN_ALLOWANCE = 'SET_TOKEN_ALLOWANCE'
 const SET_ACCOUNT_ORDERS = 'SET_ACCOUNT_ORDERS'
+const SET_ACCOUNT_HISTORY = 'SET_ACCOUNT_HISTORY'
 
 const initialState = {
   bids: [],
@@ -25,6 +26,7 @@ const initialState = {
   currentToken: {},
   account: '',
   accountOrders: [],
+  accountHistory: [],
   network: '',
   ethBalance: 0,
   tokenBalances: {},
@@ -68,6 +70,8 @@ export default (state = initialState, { type, payload }) => {
       return { ...state, tokens: payload }
     case SET_ACCOUNT_ORDERS:
       return { ...state, accountOrders: payload }
+    case SET_ACCOUNT_HISTORY:
+      return { ...state, accountHistory: payload }
     default:
       return state
   }
@@ -84,6 +88,7 @@ const setTokenBalance = (symbol, value) => ({ type: SET_TOKEN_BALANCE, payload: 
 const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
 const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
 const setAccountOrders = payload => ({ type: SET_ACCOUNT_ORDERS, payload })
+const setAccountHistory = payload => ({ type: SET_ACCOUNT_HISTORY, payload })
 
 export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
@@ -359,6 +364,11 @@ export const unwrapWeth = amount => async (dispatch, getState, { blockchainServi
 export const loadActiveAccountOrders = address => async dispatch => {
   const { data } = await axios.get(`/api/v1/accounts/${address}/orders`)
   dispatch(setAccountOrders(data))
+}
+
+export const loadFilledAccountOrders = (address) => async dispatch => {
+  const { data } = await axios.get(`/api/v1/accounts/${address}/history`)
+  dispatch(setAccountHistory(data))
 }
 
 export const updateAccountData = () => async (dispatch, getState, { blockchainService }) => {

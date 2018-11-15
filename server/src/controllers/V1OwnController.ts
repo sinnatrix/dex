@@ -4,7 +4,7 @@ import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
 import config from '../config'
-import { MoreThan } from 'typeorm'
+import { Brackets, MoreThan } from 'typeorm'
 
 class V1OwnController {
   application: any
@@ -115,11 +115,16 @@ class V1OwnController {
 
     try {
       const accountHistory = await this.orderRepository.createQueryBuilder('orders')
-        .where('"makerAddress" = :address', { address })
-        .orWhere('"takerAddress" = :address', { address })
+        .where('"remainingTakerAssetAmount" = :remainingTakerAssetAmount', { remainingTakerAssetAmount: '0' })
+        .andWhere(new Brackets(queryBrackets => {
+          queryBrackets
+            .where('"makerAddress" = :address', { address })
+            .orWhere('"takerAddress" = :address', { address })
+        }))
         .orderBy('"expirationTimeSeconds"', 'ASC')
         .addOrderBy('"id"', 'DESC')
-        .getManyAndCount()
+        .printSql()
+        .getMany()
 
       res.json(accountHistory)
     } catch (e) {

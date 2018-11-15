@@ -6,6 +6,7 @@ import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import TokensList from './TokensList'
 import OrdersList from './OrdersList'
+import OrdersHistoryList from './OrdersHistoryList'
 
 const StyledTab = jss({
   root: {
@@ -51,7 +52,7 @@ class Wallet extends React.Component {
         </Tabs>
         {value === 0 && <TokensList />}
         {value === 1 && <OrdersList />}
-        {value === 2 && <div>History</div>}
+        {value === 2 && <OrdersHistoryList />}
       </Panel>
     )
   }
