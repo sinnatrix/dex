@@ -4,7 +4,7 @@ import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
 import config from '../config'
-import { Brackets, MoreThan } from 'typeorm'
+import { Brackets, Equal, MoreThan, Not } from 'typeorm'
 
 class V1OwnController {
   application: any
@@ -97,7 +97,8 @@ class V1OwnController {
     const accountOrders = await this.orderRepository.find({
       where: {
         makerAddress: address,
-        expirationTimeSeconds: MoreThan(currentUnixtime)
+        expirationTimeSeconds: MoreThan(currentUnixtime),
+        remainingTakerAssetAmount: Not(Equal('0'))
       },
       order: {
         expirationTimeSeconds: 'ASC',
