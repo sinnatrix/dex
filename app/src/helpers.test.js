@@ -10,6 +10,7 @@ import {
   getTransaction,
   setUnlimitedTokenAllowanceAsync,
   getTokenAllowance,
+  isUnlimitedTokenAllowance,
   setZeroTokenAllowanceAsync,
   makeLimitOrderAsync
 } from './helpers'
@@ -29,8 +30,10 @@ const initWeb3 = (opts = {}) => {
 const initWeb3ByBalance = balance => {
   return initWeb3({
     accounts: [
-      { balance }
-    ]
+      { balance },
+      { balance: 1 } // at least two for 0x contracts migration
+    ],
+    gasLimit: 70000000
   })
 }
 
@@ -129,7 +132,7 @@ test('getTokenBalance', async t => {
   t.equal(result, 0)
 })
 
-test('setUnlimitedTokenAllowanceAsync', async () => {
+test('setUnlimitedTokenAllowanceAsync', async t => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
@@ -138,6 +141,9 @@ test('setUnlimitedTokenAllowanceAsync', async () => {
   const wethAddress = await deployWethContract(web3, accounts[0])
 
   await setUnlimitedTokenAllowanceAsync(web3, accounts[0], wethAddress)
+  const isUnlimited = await isUnlimitedTokenAllowance(web3, accounts[0], wethAddress)
+
+  t.equal(isUnlimited, true)
 })
 
 test('getTokenAllowance', async t => {
@@ -153,7 +159,7 @@ test('getTokenAllowance', async t => {
   t.equal(allowance.isZero(), true)
 })
 
-test('setZeroTokenAllowanceAsync', async () => {
+test('setZeroTokenAllowanceAsync', async t => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
@@ -162,6 +168,9 @@ test('setZeroTokenAllowanceAsync', async () => {
   const wethAddress = await deployWethContract(web3, accounts[0])
 
   await setZeroTokenAllowanceAsync(web3, accounts[0], wethAddress)
+
+  const allowance = await getTokenAllowance(web3, accounts[0], wethAddress)
+  t.equal(allowance.isZero(), true)
 })
 
 test('makeLimitOrderAsync', async t => {
@@ -183,16 +192,20 @@ test('makeLimitOrderAsync', async t => {
     address: wethAddress2
   }
 
-  const signedOrder = await makeLimitOrderAsync(
-    web3,
-    accounts[0],
-    {
-      makerToken,
-      makerAmount: new BigNumber(0.01),
-      takerToken,
-      takerAmount: new BigNumber(0.01)
-    }
-  )
+  try {
+    const signedOrder = await makeLimitOrderAsync(
+      web3,
+      accounts[0],
+      {
+        makerToken,
+        makerAmount: new BigNumber(0.01),
+        takerToken,
+        takerAmount: new BigNumber(0.01)
+      }
+    )
 
-  t.true(signedOrder.signature)
+    t.true(signedOrder.signature)
+  } catch (e) {
+    console.log('e: ', e)
+  }
 })

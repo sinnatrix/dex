@@ -7,6 +7,7 @@ import {
   signatureUtils
 } from '0x.js'
 import { assetDataUtils } from '@0x/order-utils'
+import { runMigrationsOnceAsync } from '@0x/migrations'
 import pick from 'ramda/es/pick'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -19,7 +20,22 @@ const getWeb3Wrapper = web3 => {
 
 const getContractWrappers = async web3 => {
   const networkId = await web3.eth.net.getId()
-  return new ContractWrappers(web3.currentProvider, { networkId })
+
+  const web3Wrapper = getWeb3Wrapper(web3)
+  const accounts = await web3Wrapper.getAvailableAddressesAsync()
+
+  const txDefaults = {
+    from: accounts[0]
+  }
+
+  const contractAddresses = await runMigrationsOnceAsync(web3.currentProvider, txDefaults)
+
+  const config = {
+    contractAddresses,
+    networkId
+  }
+
+  return new ContractWrappers(web3.currentProvider, config)
 }
 
 /**
@@ -156,7 +172,7 @@ export const awaitTransaction = async (web3, txHash) => {
 }
 
 export const setUnlimitedTokenAllowanceAsync = async (web3, account, tokenAddress) => {
-  const contractWrappers = await getContractWrappers(web3)
+  const contractWrappers = await getContractWrappers(web3, account)
 
   const txHash = await contractWrappers.erc20Token.setUnlimitedProxyAllowanceAsync(
     tokenAddress,
@@ -175,6 +191,12 @@ export const getTokenAllowance = async (web3, account, tokenAddress) => {
   )
 
   return allowance
+}
+
+export const isUnlimitedTokenAllowance = async (web3, account, tokenAddress) => {
+  const allowance = await getTokenAllowance(web3, account, tokenAddress)
+  const contractWrappers = await getContractWrappers(web3)
+  return contractWrappers.erc20Token.UNLIMITED_ALLOWANCE_IN_BASE_UNITS.toString() === allowance.toString()
 }
 
 export const getTransaction = async (web3, txHash) => {
@@ -218,9 +240,13 @@ export const makeLimitOrderAsync = async (web3, account, { makerToken, makerAmou
     expirationTimeSeconds: new BigNumber(parseInt(Date.now() / 1000 + 3600 * 24, 10)) // Valid for up to a day
   }
 
+  const provider = process.env.NODE_ENV === 'test'
+    ? web3.currentProvider
+    : new MetamaskSubprovider(web3.currentProvider)
+
   // signed order
   return signatureUtils.ecSignOrderAsync(
-    new MetamaskSubprovider(web3.currentProvider),
+    provider,
     order,
     makerAddress
   )
