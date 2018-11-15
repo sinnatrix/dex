@@ -2,19 +2,14 @@ import React from 'react'
 import jss from 'react-jss'
 import EtherscanLink from 'components/EtherscanLink'
 import { connect } from 'react-redux'
-import { setAccount, setNetwork, loadTokens } from 'modules/index'
-import withWeb3 from 'hocs/withWeb3'
-
-const networkNamesByIds = {
-  42: 'kovan'
-}
+import { loadTokens, updateAccountData } from 'modules/index'
 
 const connector = connect(
   state => ({
     network: state.network,
     account: state.account
   }),
-  { setAccount, setNetwork, loadTokens }
+  { loadTokens, updateAccountData }
 )
 
 const decorate = jss({
@@ -31,10 +26,7 @@ class ConnectionWidget extends React.Component {
   timeout
 
   async componentDidMount () {
-    if (this.props.web3) {
-      this.updateAccountDataWithTimeout()
-    }
-
+    this.updateAccountDataWithTimeout()
     this.props.loadTokens()
   }
 
@@ -46,27 +38,11 @@ class ConnectionWidget extends React.Component {
 
   updateAccountDataWithTimeout = async () => {
     try {
-      await this.updateAccountData()
+      await this.props.updateAccountData()
     } catch (e) {
     }
 
     this.timeout = setTimeout(this.updateAccountDataWithTimeout, 100)
-  }
-
-  updateAccountData = async () => {
-    const { web3 } = this.props
-    const accounts = await web3.eth.getAccounts()
-    const account = (accounts[0] || '').toLowerCase()
-    const networkId = await web3.eth.net.getId()
-    const network = networkNamesByIds[networkId]
-
-    if (account !== this.props.account) {
-      this.props.setAccount(account)
-    }
-
-    if (network !== this.props.network) {
-      this.props.setNetwork(network)
-    }
   }
 
   render () {
@@ -89,4 +65,4 @@ class ConnectionWidget extends React.Component {
   }
 }
 
-export default withWeb3(connector(decorate(ConnectionWidget)))
+export default connector(decorate(ConnectionWidget))

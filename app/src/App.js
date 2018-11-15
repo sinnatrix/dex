@@ -6,19 +6,24 @@ import TradePage from 'pages/trade/TradePage'
 import { MuiThemeProvider } from '@material-ui/core/styles'
 import { Provider } from 'react-redux'
 import theme from './theme'
-import store from './store'
+import createStore from './createStore'
 import { addOrders } from './modules/index'
 import Web3 from 'web3'
-import Web3Context from './contexts/Web3Context'
-import SocketContext from './contexts/SocketContext'
 
 class App extends React.Component {
+  store
   socket
 
   constructor (props) {
     super(props)
 
     this.socket = new window.WebSocket(`ws://${window.location.host}/api/relayer/v2`)
+    const web3 = new Web3(window.web3.currentProvider)
+
+    this.store = createStore({
+      socket: this.socket,
+      web3
+    })
   }
 
   componentDidMount () {
@@ -27,13 +32,9 @@ class App extends React.Component {
       const { type, channel, payload: orders } = data
 
       if (type === 'update' && channel === 'orders') {
-        store.dispatch(addOrders(orders))
+        this.store.dispatch(addOrders(orders))
       }
     })
-  }
-
-  getWeb3 = () => {
-    return new Web3(window.web3.currentProvider)
   }
 
   render () {
@@ -41,18 +42,14 @@ class App extends React.Component {
       <React.Fragment>
         <CssBaseline />
         <MuiThemeProvider theme={theme}>
-          <Provider store={store}>
-            <SocketContext.Provider value={this.socket}>
-              <Web3Context.Provider value={this.getWeb3()}>
-                <Router>
-                  <Switch>
-                    <Route exact path='/' render={() => <Redirect to='/WETH/ZRX' />} />
-                    <Route path='/orders' component={OrdersPage} />
-                    <Route path='/:marketplace?/:token?' component={TradePage} />
-                  </Switch>
-                </Router>
-              </Web3Context.Provider>
-            </SocketContext.Provider>
+          <Provider store={this.store}>
+            <Router>
+              <Switch>
+                <Route exact path='/' render={() => <Redirect to='/WETH/ZRX' />} />
+                <Route path='/orders' component={OrdersPage} />
+                <Route path='/:marketplace?/:token?' component={TradePage} />
+              </Switch>
+            </Router>
           </Provider>
         </MuiThemeProvider>
       </React.Fragment>

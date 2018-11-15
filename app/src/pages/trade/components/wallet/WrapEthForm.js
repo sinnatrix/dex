@@ -4,7 +4,6 @@ import TextField from '@material-ui/core/TextField'
 import { connect } from 'react-redux'
 import { wrapEth } from 'modules/index'
 import SmartButton from 'material-ui-smart-button'
-import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   null,
@@ -35,9 +34,9 @@ class WrapEthForm extends React.Component {
   handleClick = async () => {
     const amount = parseFloat(this.state.value, 10)
 
-    const { web3, wrapEth } = this.props
+    const { wrapEth } = this.props
 
-    await wrapEth(web3, amount)
+    await wrapEth(amount)
 
     this.setState({
       value: ''
@@ -57,4 +56,4 @@ class WrapEthForm extends React.Component {
   }
 }
 
-export default withWeb3(connector(decorate(WrapEthForm)))
+export default connector(decorate(WrapEthForm))

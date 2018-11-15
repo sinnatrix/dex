@@ -5,7 +5,6 @@ import SmartButton from 'material-ui-smart-button'
 import OrderModeRadio from './OrderModeRadio'
 import { makeMarketOrder } from 'modules/index'
 import { connect } from 'react-redux'
-import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   state => ({
@@ -46,10 +45,10 @@ class MarketOrderForm extends React.Component {
 
   handlePlaceOrder = async () => {
     const { mode, amount } = this.state
-    const { web3, makeMarketOrder } = this.props
+    const { makeMarketOrder } = this.props
 
     try {
-      await makeMarketOrder(web3, {
+      await makeMarketOrder({
         type: mode,
         amount
       })
@@ -90,4 +89,4 @@ class MarketOrderForm extends React.Component {
   }
 }
 
-export default withWeb3(connector(decorate(MarketOrderForm)))
+export default connector(decorate(MarketOrderForm))
