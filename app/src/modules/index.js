@@ -188,7 +188,9 @@ export const addOrders = orders => (dispatch, getState) => {
     let newBidHashes = newBids.map(one => one.order.orderHash)
     let nextBids = bids.filter(one => newBidHashes.indexOf(one.order.orderHash) === -1)
     nextBids = [...nextBids, ...newBids]
-      .filter(one => one.order.remainingTakerAssetAmount !== '0')
+      .filter(one => one.order.remainingTakerAssetAmount.toString() !== '0')
+
+
     return sortBids(nextBids)
   }
 
