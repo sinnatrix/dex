@@ -112,8 +112,6 @@ class V1OwnController {
   async getFilledAccountOrders (req, res) {
     const { address } = req.params
 
-    const emptyHistory = []
-
     try {
       const accountHistory = await this.orderRepository.createQueryBuilder('orders')
         .where('"remainingTakerAssetAmount" = :remainingTakerAssetAmount', { remainingTakerAssetAmount: '0' })
@@ -129,7 +127,7 @@ class V1OwnController {
       res.json(accountHistory)
     } catch (e) {
       console.error(e)
-      res.json(emptyHistory)
+      res.status(500).send(e)
     }
   }
 
