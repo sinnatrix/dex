@@ -2,7 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { loadFilledAccountOrders } from 'modules/index'
 import ReactTable from 'react-table'
-import format from 'date-fns/format'
 import { BigNumber } from '@0x/utils'
 
 const connector = connect(
@@ -64,11 +63,6 @@ class OrdersHistoryList extends React.Component {
         ]}
       />
     )
-  }
-
-  renderExpiresAt = order => {
-    const date = new Date(parseInt(order.expirationTimeSeconds, 0) * 1000)
-    return format(date, 'MM/DD HH:mm')
   }
 
   formatAssetAmount = assetAmount => {
