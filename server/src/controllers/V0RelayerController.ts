@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import * as express from 'express'
 import { BigNumber } from '@0x/utils'
+import { Web3Wrapper } from '@0x/web3-wrapper'
 import { orderHashUtils } from '0x.js'
 import log from '../utils/log'
 import OrderRepository from '../repositories/OrderRepository'
@@ -9,7 +10,8 @@ import TokenPair from '../entities/TokenPair'
 import config from '../config'
 import { convertOrderToDexFormat } from '../utils/helpers'
 import { validateRequiredField, validateNetworkId } from '../validation'
-const ZeroEx = require('0x.js')
+
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 class V0RelayerController {
   application: any
@@ -174,10 +176,10 @@ class V0RelayerController {
     log.info('HTTP: POST fees')
 
     const makerFee = new BigNumber(0).toString()
-    const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(10), 18).toString()
+    const takerFee = Web3Wrapper.toBaseUnitAmount(new BigNumber(10), 18).toString()
 
     res.send({
-      feeRecipient: ZeroEx.NULL_ADDRESS,
+      feeRecipient: NULL_ADDRESS,
       makerFee,
       takerFee
     })

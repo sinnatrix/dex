@@ -2,6 +2,7 @@ import Token from './src/entities/Token'
 import TokenPair from './src/entities/TokenPair'
 import Order from './src/entities/Order'
 import Relayer from './src/entities/Relayer'
+import TradeHistory from './src/entities/TradeHistory'
 
 const ormconfig = {
   type: 'postgres',
@@ -16,7 +17,8 @@ const ormconfig = {
     Token,
     TokenPair,
     Order,
-    Relayer
+    Relayer,
+    TradeHistory
   ]
 }
 
