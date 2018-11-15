@@ -124,7 +124,6 @@ class V1OwnController {
         }))
         .orderBy('"expirationTimeSeconds"', 'ASC')
         .addOrderBy('"id"', 'DESC')
-        .printSql()
         .getMany()
 
       res.json(accountHistory)
