@@ -32,6 +32,7 @@ class V1OwnController {
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
     router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
+    router.get('/accounts/:address/history', this.getFilledAccountOrders.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.post('/orders', this.createOrder.bind(this))
 
@@ -105,6 +106,26 @@ class V1OwnController {
     })
 
     res.json(accountOrders)
+  }
+
+  async getFilledAccountOrders (req, res) {
+    const { address } = req.params
+
+    const emptyHistory = []
+
+    try {
+      const accountHistory = await this.orderRepository.createQueryBuilder('orders')
+        .where('"makerAddress" = :address', { address })
+        .orWhere('"takerAddress" = :address', { address })
+        .orderBy('"expirationTimeSeconds"', 'ASC')
+        .addOrderBy('"id"', 'DESC')
+        .getManyAndCount()
+
+      res.json(accountHistory)
+    } catch (e) {
+      console.error(e)
+      res.json(emptyHistory)
+    }
   }
 
   async refreshOrder (req, res) {
