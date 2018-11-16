@@ -1,22 +1,20 @@
 import test from 'tape-promise/tape'
-import Chance from 'chance'
 import { txMinedSchema } from '../schemas'
 import Joi from 'joi'
 import { BigNumber } from '@0x/utils'
-import { initWeb3ByBalance, initBlockchainService, initWeb3, deployWethContract } from 'helpers/test'
+import { initWeb3ByBalance, initBlockchainService, initWeb3, deployWethContract } from 'helpers/testUtils'
+import BlockchainService from 'services/BlockchainService'
 const wethToken = require('../fixtures/wethToken.json')
 
 /* eslint-env jest */
 
 test('getEthBalance', async t => {
-  const chance = new Chance()
-  const balance = chance.integer({ min: 0, max: 10000 })
+  const balance = 1000
 
   const web3 = initWeb3ByBalance(balance)
-  const blockchainService = await initBlockchainService(web3)
+  const blockchainService = new BlockchainService({ web3 })
 
-  const accounts = await web3.eth.getAccounts()
-
+  const accounts = await blockchainService.getAccounts()
   const balanceInEth = await blockchainService.getEthBalance(accounts[0])
 
   t.equal(balanceInEth, balance / Math.pow(10, 18))
@@ -102,14 +100,13 @@ test('setUnlimitedTokenAllowanceAsync', async t => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
-  const accounts = await web3.eth.getAccounts()
-
   const blockchainService = await initBlockchainService(web3)
+  const accounts = await blockchainService.getAccounts()
 
   const wethAddress = await deployWethContract(blockchainService, accounts[0])
 
   await blockchainService.setUnlimitedTokenAllowanceAsync(accounts[0], wethAddress)
-  const isUnlimited = await this.blockchainService.isUnlimitedTokenAllowance(accounts[0], wethAddress)
+  const isUnlimited = await blockchainService.isUnlimitedTokenAllowance(accounts[0], wethAddress)
 
   t.equal(isUnlimited, true)
 })
@@ -180,6 +177,6 @@ test('makeLimitOrderAsync', async t => {
 
     t.true(signedOrder.signature)
   } catch (e) {
-    console.log('e: ', e)
+    console.error('e: ', e)
   }
 })

@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import ganache from 'ganache-cli'
-import BlockchainService from './BlockchainService'
+import BlockchainService from '../services/BlockchainService'
 import { runMigrationsOnceAsync } from '@0x/migrations'
 const wethToken = require('../fixtures/wethToken.json')
 
@@ -15,15 +15,32 @@ export const initWeb3ByBalance = balance => {
   return initWeb3({
     accounts: [
       { balance },
-      { balance: 1 } // at least two for 0x contracts migration
+      { balance: 1000 } // at least two for 0x contracts migration
     ],
     gasLimit: 70000000
   })
 }
 
+const deployZeroExContracts = async (web3, from) => {
+  const txDefaults = {
+    from: from.toLowerCase(),
+    gasLimit: 700000000
+  }
+
+  const contractAddresses = await runMigrationsOnceAsync(web3.currentProvider, txDefaults)
+  return contractAddresses
+}
+
 export const initBlockchainService = async web3 => {
   const accounts = await web3.eth.getAccounts()
-  const contractAddresses = await deployZeroExContracts(web3, accounts[0])
+
+  let contractAddresses
+  try {
+    contractAddresses = await deployZeroExContracts(web3, accounts[0])
+  } catch (e) {
+    console.error('deployError: ', e)
+    throw e
+  }
 
   const blockchainService = new BlockchainService({ web3, contractAddresses })
   await blockchainService.init()
@@ -41,13 +58,4 @@ export const deployWethContract = async (blockchainService, from) => {
   const txHash = await blockchainService.sendTransaction(rawTx)
   const { contractAddress } = await blockchainService.getTransactionReceipt(txHash)
   return contractAddress
-}
-
-const deployZeroExContracts = async (web3, from) => {
-  const txDefaults = {
-    from
-  }
-
-  const contractAddresses = await runMigrationsOnceAsync(web3.currentProvider, txDefaults)
-  return contractAddresses
 }

@@ -8,7 +8,8 @@ import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import moxios from 'moxios'
 import rootReducer from 'modules/index'
-import { initWeb3ByBalance, initBlockchainService } from 'helpers/test'
+import { initWeb3ByBalance } from 'helpers/testUtils'
+import BlockchainService from 'services/BlockchainService'
 import { createStore, applyMiddleware } from 'redux'
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -43,7 +44,7 @@ wrappedTest('should render metamask link', async t => {
 
 wrappedTest('should render etherscan link', async t => {
   const web3 = initWeb3ByBalance(0)
-  const blockchainService = await initBlockchainService(web3)
+  const blockchainService = new BlockchainService({ web3 })
 
   const store = createStore(rootReducer, applyMiddleware(
     thunk.withExtraArgument({ blockchainService })
