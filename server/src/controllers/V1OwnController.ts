@@ -191,34 +191,10 @@ class V1OwnController {
       console.log(e)
       res.status(500).send(e)
     }
-
   }
 
   async loadOrderHistory (orderHash) {
-    const provider = this.blockchainService.getProvider();
-    const contractWrappers = new ContractWrappers(
-      provider,
-      {
-        networkId: parseInt(process.env.NETWORK_ID || '', 10)
-      }
-    )
-    const web3 = this.blockchainService.getWeb3()
-    const contract = new web3.eth.Contract(
-      contractWrappers.exchange.abi,
-      contractWrappers.exchange.address
-    )
-
-    const result = await contract.getPastEvents(
-      'Fill',
-      {
-        fromBlock: 0,
-        filter: {
-          orderHash
-        }
-      }
-    )
-
-    return result
+    return this.orderBlockchainService.loadOrderHistory(orderHash)
   }
 }
 
