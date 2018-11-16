@@ -11,7 +11,7 @@ import WsRelayerServer from './wsServers/WsRelayerServer'
 import V1OwnController from './controllers/V1OwnController'
 import V0RelayerController from './controllers/V0RelayerController'
 import BlockchainService from './services/BlockchainService'
-import OrderBlochainService from './services/OrderBlockainService'
+import OrderBlochainService from './services/OrderBlockchainService'
 const { createContainer, asValue, asClass } = require('awilix')
 
 ;(async () => {
