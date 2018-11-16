@@ -1,6 +1,14 @@
 import React from 'react'
 import jss from 'react-jss'
+import cx from 'classnames'
+import { connect } from 'react-redux'
 import Button from '@material-ui/core/Button'
+
+const connector = connect(
+  state => ({
+    network: state.network
+  })
+)
 
 const decorate = jss({
   root: {
@@ -15,18 +23,18 @@ const decorate = jss({
   }
 })
 
-const EtherscanLink = ({ classes, children, network, address }) => {
+const EtherscanLink = ({ classes, className, children, network, address, type = 'address' }) => {
   return (
     <Button
       variant='outlined'
-      className={classes.root}
+      className={cx(classes.root, className)}
       classes={{ label: classes.label }}
       target='_blank'
-      href={`https://${network}.etherscan.io/address/${address}`}
+      href={`https://${network}.etherscan.io/${type}/${address}`}
     >
       <span className={classes.content}>{children}</span>&nbsp;({network})
     </Button>
   )
 }
 
-export default decorate(EtherscanLink)
+export default connector(decorate(EtherscanLink))

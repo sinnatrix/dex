@@ -1,8 +1,5 @@
 import { assetDataUtils } from '@0x/order-utils'
 import * as R from 'ramda'
-import { orderHashUtils } from '0x.js'
-import { Web3Wrapper } from '@0x/web3-wrapper'
-import { BigNumber } from '@0x/utils'
 
 export const convertOrderToSRA2Format = order => ({
   order: R.pick([
