@@ -1,6 +1,5 @@
 import * as express from 'express'
 import { BigNumber } from '@0x/utils'
-import { ContractWrappers } from '0x.js'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
@@ -15,18 +14,16 @@ class V1OwnController {
   relayerRepository: any
   orderRepository: any
   tradeHistoryRepository: any
-  blockchainService: any
   orderBlockchainService: any
   wsRelayerServer: any
 
-  constructor ({ connection, application, orderBlockchainService, wsRelayerServer, blockchainService }) {
+  constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
     this.application = application
 
     this.tokenRepository = connection.getRepository(Token)
     this.relayerRepository = connection.getRepository(Relayer)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
     this.tradeHistoryRepository = connection.getRepository(TradeHistory)
-    this.blockchainService = blockchainService
     this.orderBlockchainService = orderBlockchainService
     this.wsRelayerServer = wsRelayerServer
   }
@@ -41,6 +38,7 @@ class V1OwnController {
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.get('/accounts/:address/history', this.getAccountTradeHistory.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
+    router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
 
     this.application.use(config.OWN_API_PATH, router)
@@ -129,6 +127,12 @@ class V1OwnController {
     res.json(accountTradeHistory)
   }
 
+  async loadOrderTradeHistory (req, res) {
+    const { hash: orderHash } = req.params
+    const tradeHistory = await this.orderBlockchainService.loadOrderHistory(orderHash)
+
+    res.json(tradeHistory)
+  }
 
   async refreshOrder (req, res) {
     const { hash: orderHash } = req.params
@@ -160,19 +164,25 @@ class V1OwnController {
 
     this.wsRelayerServer.pushOrder(orderForSave)
 
-    /**
-     * get transaction info from blockchain and save it's data to DB
-     */
-    const [ tradeHistoryItem ] = await this.loadOrderHistory(orderHash)
-    if (!tradeHistoryItem) {
-      log.info(`History for order hash (${orderHash}) not found`)
-      return
-    }
+    try {
+      const [tradeHistoryItem] = await this.orderBlockchainService.loadOrderHistory(orderHash)
+      if (!tradeHistoryItem) {
+        log.info(`History for order hash (${orderHash}) not found`)
+        return
+      }
 
-    const tradeHistoryEntry = {
-      orderHash,
+      await this.saveTradeHistoryItem(tradeHistoryItem)
+    } catch (e) {
+      console.error(e)
+      res.status(500).send(e)
+    }
+  }
+
+  async saveTradeHistoryItem (tradeHistoryItem) {
+    const toSave = {
       transactionHash: tradeHistoryItem.transactionHash,
       blockNumber: tradeHistoryItem.blockNumber,
+      orderHash: tradeHistoryItem.returnValues.orderHash,
       senderAddress: tradeHistoryItem.returnValues.senderAddress.toLowerCase(),
       feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
       makerAddress: tradeHistoryItem.returnValues.makerAddress.toLowerCase(),
@@ -185,16 +195,7 @@ class V1OwnController {
       takerFeePaid: tradeHistoryItem.returnValues.takerFeePaid
     }
 
-    try {
-      this.tradeHistoryRepository.save(tradeHistoryEntry)
-    } catch (e) {
-      console.log(e)
-      res.status(500).send(e)
-    }
-  }
-
-  async loadOrderHistory (orderHash) {
-    return this.orderBlockchainService.loadOrderHistory(orderHash)
+    await this.tradeHistoryRepository.save(toSave)
   }
 }
 

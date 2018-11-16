@@ -101,15 +101,8 @@ export const convertOrderToDexFormat = order => {
   }
 }
 
-/**
- * @param token
- * @param assetAmount base unit amount
- * @param digits
- */
-export const formatTokenAssetAmountToFixed = ({ token, assetAmount, digits = 6 }) => {
-  // TODO replace magic number with default value or throw
-  const { decimals: tokenDecimals = 18 } = token
+export const formatAssetAmount = (assetAmount, { decimals = 18, digits = 6 } = {}) => {
   return new BigNumber(assetAmount)
-    .dividedBy(Math.pow(10, tokenDecimals))
+    .dividedBy(Math.pow(10, decimals))
     .toFixed(digits)
 }

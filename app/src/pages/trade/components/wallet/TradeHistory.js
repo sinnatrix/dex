@@ -3,13 +3,12 @@ import { connect } from 'react-redux'
 import jss from 'react-jss'
 import { loadAccountTradeHistory } from 'modules/index'
 import ReactTable from 'react-table'
-import { formatTokenAssetAmountToFixed } from 'helpers/general'
+import { formatAssetAmount } from 'helpers/general'
 import EtherscanLink from 'components/EtherscanLink'
 
 const cellStyle = {
   fontSize: '0.7em',
   display: 'flex',
-  justifyContent: 'center',
   alignItems: 'center'
 }
 
@@ -24,18 +23,14 @@ const decorate = jss({
 const connector = connect(
   state => ({
     accountHistory: state.accountHistory,
-    account: state.account,
     tokens: state.tokens
   }),
   { loadAccountTradeHistory }
 )
 
 class TradeHistory extends React.Component {
-  // FIXME tech debt
-  tokenDecimals = 18
-
   componentDidMount () {
-    this.props.loadAccountTradeHistory(this.props.account)
+    this.props.loadAccountTradeHistory()
   }
 
   render () {
@@ -58,9 +53,9 @@ class TradeHistory extends React.Component {
             id: 'sold',
             minWidth: 80,
             accessor: one => {
-              const [makerToken] = tokens.filter(token => token.address === one.makerAssetAddress)
+              const [ makerToken ] = tokens.filter(token => token.address === one.makerAssetAddress)
               return `
-                ${formatTokenAssetAmountToFixed({ token: makerToken, assetAmount: one.makerAssetFilledAmount })}
+                ${formatAssetAmount(one.makerAssetFilledAmount, { decimals: makerToken.decimals })}
                 ${makerToken.symbol}
               `
             },
@@ -71,11 +66,10 @@ class TradeHistory extends React.Component {
             id: 'Bought',
             minWidth: 80,
             accessor: one => {
-              const [takerToken] = tokens.filter(token => token.address === one.takerAssetAddress)
+              const [ takerToken ] = tokens.filter(token => token.address === one.takerAssetAddress)
               return `
-                ${formatTokenAssetAmountToFixed({ token: takerToken, assetAmount: one.takerAssetFilledAmount })}
+                ${formatAssetAmount(one.takerAssetFilledAmount, { decimals: takerToken.decimals })}
                 ${takerToken.symbol}
-
               `
             },
             style: cellStyle
@@ -91,7 +85,10 @@ class TradeHistory extends React.Component {
                 type='tx'
               />
             ),
-            style: cellStyle
+            style: {
+              ...cellStyle,
+              justifyContent: 'center'
+            }
           }
         ]}
       />

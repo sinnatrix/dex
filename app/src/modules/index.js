@@ -367,8 +367,9 @@ export const loadActiveAccountOrders = address => async dispatch => {
   dispatch(setAccountOrders(data))
 }
 
-export const loadAccountTradeHistory = (address) => async dispatch => {
-  const { data } = await axios.get(`/api/v1/accounts/${address}/history`)
+export const loadAccountTradeHistory = () => async (dispatch, getState) => {
+  const { account } = getState()
+  const { data } = await axios.get(`/api/v1/accounts/${account}/history`)
   const expandedTradeHistory = data.map(expandAccountTradeHistory)
 
   dispatch(setAccountTradeHistory(expandedTradeHistory))

@@ -2,17 +2,16 @@ import log from '../utils/log'
 import * as Web3 from 'web3'
 
 class BlockchainService {
-  getProvider () {
-    return new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL)
+  provider: any
+  web3: any
+
+  constructor () {
+    this.provider = new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL)
+    this.web3 = new Web3(this.provider)
   }
 
-  getWeb3 () {
-    const provider = this.getProvider()
-    return new Web3(provider)
-  }
-
-  async sendSignedTx (web3, signedTx) {
-    const method = web3.eth.sendSignedTransaction.method
+  async sendSignedTx (signedTx) {
+    const method = this.web3.eth.sendSignedTransaction.method
     const payload = method.toPayload([signedTx.rawTransaction])
 
     return new Promise((resolve, reject) => {
@@ -38,12 +37,10 @@ class BlockchainService {
     // The Exchange.sol address (0x exchange smart contract)
     // const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress()
 
-    const web3 = this.getWeb3()
-
     let signedTx
     try {
       log.info('signing transaction...')
-      signedTx = await web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY)
+      signedTx = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY)
       log.info('ok. signedTx: ', signedTx)
     } catch (e) {
       log.error('error: ', e)
@@ -52,7 +49,7 @@ class BlockchainService {
 
     try {
       log.info('sending signed transaction...')
-      const result = await this.sendSignedTx(web3, signedTx)
+      const result = await this.sendSignedTx(signedTx)
       log.info('ok')
       return result
     } catch (e) {

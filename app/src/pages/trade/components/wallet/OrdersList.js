@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { loadActiveAccountOrders } from 'modules/index'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
-import { formatTokenAssetAmountToFixed } from 'helpers/general'
+import { formatAssetAmount } from 'helpers/general'
 
 const connector = connect(
   state => ({
@@ -15,9 +15,6 @@ const connector = connect(
 )
 
 class OrdersList extends React.Component {
-  // FIXME tech debt
-  tokenDecimals = 18
-
   componentDidMount () {
     this.props.loadActiveAccountOrders(this.props.account)
   }
@@ -42,9 +39,9 @@ class OrdersList extends React.Component {
             id: 'selling',
             minWidth: 80,
             accessor: order => {
-              const [makerToken] = tokens.filter(token => token.address === order.makerAssetAddress)
+              const [ makerToken ] = tokens.filter(token => token.address === order.makerAssetAddress)
               return `
-                ${formatTokenAssetAmountToFixed({ token: makerToken, assetAmount: order.makerAssetAmount })}
+                ${formatAssetAmount(order.makerAssetAmount, { decimals: makerToken.decimals })}
                 ${makerToken.symbol}
               `
             },
@@ -57,9 +54,9 @@ class OrdersList extends React.Component {
             id: 'buying',
             minWidth: 80,
             accessor: order => {
-              const [takerToken] = tokens.filter(token => token.address === order.takerAssetAddress)
+              const [ takerToken ] = tokens.filter(token => token.address === order.takerAssetAddress)
               return `
-                ${formatTokenAssetAmountToFixed({ token: takerToken, assetAmount: order.takerAssetAmount })}
+                ${formatAssetAmount(order.takerAssetAmount, { decimals: takerToken.decimals })}
                 ${takerToken.symbol}
               `
             },
