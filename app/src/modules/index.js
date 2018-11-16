@@ -1,20 +1,6 @@
 import axios from 'axios'
 import * as R from 'ramda'
-import {
-  generateBid,
-  getTokenBalance,
-  getEthBalance,
-  awaitTransaction,
-  setUnlimitedTokenAllowanceAsync,
-  getTokenAllowance,
-  setZeroTokenAllowanceAsync,
-  makeLimitOrderAsync,
-  makeMarketOrderAsync,
-  sendUnwrapWethTx,
-  sendWrapWethTx,
-  convertOrderToSRA2Format,
-  fillOrderAsync
-} from '../helpers'
+import { generateBid, convertOrderToSRA2Format } from '../helpers/general'
 import { getToken } from 'selectors'
 import { assetDataUtils } from '@0x/order-utils'
 
@@ -99,33 +85,33 @@ const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
 const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
 const setAccountOrders = payload => ({ type: SET_ACCOUNT_ORDERS, payload })
 
-export const loadEthBalance = () => async (dispatch, getState, { web3 }) => {
+export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
-  const balance = await getEthBalance(web3, account)
+  const balance = await blockchainService.getEthBalance(account)
 
   dispatch(setEthBalance(balance))
 }
 
-export const loadTokenAllowance = token => async (dispatch, getState, { web3 }) => {
+export const loadTokenAllowance = token => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
 
-  const result = await getTokenAllowance(web3, account, token.address)
+  const result = await blockchainService.getTokenAllowance(account, token.address)
 
   dispatch(setTokenAllowance(token.symbol, !result.isZero()))
 }
 
-export const setUnlimitedTokenAllowance = token => async (dispatch, getState, { web3 }) => {
+export const setUnlimitedTokenAllowance = token => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
 
-  await setUnlimitedTokenAllowanceAsync(web3, account, token.address)
+  await blockchainService.setUnlimitedTokenAllowanceAsync(account, token.address)
 
   await dispatch(loadTokenAllowance(token))
 }
 
-export const setZeroTokenAllowance = token => async (dispatch, getState, { web3 }) => {
+export const setZeroTokenAllowance = token => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
 
-  await setZeroTokenAllowanceAsync(web3, account, token.address)
+  await blockchainService.setZeroTokenAllowanceAsync(account, token.address)
 
   await dispatch(loadTokenAllowance(token))
 }
@@ -275,19 +261,18 @@ export const loadTokens = () => async dispatch => {
   dispatch(setTokens(data))
 }
 
-export const loadTokenBalance = token => async (dispatch, getState, { web3 }) => {
+export const loadTokenBalance = token => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
-  const balance = await getTokenBalance(web3, account, token.address)
+  const balance = await blockchainService.getTokenBalance(account, token.address)
 
   dispatch(setTokenBalance(token.symbol, balance))
 }
 
-export const fillOrder = order => async (dispatch, getState, { web3 }) => {
+export const fillOrder = order => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
   const sra2Order = convertOrderToSRA2Format(order.order)
 
-  const txHash = await fillOrderAsync(
-    web3,
+  const txHash = await blockchainService.fillOrderAsync(
     account,
     sra2Order.order,
     sra2Order.order.takerAssetAmount
@@ -297,10 +282,10 @@ export const fillOrder = order => async (dispatch, getState, { web3 }) => {
     throw new Error('txHash is invalid!')
   }
 
-  await awaitTransaction(web3, txHash)
+  await blockchainService.awaitTransaction(txHash)
 }
 
-export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { web3 }) => {
+export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { blockchainService }) => {
   const { marketplaceToken, currentToken, account } = getState()
 
   let data
@@ -321,22 +306,22 @@ export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getS
     }
   }
 
-  const signedOrder = await makeLimitOrderAsync(web3, account, data)
+  const signedOrder = await blockchainService.makeLimitOrderAsync(account, data)
 
   await axios.post('/api/relayer/v0/order', signedOrder)
 }
 
-export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState, { web3 }) => {
+export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState, { blockchainService }) => {
   const { bids, asks, account } = getState()
 
   const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order)
 
-  const fillTxHash = await makeMarketOrderAsync(web3, account, ordersToCheck, amount)
+  const fillTxHash = await blockchainService.makeMarketOrderAsync(account, ordersToCheck, amount)
 
   console.log('fillTxHash: ', fillTxHash)
 }
 
-export const wrapEth = amount => async (dispatch, getState, { web3 }) => {
+export const wrapEth = amount => async (dispatch, getState, { blockchainService }) => {
   const wethToken = getToken('WETH', getState())
   if (!wethToken) {
     console.error('WETH token is not found')
@@ -345,16 +330,16 @@ export const wrapEth = amount => async (dispatch, getState, { web3 }) => {
 
   const { account } = getState()
 
-  const txHash = await sendWrapWethTx(web3, account, wethToken, amount)
+  const txHash = await blockchainService.sendWrapWethTx(account, wethToken, amount)
 
-  await awaitTransaction(web3, txHash)
+  await blockchainService.awaitTransaction(txHash)
 
   dispatch(loadTokenBalance(wethToken))
 
   dispatch(loadEthBalance())
 }
 
-export const unwrapWeth = amount => async (dispatch, getState, { web3 }) => {
+export const unwrapWeth = amount => async (dispatch, getState, { blockchainService }) => {
   const wethToken = getToken('WETH', getState())
   if (!wethToken) {
     console.error('WETH token is not found')
@@ -363,9 +348,9 @@ export const unwrapWeth = amount => async (dispatch, getState, { web3 }) => {
 
   const { account } = getState()
 
-  const txHash = await sendUnwrapWethTx(web3, account, wethToken, amount)
+  const txHash = await blockchainService.sendUnwrapWethTx(account, wethToken, amount)
 
-  await awaitTransaction(web3, txHash)
+  await blockchainService.awaitTransaction(txHash)
 
   dispatch(loadTokenBalance(wethToken))
   dispatch(loadEthBalance())
@@ -376,18 +361,12 @@ export const loadActiveAccountOrders = address => async dispatch => {
   dispatch(setAccountOrders(data))
 }
 
-const networkNamesByIds = {
-  42: 'kovan',
-  50: 'test'
-}
-
-export const updateAccountData = () => async (dispatch, getState, { web3 }) => {
+export const updateAccountData = () => async (dispatch, getState, { blockchainService }) => {
   const { network, account } = getState()
 
-  const accounts = await web3.eth.getAccounts()
+  const accounts = await blockchainService.getAccounts()
   const nextAccount = (accounts[0] || '').toLowerCase()
-  const networkId = await web3.eth.net.getId()
-  const nextNetwork = networkNamesByIds[networkId]
+  const nextNetwork = await blockchainService.getNetworkName()
 
   if (nextAccount !== account) {
     dispatch(setAccount(nextAccount))

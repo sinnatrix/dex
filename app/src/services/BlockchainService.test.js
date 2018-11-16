@@ -1,53 +1,10 @@
 import test from 'tape-promise/tape'
-import Web3 from 'web3'
 import Chance from 'chance'
-import ganache from 'ganache-cli'
-import {
-  getEthBalance,
-  getTokenBalance,
-  sendTransaction,
-  awaitTransaction,
-  getTransaction,
-  setUnlimitedTokenAllowanceAsync,
-  getTokenAllowance,
-  isUnlimitedTokenAllowance,
-  setZeroTokenAllowanceAsync,
-  makeLimitOrderAsync
-} from './helpers'
-import { txMinedSchema } from './schemas'
+import { txMinedSchema } from '../schemas'
 import Joi from 'joi'
 import { BigNumber } from '@0x/utils'
-
-const wethToken = require('./fixtures/wethToken.json')
-
-const initWeb3 = (opts = {}) => {
-  return new Web3(ganache.provider({
-    network_id: 50, // setUnlimitedTokenAllowanceAsync works with fixed set of network ids: https://github.com/0xProject/0x-monorepo/blob/083319786fad31dfde16cb9e06e893bfeb23785d/packages/contract-wrappers/src/schemas/contract_wrappers_public_network_config_schema.ts
-    ...opts
-  }))
-}
-
-const initWeb3ByBalance = balance => {
-  return initWeb3({
-    accounts: [
-      { balance },
-      { balance: 1 } // at least two for 0x contracts migration
-    ],
-    gasLimit: 70000000
-  })
-}
-
-const deployWethContract = async (web3, from) => {
-  const rawTx = {
-    from,
-    data: wethToken.code,
-    gas: 21000 * 100
-  }
-
-  const txHash = await sendTransaction(web3, rawTx)
-  const { contractAddress } = await web3.eth.getTransactionReceipt(txHash)
-  return contractAddress
-}
+import { initWeb3ByBalance, initBlockchainService, initWeb3, deployWethContract } from 'helpers/test'
+const wethToken = require('../fixtures/wethToken.json')
 
 /* eslint-env jest */
 
@@ -56,10 +13,11 @@ test('getEthBalance', async t => {
   const balance = chance.integer({ min: 0, max: 10000 })
 
   const web3 = initWeb3ByBalance(balance)
+  const blockchainService = await initBlockchainService(web3)
 
   const accounts = await web3.eth.getAccounts()
 
-  const balanceInEth = await getEthBalance(web3, accounts[0])
+  const balanceInEth = await blockchainService.getEthBalance(accounts[0])
 
   t.equal(balanceInEth, balance / Math.pow(10, 18))
 })
@@ -73,6 +31,9 @@ test('sendTransaction', async t => {
       { balance: 0 }
     ]
   })
+
+  const blockchainService = await initBlockchainService(web3)
+
   const accounts = await web3.eth.getAccounts()
 
   const rawTx = {
@@ -82,9 +43,9 @@ test('sendTransaction', async t => {
     gas: 21000 * 2
   }
 
-  await sendTransaction(web3, rawTx)
+  await blockchainService.sendTransaction(rawTx)
 
-  const balanceInEth = await getEthBalance(web3, accounts[1])
+  const balanceInEth = await blockchainService.getEthBalance(accounts[1])
   t.equal(balanceInEth, 1 / Math.pow(10, 18))
 })
 
@@ -97,6 +58,9 @@ test('awaitTransaction', async t => {
     ],
     blockTime: 0.5 // seconds
   })
+
+  const blockchainService = await initBlockchainService(web3)
+
   const accounts = await web3.eth.getAccounts()
 
   const rawTx = {
@@ -106,14 +70,14 @@ test('awaitTransaction', async t => {
     gas: 21000 * 3
   }
 
-  const txHash = await sendTransaction(web3, rawTx)
+  const txHash = await blockchainService.sendTransaction(rawTx)
 
-  let txInfo = await getTransaction(web3, txHash)
+  let txInfo = await blockchainService.getTransaction(txHash)
   t.equal(txInfo, null)
 
-  await awaitTransaction(web3, txHash)
+  await blockchainService.awaitTransaction(txHash)
 
-  txInfo = await getTransaction(web3, txHash)
+  txInfo = await blockchainService.getTransaction(txHash)
 
   const validation = Joi.validate(txInfo, txMinedSchema)
   t.equal(validation.error, null)
@@ -125,9 +89,11 @@ test('getTokenBalance', async t => {
   const web3 = initWeb3ByBalance(balance)
   const accounts = await web3.eth.getAccounts()
 
-  const wethAddress = await deployWethContract(web3, accounts[0])
+  const blockchainService = await initBlockchainService(web3)
 
-  const result = await getTokenBalance(web3, accounts[0], wethAddress)
+  const wethAddress = await deployWethContract(blockchainService, accounts[0])
+
+  const result = await blockchainService.getTokenBalance(accounts[0], wethAddress)
 
   t.equal(result, 0)
 })
@@ -138,10 +104,12 @@ test('setUnlimitedTokenAllowanceAsync', async t => {
   const web3 = initWeb3ByBalance(balance)
   const accounts = await web3.eth.getAccounts()
 
-  const wethAddress = await deployWethContract(web3, accounts[0])
+  const blockchainService = await initBlockchainService(web3)
 
-  await setUnlimitedTokenAllowanceAsync(web3, accounts[0], wethAddress)
-  const isUnlimited = await isUnlimitedTokenAllowance(web3, accounts[0], wethAddress)
+  const wethAddress = await deployWethContract(blockchainService, accounts[0])
+
+  await blockchainService.setUnlimitedTokenAllowanceAsync(accounts[0], wethAddress)
+  const isUnlimited = await this.blockchainService.isUnlimitedTokenAllowance(accounts[0], wethAddress)
 
   t.equal(isUnlimited, true)
 })
@@ -152,9 +120,11 @@ test('getTokenAllowance', async t => {
   const web3 = initWeb3ByBalance(balance)
   const accounts = await web3.eth.getAccounts()
 
-  const wethAddress = await deployWethContract(web3, accounts[0])
+  const blockchainService = await initBlockchainService(web3)
 
-  const allowance = await getTokenAllowance(web3, accounts[0], wethAddress)
+  const wethAddress = await deployWethContract(blockchainService, accounts[0])
+
+  const allowance = await blockchainService.getTokenAllowance(accounts[0], wethAddress)
 
   t.equal(allowance.isZero(), true)
 })
@@ -165,11 +135,13 @@ test('setZeroTokenAllowanceAsync', async t => {
   const web3 = initWeb3ByBalance(balance)
   const accounts = await web3.eth.getAccounts()
 
-  const wethAddress = await deployWethContract(web3, accounts[0])
+  const blockchainService = await initBlockchainService(web3)
 
-  await setZeroTokenAllowanceAsync(web3, accounts[0], wethAddress)
+  const wethAddress = await deployWethContract(blockchainService, accounts[0])
 
-  const allowance = await getTokenAllowance(web3, accounts[0], wethAddress)
+  await blockchainService.setZeroTokenAllowanceAsync(accounts[0], wethAddress)
+  const allowance = await blockchainService.getTokenAllowance(accounts[0], wethAddress)
+
   t.equal(allowance.isZero(), true)
 })
 
@@ -177,10 +149,13 @@ test('makeLimitOrderAsync', async t => {
   const balance = Math.pow(10, 18).toString()
 
   const web3 = initWeb3ByBalance(balance)
+
+  const blockchainService = await initBlockchainService(web3)
+
   const accounts = await web3.eth.getAccounts()
 
-  const wethAddress = await deployWethContract(web3, accounts[0])
-  const wethAddress2 = await deployWethContract(web3, accounts[0])
+  const wethAddress = await deployWethContract(blockchainService, accounts[0])
+  const wethAddress2 = await deployWethContract(blockchainService, accounts[0])
 
   const makerToken = {
     ...wethToken,
@@ -193,8 +168,7 @@ test('makeLimitOrderAsync', async t => {
   }
 
   try {
-    const signedOrder = await makeLimitOrderAsync(
-      web3,
+    const signedOrder = await blockchainService.makeLimitOrderAsync(
       accounts[0],
       {
         makerToken,

@@ -6,11 +6,10 @@ import Adapter from 'enzyme-adapter-react-16'
 import { Provider } from 'react-redux'
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
-import Web3 from 'web3'
 import moxios from 'moxios'
 import rootReducer from 'modules/index'
+import { initWeb3ByBalance, initBlockchainService } from 'helpers/test'
 import { createStore, applyMiddleware } from 'redux'
-const ganache = require('ganache-cli')
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -43,15 +42,11 @@ wrappedTest('should render metamask link', async t => {
 })
 
 wrappedTest('should render etherscan link', async t => {
-  const web3 = new Web3(ganache.provider({
-    network_id: 50,
-    accounts: [
-      { balance: 0 }
-    ]
-  }))
+  const web3 = initWeb3ByBalance(0)
+  const blockchainService = await initBlockchainService(web3)
 
   const store = createStore(rootReducer, applyMiddleware(
-    thunk.withExtraArgument({ web3 })
+    thunk.withExtraArgument({ blockchainService })
   ))
 
   const wrapper = mount(

@@ -8,25 +8,35 @@ import { Provider } from 'react-redux'
 import theme from './theme'
 import createStore from './createStore'
 import { addOrders } from './modules/index'
+import BlockchainService from './services/BlockchainService'
 import Web3 from 'web3'
 
 class App extends React.Component {
-  store
   socket
+  blockchainService
+  store
 
   constructor (props) {
     super(props)
 
     this.socket = new window.WebSocket(`ws://${window.location.host}/api/relayer/v2`)
-    const web3 = new Web3(window.web3.currentProvider)
+    this.blockchainService = this.createBlockchainService()
 
     this.store = createStore({
       socket: this.socket,
-      web3
+      blockchainService: this.blockchainService
     })
   }
 
-  componentDidMount () {
+  createBlockchainService () {
+    const web3 = new Web3(window.web3.currentProvider)
+    return new BlockchainService({
+      web3,
+      contractAddresses: null
+    })
+  }
+
+  async componentDidMount () {
     this.socket.addEventListener('message', message => {
       const data = JSON.parse(message.data)
       const { type, channel, payload: orders } = data
@@ -35,6 +45,8 @@ class App extends React.Component {
         this.store.dispatch(addOrders(orders))
       }
     })
+
+    await this.blockchainService.init()
   }
 
   render () {
