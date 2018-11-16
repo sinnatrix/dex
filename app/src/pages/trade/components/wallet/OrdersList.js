@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { loadActiveAccountOrders } from 'modules/index'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
-import { BigNumber } from '@0x/utils'
+import { formatAssetAmount } from 'helpers/general'
 
 const connector = connect(
   state => ({
@@ -15,9 +15,6 @@ const connector = connect(
 )
 
 class OrdersList extends React.Component {
-  // FIXME tech debt
-  tokenDecimals = 18
-
   componentDidMount () {
     this.props.loadActiveAccountOrders(this.props.account)
   }
@@ -42,8 +39,11 @@ class OrdersList extends React.Component {
             id: 'selling',
             minWidth: 80,
             accessor: order => {
-              const [makerToken] = tokens.filter(token => token.address === order.makerAssetAddress)
-              return `${this.formatAssetAmount(order.makerAssetAmount)} ${makerToken.symbol}`
+              const [ makerToken ] = tokens.filter(token => token.address === order.makerAssetAddress)
+              return `
+                ${formatAssetAmount(order.makerAssetAmount, { decimals: makerToken.decimals })}
+                ${makerToken.symbol}
+              `
             },
             style: {
               fontSize: '.7em'
@@ -54,8 +54,11 @@ class OrdersList extends React.Component {
             id: 'buying',
             minWidth: 80,
             accessor: order => {
-              const [takerToken] = tokens.filter(token => token.address === order.takerAssetAddress)
-              return `${this.formatAssetAmount(order.takerAssetAmount)} ${takerToken.symbol}`
+              const [ takerToken ] = tokens.filter(token => token.address === order.takerAssetAddress)
+              return `
+                ${formatAssetAmount(order.takerAssetAmount, { decimals: takerToken.decimals })}
+                ${takerToken.symbol}
+              `
             },
             style: {
               fontSize: '.7em'
@@ -78,12 +81,6 @@ class OrdersList extends React.Component {
   renderExpiresAt = order => {
     const date = new Date(parseInt(order.expirationTimeSeconds, 0) * 1000)
     return format(date, 'MM/DD HH:mm')
-  }
-
-  formatAssetAmount = assetAmount => {
-    return new BigNumber(assetAmount)
-      .dividedBy(Math.pow(10, this.tokenDecimals))
-      .toFixed(6)
   }
 }
 

@@ -3,14 +3,17 @@ import { BigNumber } from '@0x/utils'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
+import TradeHistory from '../entities/TradeHistory'
 import config from '../config'
-import { MoreThan } from 'typeorm'
+import { Equal, MoreThan, Not } from 'typeorm'
+import log from '../utils/log'
 
 class V1OwnController {
   application: any
   tokenRepository: any
   relayerRepository: any
   orderRepository: any
+  tradeHistoryRepository: any
   orderBlockchainService: any
   wsRelayerServer: any
 
@@ -20,6 +23,7 @@ class V1OwnController {
     this.tokenRepository = connection.getRepository(Token)
     this.relayerRepository = connection.getRepository(Relayer)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
+    this.tradeHistoryRepository = connection.getRepository(TradeHistory)
     this.orderBlockchainService = orderBlockchainService
     this.wsRelayerServer = wsRelayerServer
   }
@@ -32,7 +36,9 @@ class V1OwnController {
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
     router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
+    router.get('/accounts/:address/history', this.getAccountTradeHistory.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
+    router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
 
     this.application.use(config.OWN_API_PATH, router)
@@ -96,7 +102,8 @@ class V1OwnController {
     const accountOrders = await this.orderRepository.find({
       where: {
         makerAddress: address,
-        expirationTimeSeconds: MoreThan(currentUnixtime)
+        expirationTimeSeconds: MoreThan(currentUnixtime),
+        remainingTakerAssetAmount: Not(Equal('0'))
       },
       order: {
         expirationTimeSeconds: 'ASC',
@@ -105,6 +112,26 @@ class V1OwnController {
     })
 
     res.json(accountOrders)
+  }
+
+  async getAccountTradeHistory (req, res) {
+    const { address } = req.params
+
+    const accountTradeHistory = await this.tradeHistoryRepository.createQueryBuilder()
+      .where('"makerAddress" = :address', { address })
+      .orWhere('"takerAddress" = :address', { address })
+      .orderBy('"blockNumber"', 'DESC')
+      .addOrderBy('"id"', 'DESC')
+      .getMany()
+
+    res.json(accountTradeHistory)
+  }
+
+  async loadOrderTradeHistory (req, res) {
+    const { hash: orderHash } = req.params
+    const tradeHistory = await this.orderBlockchainService.loadOrderHistory(orderHash)
+
+    res.json(tradeHistory)
   }
 
   async refreshOrder (req, res) {
@@ -136,6 +163,39 @@ class V1OwnController {
     res.status(200).json(orderForSave)
 
     this.wsRelayerServer.pushOrder(orderForSave)
+
+    try {
+      const [tradeHistoryItem] = await this.orderBlockchainService.loadOrderHistory(orderHash)
+      if (!tradeHistoryItem) {
+        log.info(`History for order hash (${orderHash}) not found`)
+        return
+      }
+
+      await this.saveTradeHistoryItem(tradeHistoryItem)
+    } catch (e) {
+      console.error(e)
+      res.status(500).send(e)
+    }
+  }
+
+  async saveTradeHistoryItem (tradeHistoryItem) {
+    const toSave = {
+      transactionHash: tradeHistoryItem.transactionHash,
+      blockNumber: tradeHistoryItem.blockNumber,
+      orderHash: tradeHistoryItem.returnValues.orderHash,
+      senderAddress: tradeHistoryItem.returnValues.senderAddress.toLowerCase(),
+      feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
+      makerAddress: tradeHistoryItem.returnValues.makerAddress.toLowerCase(),
+      takerAddress: tradeHistoryItem.returnValues.takerAddress.toLowerCase(),
+      makerAssetData: tradeHistoryItem.returnValues.makerAssetData,
+      takerAssetData: tradeHistoryItem.returnValues.takerAssetData,
+      makerAssetFilledAmount: tradeHistoryItem.returnValues.makerAssetFilledAmount,
+      takerAssetFilledAmount: tradeHistoryItem.returnValues.takerAssetFilledAmount,
+      makerFeePaid: tradeHistoryItem.returnValues.makerFeePaid,
+      takerFeePaid: tradeHistoryItem.returnValues.takerFeePaid
+    }
+
+    await this.tradeHistoryRepository.save(toSave)
   }
 }
 
