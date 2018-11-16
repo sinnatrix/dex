@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import jss from 'react-jss'
 import { loadAccountTradeHistory } from 'modules/index'
 import ReactTable from 'react-table'
-import { BigNumber } from '@0x/utils'
+import { formatTokenAssetAmountToFixed } from 'helpers/general'
 import EtherscanLink from 'components/EtherscanLink'
 
 const cellStyle = {
@@ -30,7 +30,7 @@ const connector = connect(
   { loadAccountTradeHistory }
 )
 
-class OrdersHistoryList extends React.Component {
+class TradeHistory extends React.Component {
   // FIXME tech debt
   tokenDecimals = 18
 
@@ -59,7 +59,10 @@ class OrdersHistoryList extends React.Component {
             minWidth: 80,
             accessor: one => {
               const [makerToken] = tokens.filter(token => token.address === one.makerAssetAddress)
-              return `${this.formatAssetAmount(one.makerAssetFilledAmount)} ${makerToken.symbol}`
+              return `
+                ${formatTokenAssetAmountToFixed({ token: makerToken, assetAmount: one.makerAssetFilledAmount })}
+                ${makerToken.symbol}
+              `
             },
             style: cellStyle
           },
@@ -69,7 +72,11 @@ class OrdersHistoryList extends React.Component {
             minWidth: 80,
             accessor: one => {
               const [takerToken] = tokens.filter(token => token.address === one.takerAssetAddress)
-              return `${this.formatAssetAmount(one.takerAssetFilledAmount)} ${takerToken.symbol}`
+              return `
+                ${formatTokenAssetAmountToFixed({ token: takerToken, assetAmount: one.takerAssetFilledAmount })}
+                ${takerToken.symbol}
+
+              `
             },
             style: cellStyle
           },
@@ -90,12 +97,6 @@ class OrdersHistoryList extends React.Component {
       />
     )
   }
-
-  formatAssetAmount = assetAmount => {
-    return new BigNumber(assetAmount)
-      .dividedBy(Math.pow(10, this.tokenDecimals))
-      .toFixed(6)
-  }
 }
 
-export default connector(decorate(OrdersHistoryList))
+export default connector(decorate(TradeHistory))

@@ -100,3 +100,16 @@ export const convertOrderToDexFormat = order => {
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
 }
+
+/**
+ * @param token
+ * @param assetAmount base unit amount
+ * @param digits
+ */
+export const formatTokenAssetAmountToFixed = ({ token, assetAmount, digits = 6 }) => {
+  // TODO replace magic number with default value or throw
+  const { decimals: tokenDecimals = 18 } = token
+  return new BigNumber(assetAmount)
+    .dividedBy(Math.pow(10, tokenDecimals))
+    .toFixed(digits)
+}

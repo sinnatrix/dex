@@ -6,7 +6,7 @@ import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
 import TradeHistory from '../entities/TradeHistory'
 import config from '../config'
-import { Brackets, Equal, MoreThan, Not } from 'typeorm'
+import { Equal, MoreThan, Not } from 'typeorm'
 import log from '../utils/log'
 
 class V1OwnController {
