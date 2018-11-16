@@ -5466,6 +5466,11 @@ ethers@~4.0.4:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
+etherscan-link@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/etherscan-link/-/etherscan-link-1.0.3.tgz#632c54ade2f0ae8777fec8780bcfa0d5abe626fd"
+  integrity sha512-eIYBN/WU8HyMQo8wDdexUANFpfLPJwQbYgSJgqvUKTdMTYlWoWNvDhc+3YS+jWNBl06RrnBG/DGHNxgH62x2cg==
+
 ethjs-unit@0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ethjs-unit/-/ethjs-unit-0.1.6.tgz#c665921e476e87bce2a9d588a6fe0405b2c41699"
