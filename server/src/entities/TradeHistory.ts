@@ -9,6 +9,12 @@ export default class TradeHistory {
   orderHash: 'string'
 
   @Column()
+  transactionHash: 'string'
+
+  @Column()
+  blockNumber: 'string'
+
+  @Column()
   senderAddress: 'string'
 
   @Column()
@@ -37,7 +43,4 @@ export default class TradeHistory {
 
   @Column()
   takerFeePaid: 'string'
-
-  @Column()
-  txHash: 'string'
 }

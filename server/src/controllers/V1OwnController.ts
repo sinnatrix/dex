@@ -1,25 +1,33 @@
 import * as express from 'express'
 import { BigNumber } from '@0x/utils'
+import { ContractWrappers } from '0x.js'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
+import TradeHistory from '../entities/TradeHistory'
 import config from '../config'
-import { Brackets, Equal, MoreThan, Not } from 'typeorm'
+import { Brackets, Column, Equal, MoreThan, Not } from 'typeorm'
+import log from '../utils/log'
+import pick from 'ramda/es/pick'
 
 class V1OwnController {
   application: any
   tokenRepository: any
   relayerRepository: any
   orderRepository: any
+  tradeHistoryRepository: any
+  blockchainService: any
   orderBlockchainService: any
   wsRelayerServer: any
 
-  constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
+  constructor ({ connection, application, orderBlockchainService, wsRelayerServer, blockchainService }) {
     this.application = application
 
     this.tokenRepository = connection.getRepository(Token)
     this.relayerRepository = connection.getRepository(Relayer)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
+    this.tradeHistoryRepository = connection.getRepository(TradeHistory)
+    this.blockchainService = blockchainService
     this.orderBlockchainService = orderBlockchainService
     this.wsRelayerServer = wsRelayerServer
   }
@@ -160,6 +168,64 @@ class V1OwnController {
     res.status(200).json(orderForSave)
 
     this.wsRelayerServer.pushOrder(orderForSave)
+
+    // save TradeHistory
+    const [ tradeHistoryItem ] = await this.loadOrderHistory(orderHash)
+    if (!tradeHistoryItem) {
+      log.info(`History for order hash (${orderHash}) not found`)
+      return
+    }
+
+    const tradeHistoryEntry = {
+      orderHash,
+      transactionHash: tradeHistoryItem.transactionHash,
+      blockNumber: tradeHistoryItem.blockNumber,
+      senderAddress: tradeHistoryItem.returnValues.senderAddress,
+      feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
+      makerAddress: tradeHistoryItem.returnValues.makerAddress,
+      takerAddress: tradeHistoryItem.returnValues.takerAddress,
+      makerAssetData: tradeHistoryItem.returnValues.makerAssetData,
+      takerAssetData: tradeHistoryItem.returnValues.takerAssetData,
+      makerAssetFilledAmount: tradeHistoryItem.returnValues.makerAssetFilledAmount,
+      takerAssetFilledAmount: tradeHistoryItem.returnValues.takerAssetFilledAmount,
+      makerFeePaid: tradeHistoryItem.returnValues.makerFeePaid,
+      takerFeePaid: tradeHistoryItem.returnValues.takerFeePaid
+    }
+
+    try {
+      this.tradeHistoryRepository.save(tradeHistoryEntry)
+    } catch (e) {
+      console.log(e)
+      res.status(500).send(e)
+    }
+
+  }
+
+  async loadOrderHistory (orderHash) {
+    const provider = this.blockchainService.getProvider();
+    const contractWrappers = new ContractWrappers(
+      provider,
+      {
+        networkId: parseInt(process.env.NETWORK_ID || '', 10)
+      }
+    )
+    const web3 = this.blockchainService.getWeb3()
+    const contract = new web3.eth.Contract(
+      contractWrappers.exchange.abi,
+      contractWrappers.exchange.address
+    )
+
+    const result = await contract.getPastEvents(
+      'Fill',
+      {
+        fromBlock: 0,
+        filter: {
+          orderHash
+        }
+      }
+    )
+
+    return result
   }
 }
 

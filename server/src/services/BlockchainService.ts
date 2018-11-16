@@ -6,6 +6,11 @@ class BlockchainService {
     return new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL)
   }
 
+  getWeb3 () {
+    const provider = this.getProvider()
+    return new Web3(provider)
+  }
+
   async sendSignedTx (web3, signedTx) {
     const method = web3.eth.sendSignedTransaction.method
     const payload = method.toPayload([signedTx.rawTransaction])
@@ -24,8 +29,6 @@ class BlockchainService {
   async sendTx (tx) {
     log.info('tx: ', tx)
 
-    const provider = this.getProvider()
-
     // const zeroEx = new ZeroEx(provider, {
     //   networkId: config.KOVAN_NETWORK_ID
     // })
@@ -35,7 +38,7 @@ class BlockchainService {
     // The Exchange.sol address (0x exchange smart contract)
     // const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress()
 
-    const web3 = new Web3(provider)
+    const web3 = this.getWeb3()
 
     let signedTx
     try {
