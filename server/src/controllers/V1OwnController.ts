@@ -6,9 +6,8 @@ import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
 import TradeHistory from '../entities/TradeHistory'
 import config from '../config'
-import { Brackets, Column, Equal, MoreThan, Not } from 'typeorm'
+import { Brackets, Equal, MoreThan, Not } from 'typeorm'
 import log from '../utils/log'
-import pick from 'ramda/es/pick'
 
 class V1OwnController {
   application: any
@@ -40,7 +39,7 @@ class V1OwnController {
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
     router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
-    router.get('/accounts/:address/history', this.getFilledAccountOrders.bind(this))
+    router.get('/accounts/:address/history', this.getAccountTradeHistory.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.post('/orders', this.createOrder.bind(this))
 
@@ -117,27 +116,19 @@ class V1OwnController {
     res.json(accountOrders)
   }
 
-  async getFilledAccountOrders (req, res) {
+  async getAccountTradeHistory (req, res) {
     const { address } = req.params
 
-    try {
-      const accountHistory = await this.orderRepository.createQueryBuilder('orders')
-        .where('"remainingTakerAssetAmount" = :remainingTakerAssetAmount', { remainingTakerAssetAmount: '0' })
-        .andWhere(new Brackets(queryBrackets => {
-          queryBrackets
-            .where('"makerAddress" = :address', { address })
-            .orWhere('"takerAddress" = :address', { address })
-        }))
-        .orderBy('"expirationTimeSeconds"', 'ASC')
-        .addOrderBy('"id"', 'DESC')
-        .getMany()
+    const accountTradeHistory = await this.tradeHistoryRepository.createQueryBuilder()
+      .where('"makerAddress" = :address', { address })
+      .orWhere('"takerAddress" = :address', { address })
+      .orderBy('"blockNumber"', 'DESC')
+      .addOrderBy('"id"', 'DESC')
+      .getMany()
 
-      res.json(accountHistory)
-    } catch (e) {
-      console.error(e)
-      res.status(500).send(e)
-    }
+    res.json(accountTradeHistory)
   }
+
 
   async refreshOrder (req, res) {
     const { hash: orderHash } = req.params
@@ -169,7 +160,9 @@ class V1OwnController {
 
     this.wsRelayerServer.pushOrder(orderForSave)
 
-    // save TradeHistory
+    /**
+     * get transaction info from blockchain and save it's data to DB
+     */
     const [ tradeHistoryItem ] = await this.loadOrderHistory(orderHash)
     if (!tradeHistoryItem) {
       log.info(`History for order hash (${orderHash}) not found`)
@@ -180,10 +173,10 @@ class V1OwnController {
       orderHash,
       transactionHash: tradeHistoryItem.transactionHash,
       blockNumber: tradeHistoryItem.blockNumber,
-      senderAddress: tradeHistoryItem.returnValues.senderAddress,
+      senderAddress: tradeHistoryItem.returnValues.senderAddress.toLowerCase(),
       feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
-      makerAddress: tradeHistoryItem.returnValues.makerAddress,
-      takerAddress: tradeHistoryItem.returnValues.takerAddress,
+      makerAddress: tradeHistoryItem.returnValues.makerAddress.toLowerCase(),
+      takerAddress: tradeHistoryItem.returnValues.takerAddress.toLowerCase(),
       makerAssetData: tradeHistoryItem.returnValues.makerAssetData,
       takerAssetData: tradeHistoryItem.returnValues.takerAssetData,
       makerAssetFilledAmount: tradeHistoryItem.returnValues.makerAssetFilledAmount,

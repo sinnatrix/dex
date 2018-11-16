@@ -17,7 +17,7 @@ const SET_ETH_BALANCE = 'SET_ETH_BALANCE'
 const SET_TOKENS = 'SET_TOKENS'
 const SET_TOKEN_ALLOWANCE = 'SET_TOKEN_ALLOWANCE'
 const SET_ACCOUNT_ORDERS = 'SET_ACCOUNT_ORDERS'
-const SET_ACCOUNT_HISTORY = 'SET_ACCOUNT_HISTORY'
+const SET_ACCOUNT_TRADE_HISTORY = 'SET_ACCOUNT_TRADE_HISTORY'
 
 const initialState = {
   bids: [],
@@ -70,7 +70,7 @@ export default (state = initialState, { type, payload }) => {
       return { ...state, tokens: payload }
     case SET_ACCOUNT_ORDERS:
       return { ...state, accountOrders: payload }
-    case SET_ACCOUNT_HISTORY:
+    case SET_ACCOUNT_TRADE_HISTORY:
       return { ...state, accountHistory: payload }
     default:
       return state
@@ -88,7 +88,7 @@ const setTokenBalance = (symbol, value) => ({ type: SET_TOKEN_BALANCE, payload: 
 const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
 const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
 const setAccountOrders = payload => ({ type: SET_ACCOUNT_ORDERS, payload })
-const setAccountHistory = payload => ({ type: SET_ACCOUNT_HISTORY, payload })
+const setAccountTradeHistory = payload => ({ type: SET_ACCOUNT_TRADE_HISTORY, payload })
 
 export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
@@ -189,7 +189,6 @@ export const addOrders = orders => (dispatch, getState) => {
     let nextBids = bids.filter(one => newBidHashes.indexOf(one.order.orderHash) === -1)
     nextBids = [...nextBids, ...newBids]
       .filter(one => one.order.remainingTakerAssetAmount.toString() !== '0')
-
 
     return sortBids(nextBids)
   }
@@ -368,11 +367,25 @@ export const loadActiveAccountOrders = address => async dispatch => {
   dispatch(setAccountOrders(data))
 }
 
-export const loadFilledAccountOrders = (address) => async dispatch => {
+export const loadAccountTradeHistory = (address) => async dispatch => {
   const { data } = await axios.get(`/api/v1/accounts/${address}/history`)
-  dispatch(setAccountHistory(data))
+  const expandedTradeHistory = data.map(expandAccountTradeHistory)
+
+  dispatch(setAccountTradeHistory(expandedTradeHistory))
 }
 
+const expandAccountTradeHistory = one => {
+  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(one.makerAssetData)
+  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(one.takerAssetData)
+
+  return {
+    ...one,
+    makerAssetAddress: decodedMakerAssetData.tokenAddress,
+    takerAssetAddress: decodedTakerAssetData.tokenAddress,
+    makerAssetProxyId: decodedMakerAssetData.assetProxyId,
+    takerAssetProxyId: decodedTakerAssetData.assetProxyId
+  }
+}
 export const updateAccountData = () => async (dispatch, getState, { blockchainService }) => {
   const { network, account } = getState()
 

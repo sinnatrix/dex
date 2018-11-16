@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { loadFilledAccountOrders } from 'modules/index'
+import { loadAccountTradeHistory } from 'modules/index'
 import ReactTable from 'react-table'
 import { BigNumber } from '@0x/utils'
 
@@ -10,7 +10,7 @@ const connector = connect(
     account: state.account,
     tokens: state.tokens
   }),
-  { loadFilledAccountOrders }
+  { loadAccountTradeHistory }
 )
 
 class OrdersHistoryList extends React.Component {
@@ -18,7 +18,7 @@ class OrdersHistoryList extends React.Component {
   tokenDecimals = 18
 
   componentDidMount () {
-    this.props.loadFilledAccountOrders(this.props.account)
+    this.props.loadAccountTradeHistory(this.props.account)
   }
 
   render () {
@@ -40,9 +40,9 @@ class OrdersHistoryList extends React.Component {
             Header: 'Sold',
             id: 'sold',
             minWidth: 80,
-            accessor: order => {
-              const [makerToken] = tokens.filter(token => token.address === order.makerAssetAddress)
-              return `${this.formatAssetAmount(order.makerAssetAmount)} ${makerToken.symbol}`
+            accessor: one => {
+              const [makerToken] = tokens.filter(token => token.address === one.makerAssetAddress)
+              return `${this.formatAssetAmount(one.makerAssetFilledAmount)} ${makerToken.symbol}`
             },
             style: {
               fontSize: '.7em'
@@ -52,9 +52,9 @@ class OrdersHistoryList extends React.Component {
             Header: 'Bought',
             id: 'Bought',
             minWidth: 80,
-            accessor: order => {
-              const [takerToken] = tokens.filter(token => token.address === order.takerAssetAddress)
-              return `${this.formatAssetAmount(order.takerAssetAmount)} ${takerToken.symbol}`
+            accessor: one => {
+              const [takerToken] = tokens.filter(token => token.address === one.takerAssetAddress)
+              return `${this.formatAssetAmount(one.takerAssetFilledAmount)} ${takerToken.symbol}`
             },
             style: {
               fontSize: '.7em'
