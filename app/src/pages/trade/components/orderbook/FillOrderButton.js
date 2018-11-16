@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import SmartButton from 'material-ui-smart-button'
 import axios from 'axios'
 import { fillOrder } from 'modules/index'
-import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   null,
@@ -12,9 +11,9 @@ const connector = connect(
 
 class FillOrderButton extends React.Component {
   handleClick = async () => {
-    const { web3, order } = this.props
+    const { order } = this.props
 
-    await this.props.fillOrder(web3, order)
+    await this.props.fillOrder(order)
 
     await axios.get(`/api/v1/orders/${order.order.orderHash}/refresh`)
   }
@@ -28,4 +27,4 @@ class FillOrderButton extends React.Component {
   }
 }
 
-export default withWeb3(connector(FillOrderButton))
+export default connector(FillOrderButton)

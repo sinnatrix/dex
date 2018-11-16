@@ -7,7 +7,6 @@ import compose from 'ramda/es/compose'
 import { makeLimitOrder } from 'modules/index'
 import { BigNumber } from '@0x/utils'
 import OrderModeRadio from './OrderModeRadio'
-import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   state => ({
@@ -55,9 +54,9 @@ class LimitOrderForm extends React.Component {
 
   handlePlaceOrder = async () => {
     const { mode, amount, price } = this.state
-    const { web3, makeLimitOrder } = this.props
+    const { makeLimitOrder } = this.props
 
-    await makeLimitOrder(web3, {
+    await makeLimitOrder({
       type: mode,
       amount: new BigNumber(amount),
       price: new BigNumber(price)
@@ -102,7 +101,6 @@ class LimitOrderForm extends React.Component {
 }
 
 export default compose(
-  withWeb3,
   connector,
   decorate
 )(LimitOrderForm)

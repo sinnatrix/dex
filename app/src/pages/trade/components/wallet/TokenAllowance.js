@@ -3,7 +3,6 @@ import jss from 'react-jss'
 import Switch from '@material-ui/core/Switch'
 import { connect } from 'react-redux'
 import { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance } from 'modules/index'
-import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -21,19 +20,19 @@ const decorate = jss({
 
 class TokenAllowance extends React.Component {
   componentDidMount () {
-    const { web3, token, loadTokenAllowance } = this.props
+    const { token, loadTokenAllowance } = this.props
 
-    loadTokenAllowance(web3, token)
+    loadTokenAllowance(token)
   }
 
   handleChange = e => {
-    const { web3, token } = this.props
+    const { token } = this.props
     const { checked } = e.target
 
     if (checked) {
-      this.props.setUnlimitedTokenAllowance(web3, token)
+      this.props.setUnlimitedTokenAllowance(token)
     } else {
-      this.props.setZeroTokenAllowance(web3, token)
+      this.props.setZeroTokenAllowance(token)
     }
   }
 
@@ -50,4 +49,4 @@ class TokenAllowance extends React.Component {
   }
 }
 
-export default withWeb3(connector(decorate(TokenAllowance)))
+export default connector(decorate(TokenAllowance))

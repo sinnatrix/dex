@@ -5,17 +5,12 @@ import { loadEthBalance } from 'modules/index'
 import WrapEthForm from './WrapEthForm'
 import TokenHeader from './TokenHeader'
 import TokenBalance from './TokenBalance'
-import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   state => ({
     ethBalance: state.ethBalance
   }),
-  (dispatch, ownProps) => ({
-    loadEthBalance () {
-      return dispatch(loadEthBalance(ownProps.web3))
-    }
-  })
+  { loadEthBalance }
 )
 
 const decorate = jss({
@@ -42,4 +37,4 @@ class EthToken extends React.Component {
   }
 }
 
-export default withWeb3(connector(decorate(EthToken)))
+export default connector(decorate(EthToken))

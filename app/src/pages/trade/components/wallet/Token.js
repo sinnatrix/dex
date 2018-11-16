@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import TokenAllowance from './TokenAllowance'
 import TokenHeader from './TokenHeader'
 import TokenBalance from './TokenBalance'
-import withWeb3 from 'hocs/withWeb3'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -24,7 +23,7 @@ const decorate = jss({
 })
 
 class Token extends React.Component {
-  loadBalance = () => this.props.loadTokenBalance(this.props.web3, this.props.token)
+  loadBalance = () => this.props.loadTokenBalance(this.props.token)
 
   render () {
     const { classes, token, balance } = this.props
@@ -41,4 +40,4 @@ class Token extends React.Component {
   }
 }
 
-export default withWeb3(connector(decorate(Token)))
+export default connector(decorate(Token))
