@@ -34,14 +34,16 @@ class TradeHistoryService {
 
   async loadFullTradeHistory () {
     log.info('Loading full trade history from exchange')
-    const fromBlock = 0
 
+    const fromBlock = await this.tradeHistoryRepository.getMaxBlockNumber()
     const tradeHistory = await this.contract.getPastEvents(
       'Fill',
       {
         fromBlock
       }
     )
+
+    log.info(`Loaded ${tradeHistory.length} records start at block #${fromBlock}`)
 
     const formattedTradeHistory = tradeHistory.map(convertTradeHistoryToDexFormat)
 
