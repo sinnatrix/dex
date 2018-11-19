@@ -37,3 +37,21 @@ export const convertOrderToDexFormat = order => {
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
 }
+
+export const convertTradeHistoryToDexFormat = tradeHistoryItem => {
+  return {
+    transactionHash: tradeHistoryItem.transactionHash,
+    blockNumber: tradeHistoryItem.blockNumber,
+    orderHash: tradeHistoryItem.returnValues.orderHash,
+    senderAddress: tradeHistoryItem.returnValues.senderAddress.toLowerCase(),
+    feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
+    makerAddress: tradeHistoryItem.returnValues.makerAddress.toLowerCase(),
+    takerAddress: tradeHistoryItem.returnValues.takerAddress.toLowerCase(),
+    makerAssetData: tradeHistoryItem.returnValues.makerAssetData,
+    takerAssetData: tradeHistoryItem.returnValues.takerAssetData,
+    makerAssetFilledAmount: tradeHistoryItem.returnValues.makerAssetFilledAmount,
+    takerAssetFilledAmount: tradeHistoryItem.returnValues.takerAssetFilledAmount,
+    makerFeePaid: tradeHistoryItem.returnValues.makerFeePaid,
+    takerFeePaid: tradeHistoryItem.returnValues.takerFeePaid
+  }
+}

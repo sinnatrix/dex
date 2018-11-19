@@ -3,10 +3,11 @@ import { BigNumber } from '@0x/utils'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
-import TradeHistory from '../entities/TradeHistory'
+import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
 import { Equal, MoreThan, Not } from 'typeorm'
 import log from '../utils/log'
+import { convertTradeHistoryToDexFormat } from '../utils/helpers'
 
 class V1OwnController {
   application: any
@@ -15,16 +16,24 @@ class V1OwnController {
   orderRepository: any
   tradeHistoryRepository: any
   orderBlockchainService: any
+  tradeHistoryService: any
   wsRelayerServer: any
 
-  constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
+  constructor ({
+    connection,
+    application,
+    orderBlockchainService,
+    tradeHistoryService,
+    wsRelayerServer
+  }) {
     this.application = application
 
     this.tokenRepository = connection.getRepository(Token)
     this.relayerRepository = connection.getRepository(Relayer)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
-    this.tradeHistoryRepository = connection.getRepository(TradeHistory)
+    this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
     this.orderBlockchainService = orderBlockchainService
+    this.tradeHistoryService = tradeHistoryService
     this.wsRelayerServer = wsRelayerServer
   }
 
@@ -37,6 +46,7 @@ class V1OwnController {
     router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.get('/accounts/:address/history', this.getAccountTradeHistory.bind(this))
+    router.get('/accounts/:address/synchronizeTradeHistory', this.synchronizeAccountHistory.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
@@ -179,23 +189,25 @@ class V1OwnController {
   }
 
   async saveTradeHistoryItem (tradeHistoryItem) {
-    const toSave = {
-      transactionHash: tradeHistoryItem.transactionHash,
-      blockNumber: tradeHistoryItem.blockNumber,
-      orderHash: tradeHistoryItem.returnValues.orderHash,
-      senderAddress: tradeHistoryItem.returnValues.senderAddress.toLowerCase(),
-      feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
-      makerAddress: tradeHistoryItem.returnValues.makerAddress.toLowerCase(),
-      takerAddress: tradeHistoryItem.returnValues.takerAddress.toLowerCase(),
-      makerAssetData: tradeHistoryItem.returnValues.makerAssetData,
-      takerAssetData: tradeHistoryItem.returnValues.takerAssetData,
-      makerAssetFilledAmount: tradeHistoryItem.returnValues.makerAssetFilledAmount,
-      takerAssetFilledAmount: tradeHistoryItem.returnValues.takerAssetFilledAmount,
-      makerFeePaid: tradeHistoryItem.returnValues.makerFeePaid,
-      takerFeePaid: tradeHistoryItem.returnValues.takerFeePaid
-    }
-
+    const toSave = convertTradeHistoryToDexFormat(tradeHistoryItem)
     await this.tradeHistoryRepository.save(toSave)
+  }
+
+  async synchronizeAccountHistory (req, res) {
+    const { address } = req.params
+
+    const fromBlock = await this.tradeHistoryRepository.getLatestSynchronizedBlockNumber(address)
+    const accountHistoryItems = await this.tradeHistoryService.loadAccountTradeHistoryAsync(
+      address,
+      {
+        fromBlock
+      }
+    )
+
+    const toSave = accountHistoryItems.map(convertTradeHistoryToDexFormat)
+    await this.tradeHistoryRepository.saveMultiple(toSave)
+
+    res.set(200).end()
   }
 }
 
