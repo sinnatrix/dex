@@ -1,10 +1,9 @@
-import { Entity, Unique, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, PrimaryColumn, Column } from 'typeorm'
 
 @Entity('tradeHistory')
-@Unique(['orderHash'])
 export default class TradeHistory {
-  @PrimaryGeneratedColumn()
-  id: 'bigint'
+  @PrimaryColumn()
+  id: 'string'
 
   @Column()
   orderHash: 'string'

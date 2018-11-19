@@ -29,7 +29,7 @@ class TradeHistoryRepository extends Repository<any> {
     return this.createQueryBuilder()
       .insert()
       .values(recordsToSave)
-      .onConflict('("orderHash") DO NOTHING')
+      .onConflict('("id") DO NOTHING')
       .execute()
   }
 }

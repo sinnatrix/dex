@@ -40,6 +40,7 @@ export const convertOrderToDexFormat = order => {
 
 export const convertTradeHistoryToDexFormat = tradeHistoryItem => {
   return {
+    id: tradeHistoryItem.id,
     transactionHash: tradeHistoryItem.transactionHash,
     blockNumber: tradeHistoryItem.blockNumber,
     orderHash: tradeHistoryItem.returnValues.orderHash,

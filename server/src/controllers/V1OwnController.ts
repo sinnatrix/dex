@@ -195,7 +195,6 @@ class V1OwnController {
 
   async synchronizeAccountHistory (req, res) {
     const { address } = req.params
-
     const fromBlock = await this.tradeHistoryRepository.getLatestSynchronizedBlockNumber(address)
     const accountHistoryItems = await this.tradeHistoryService.loadAccountTradeHistoryAsync(
       address,
