@@ -38,21 +38,22 @@ export const convertOrderToDexFormat = order => {
   }
 }
 
-export const convertTradeHistoryToDexFormat = tradeHistoryItem => {
+export const convertFillEventToDexTradeHistory = fillEvent => {
   return {
-    id: tradeHistoryItem.id,
-    transactionHash: tradeHistoryItem.transactionHash,
-    blockNumber: tradeHistoryItem.blockNumber,
-    orderHash: tradeHistoryItem.returnValues.orderHash,
-    senderAddress: tradeHistoryItem.returnValues.senderAddress.toLowerCase(),
-    feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
-    makerAddress: tradeHistoryItem.returnValues.makerAddress.toLowerCase(),
-    takerAddress: tradeHistoryItem.returnValues.takerAddress.toLowerCase(),
-    makerAssetData: tradeHistoryItem.returnValues.makerAssetData,
-    takerAssetData: tradeHistoryItem.returnValues.takerAssetData,
-    makerAssetFilledAmount: tradeHistoryItem.returnValues.makerAssetFilledAmount,
-    takerAssetFilledAmount: tradeHistoryItem.returnValues.takerAssetFilledAmount,
-    makerFeePaid: tradeHistoryItem.returnValues.makerFeePaid,
-    takerFeePaid: tradeHistoryItem.returnValues.takerFeePaid
+    id: fillEvent.id,
+    transactionHash: fillEvent.transactionHash,
+    blockNumber: fillEvent.blockNumber,
+    logIndex: fillEvent.logIndex,
+    orderHash: fillEvent.returnValues.orderHash,
+    senderAddress: fillEvent.returnValues.senderAddress.toLowerCase(),
+    feeRecipientAddress: fillEvent.returnValues.feeRecipientAddress,
+    makerAddress: fillEvent.returnValues.makerAddress.toLowerCase(),
+    takerAddress: fillEvent.returnValues.takerAddress.toLowerCase(),
+    makerAssetData: fillEvent.returnValues.makerAssetData,
+    takerAssetData: fillEvent.returnValues.takerAssetData,
+    makerAssetFilledAmount: fillEvent.returnValues.makerAssetFilledAmount,
+    takerAssetFilledAmount: fillEvent.returnValues.takerAssetFilledAmount,
+    makerFeePaid: fillEvent.returnValues.makerFeePaid,
+    takerFeePaid: fillEvent.returnValues.takerFeePaid
   }
 }

@@ -3,28 +3,38 @@ import TradeHistory from '../entities/TradeHistory'
 
 @EntityRepository(TradeHistory as any)
 class TradeHistoryRepository extends Repository<any> {
-  DEFAULT_BLOCK_NUMBER = 0
+  CHUNK_SIZE = 500
 
   async saveFullTradeHistory (recordsToSave) {
-    return this.createQueryBuilder()
-      .insert()
-      .values(recordsToSave)
-      .onConflict('("id") DO NOTHING')
-      .execute()
+    return this.manager.transaction(async manager => {
+      for (let i = 0, l = recordsToSave.length; i < l; i += this.CHUNK_SIZE) {
+        await manager.save(TradeHistory, recordsToSave.slice(i, i + this.CHUNK_SIZE))
+      }
+    })
   }
 
   async getMaxBlockNumber () {
     const records = await this.createQueryBuilder()
-      .select(['"blockNumber"'])
-      .orderBy('"blockNumber"', 'DESC')
-      .limit(1)
+      .select('MAX("blockNumber")')
       .execute()
 
     if (records.length === 0) {
-      return this.DEFAULT_BLOCK_NUMBER
+      return 0
     }
 
-    return records[0].blockNumber
+    return +records[0].max
+  }
+
+  async getMinBlockNumber () {
+    const records = await this.createQueryBuilder()
+      .select('MIN("blockNumber")')
+      .execute()
+
+    if (records.length === 0) {
+      return 0
+    }
+
+    return +records[0].min
   }
 }
 
