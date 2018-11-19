@@ -1,19 +1,20 @@
-# build environment
-FROM node:10.12.0-alpine as builder
-RUN mkdir /server
-WORKDIR /server
-ENV PATH /server/node_modules/.bin:$PATH
-COPY package.json /server/package.json
+# builder environment
+FROM node:10.13.0-alpine as builder
 RUN apk update
-RUN apk add --no-cache autoconf make gcc g++ git python
-RUN yarn install --pure-lockfile --ignore-optional
-COPY . /server
+RUN apk add --no-cache autoconf make gcc g++ git python libgudev-dev linux-headers eudev-dev libusb-compat-dev hwdata-usb
+RUN mkdir /app
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+COPY package.json /app/package.json
+COPY yarn.lock /app/yarn.lock
+RUN yarn install --pure-lockfile
+COPY . /app
 
 # production environment
-FROM node:10.12.0-alpine
-COPY --from=builder /server /server
-WORKDIR /server
-ENV PATH /server/node_modules/.bin:$PATH
+FROM node:10.13.0-alpine
+COPY --from=builder /app /app
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
 EXPOSE 7001
 
 CMD ["yarn", "start"]
