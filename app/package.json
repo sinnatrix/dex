@@ -10,7 +10,10 @@
     "lint:fix": "standard --fix",
     "test": "NODE_ENV=test NODE_PATH=src/ tape -r @babel/register -r esm -r regenerator-runtime/runtime -r jsdom-global/register ./src/**/*.test.js | tap-spec",
     "docker:build": "docker build -t dex-app .",
-    "docker:run": "docker run -p 3000:80 --rm -it dex-app"
+    "docker:run": "docker run -p 3000:80 --rm -it dex-app",
+    "docker:test": "yarn docker:builder && yarn docker:builder:test",
+    "docker:builder": "docker build --target=builder -t dex-app-builder .",
+    "docker:builder:test": "docker run -it dex-app-builder yarn test"
   },
   "dependencies": {
     "0x.js": "^2.0.4",

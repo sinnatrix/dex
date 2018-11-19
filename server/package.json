@@ -14,7 +14,10 @@
     "lint": "tslint --project ./tsconfig.json ./src/**/*.ts",
     "task": "ts-node src/task.ts",
     "docker:build": "docker build -t dex-server .",
-    "docker:run": "docker run --env-file=.env -e 'PSQL_HOST=host.docker.internal' -p 7001:7001 --rm -it dex-server"
+    "docker:run": "docker run --env-file=.env -e 'PSQL_HOST=host.docker.internal' -p 7001:7001 --rm -it dex-server",
+    "docker:test": "yarn docker:builder && yarn docker:builder:test",
+    "docker:builder": "docker build --target=builder -t dex-server-builder .",
+    "docker:builder:test": "docker run -it dex-server-builder yarn test"
   },
   "dependencies": {
     "0x.js": "^2.0.4",
