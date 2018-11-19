@@ -46,7 +46,6 @@ class V1OwnController {
     router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.get('/accounts/:address/history', this.getAccountTradeHistory.bind(this))
-    router.get('/accounts/:address/synchronizeTradeHistory', this.synchronizeAccountHistory.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
@@ -191,22 +190,6 @@ class V1OwnController {
   async saveTradeHistoryItem (tradeHistoryItem) {
     const toSave = convertTradeHistoryToDexFormat(tradeHistoryItem)
     await this.tradeHistoryRepository.save(toSave)
-  }
-
-  async synchronizeAccountHistory (req, res) {
-    const { address } = req.params
-    const fromBlock = await this.tradeHistoryRepository.getLatestSynchronizedBlockNumber(address)
-    const accountHistoryItems = await this.tradeHistoryService.loadAccountTradeHistoryAsync(
-      address,
-      {
-        fromBlock
-      }
-    )
-
-    const toSave = accountHistoryItems.map(convertTradeHistoryToDexFormat)
-    await this.tradeHistoryRepository.saveMultiple(toSave)
-
-    res.set(200).end()
   }
 }
 

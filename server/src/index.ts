@@ -40,7 +40,7 @@ const { createContainer, asValue, asClass } = require('awilix')
   container.resolve('wsRelayerServer').attach()
   container.resolve('v1OwnController').attach()
   container.resolve('v0RelayerController').attach()
-
+  container.resolve('tradeHistoryService').attach()
 
   container.resolve('server').listen(process.env.PORT, () => {
     log.info('started server on port', process.env.PORT)

@@ -1,15 +1,16 @@
 import { ContractWrappers } from '0x.js'
 import BlockchainService from './BlockchainService'
-import * as Web3 from 'web3'
+import { convertTradeHistoryToDexFormat } from '../utils/helpers'
+import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
+import log from '../utils/log'
 
 class TradeHistoryService {
   blockchainService: BlockchainService
   contractWrappers: ContractWrappers
   contract: any
-  provider: any
-  web3: any
+  tradeHistoryRepository: any
 
-  constructor ({ blockchainService }) {
+  constructor ({ connection, blockchainService }) {
     this.blockchainService = blockchainService
 
     this.contractWrappers = new ContractWrappers(
@@ -24,21 +25,27 @@ class TradeHistoryService {
       this.contractWrappers.exchange.address
     )
 
-    this.provider = new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL)
-    this.web3 = new Web3(this.provider)
+    this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
   }
 
-  loadAccountTradeHistoryAsync (address, { fromBlock = 0, toBlock = 'latest'} = {}) {
-    return this.contract.getPastEvents(
+  attach () {
+    this.loadFullTradeHistory()
+  }
+
+  async loadFullTradeHistory () {
+    log.info('Loading full trade history from exchange')
+    const fromBlock = 0
+
+    const tradeHistory = await this.contract.getPastEvents(
       'Fill',
       {
-        fromBlock,
-        toBlock,
-        filter: {
-          makerAddress: address
-        }
+        fromBlock
       }
     )
+
+    const formattedTradeHistory = tradeHistory.map(convertTradeHistoryToDexFormat)
+
+    await this.tradeHistoryRepository.saveFullTradeHistory(formattedTradeHistory)
   }
 }
 
