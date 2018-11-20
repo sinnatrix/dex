@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, PrimaryColumn, Column, Unique } from 'typeorm'
 
 @Entity('tradeHistory')
+@Unique(['blockNumber', 'logIndex'])
 export default class TradeHistory {
-  @PrimaryGeneratedColumn()
-  id: 'bigint'
+  @PrimaryColumn()
+  id: 'string'
 
   @Column()
   orderHash: 'string'
@@ -13,6 +14,9 @@ export default class TradeHistory {
 
   @Column()
   blockNumber: 'string'
+
+  @Column()
+  logIndex: 'bigint'
 
   @Column()
   senderAddress: 'string'

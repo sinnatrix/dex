@@ -13,6 +13,7 @@ const ormconfig = {
   database: process.env.POSTGRES_DB,
   timezone: 'UTC',
   synchronize: true,
+  logging: false,
   entities: [
     Token,
     TokenPair,

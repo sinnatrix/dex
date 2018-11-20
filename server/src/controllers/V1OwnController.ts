@@ -3,10 +3,9 @@ import { BigNumber } from '@0x/utils'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import OrderRepository from '../repositories/OrderRepository'
-import TradeHistory from '../entities/TradeHistory'
+import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
 import { Equal, MoreThan, Not } from 'typeorm'
-import log from '../utils/log'
 
 class V1OwnController {
   application: any
@@ -23,7 +22,7 @@ class V1OwnController {
     this.tokenRepository = connection.getRepository(Token)
     this.relayerRepository = connection.getRepository(Relayer)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
-    this.tradeHistoryRepository = connection.getRepository(TradeHistory)
+    this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
     this.orderBlockchainService = orderBlockchainService
     this.wsRelayerServer = wsRelayerServer
   }
@@ -163,39 +162,6 @@ class V1OwnController {
     res.status(200).json(orderForSave)
 
     this.wsRelayerServer.pushOrder(orderForSave)
-
-    try {
-      const [tradeHistoryItem] = await this.orderBlockchainService.loadOrderHistory(orderHash)
-      if (!tradeHistoryItem) {
-        log.info(`History for order hash (${orderHash}) not found`)
-        return
-      }
-
-      await this.saveTradeHistoryItem(tradeHistoryItem)
-    } catch (e) {
-      console.error(e)
-      res.status(500).send(e)
-    }
-  }
-
-  async saveTradeHistoryItem (tradeHistoryItem) {
-    const toSave = {
-      transactionHash: tradeHistoryItem.transactionHash,
-      blockNumber: tradeHistoryItem.blockNumber,
-      orderHash: tradeHistoryItem.returnValues.orderHash,
-      senderAddress: tradeHistoryItem.returnValues.senderAddress.toLowerCase(),
-      feeRecipientAddress: tradeHistoryItem.returnValues.feeRecipientAddress,
-      makerAddress: tradeHistoryItem.returnValues.makerAddress.toLowerCase(),
-      takerAddress: tradeHistoryItem.returnValues.takerAddress.toLowerCase(),
-      makerAssetData: tradeHistoryItem.returnValues.makerAssetData,
-      takerAssetData: tradeHistoryItem.returnValues.takerAssetData,
-      makerAssetFilledAmount: tradeHistoryItem.returnValues.makerAssetFilledAmount,
-      takerAssetFilledAmount: tradeHistoryItem.returnValues.takerAssetFilledAmount,
-      makerFeePaid: tradeHistoryItem.returnValues.makerFeePaid,
-      takerFeePaid: tradeHistoryItem.returnValues.takerFeePaid
-    }
-
-    await this.tradeHistoryRepository.save(toSave)
   }
 }
 

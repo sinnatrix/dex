@@ -3,7 +3,7 @@ import { createConnection } from 'typeorm'
 import ormconfig from '../ormconfig'
 import RelayerService from './services/RelayerService'
 import BlockchainService from './services/BlockchainService'
-import OrderBlochainService from './services/OrderBlockainService'
+import OrderBlockchainService from './services/OrderBlockchainService'
 const argv = require('yargs').argv
 const { createContainer, asValue, asClass } = require('awilix')
 
@@ -19,7 +19,7 @@ const { createContainer, asValue, asClass } = require('awilix')
     connection: asValue(connection),
     relayerService: asClass(RelayerService).singleton(),
     blockchainService: asClass(BlockchainService).singleton(),
-    orderBlockchainService: asClass(OrderBlochainService).singleton(),
+    orderBlockchainService: asClass(OrderBlockchainService).singleton(),
     [fullTaskName]: asClass(Task).singleton()
   })
 
