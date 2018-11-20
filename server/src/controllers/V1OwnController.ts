@@ -170,26 +170,7 @@ class V1OwnController {
     res.status(200).json(orderForSave)
 
     this.wsRelayerServer.pushOrder(orderForSave)
-
-    // try {
-    //   const [tradeHistoryItem] = await this.orderBlockchainService.loadOrderHistory(orderHash)
-    //   if (!tradeHistoryItem) {
-    //     log.info(`History for order hash (${orderHash}) not found`)
-    //     return
-    //   }
-    //   log.info(`Order hash ${orderHash} is here`)
-    //   console.log(tradeHistoryItem)
-    //   // await this.saveTradeHistoryItem(tradeHistoryItem)
-    // } catch (e) {
-    //   console.error(e)
-    //   res.status(500).send(e)
-    // }
   }
-
-  // async saveTradeHistoryItem (tradeHistoryItem) {
-  //   const toSave = convertTradeHistoryToDexFormat(tradeHistoryItem)
-  //   await this.tradeHistoryRepository.save(toSave)
-  // }
 }
 
 export default V1OwnController
