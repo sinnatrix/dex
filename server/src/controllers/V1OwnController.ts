@@ -14,16 +14,9 @@ class V1OwnController {
   orderRepository: any
   tradeHistoryRepository: any
   orderBlockchainService: any
-  tradeHistoryService: any
   wsRelayerServer: any
 
-  constructor ({
-    connection,
-    application,
-    orderBlockchainService,
-    tradeHistoryService,
-    wsRelayerServer
-  }) {
+  constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
     this.application = application
 
     this.tokenRepository = connection.getRepository(Token)
@@ -31,7 +24,6 @@ class V1OwnController {
     this.orderRepository = connection.getCustomRepository(OrderRepository)
     this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
     this.orderBlockchainService = orderBlockchainService
-    this.tradeHistoryService = tradeHistoryService
     this.wsRelayerServer = wsRelayerServer
   }
 
