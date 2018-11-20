@@ -2,12 +2,16 @@ import log from '../utils/log'
 import * as Web3 from 'web3'
 
 class BlockchainService {
-  provider: any
+  httpProvider: any
+  wsProvider: any
   web3: any
+  wsWeb3: any
 
   constructor () {
-    this.provider = new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL)
-    this.web3 = new Web3(this.provider)
+    this.httpProvider = new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL)
+    this.web3 = new Web3(this.httpProvider)
+    this.wsProvider = new Web3.providers.WebsocketProvider(process.env.WS_INFURA_HOST)
+    this.wsWeb3 = new Web3(this.wsProvider)
   }
 
   async sendSignedTx (signedTx) {

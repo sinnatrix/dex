@@ -10,7 +10,7 @@ class OrderBlockchainService {
     this.blockchainService = blockchainService
 
     this.contractWrappers = new ContractWrappers(
-      this.blockchainService.provider,
+      this.blockchainService.httpProvider,
       {
         networkId: parseInt(process.env.NETWORK_ID || '', 10)
       }

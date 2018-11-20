@@ -6,8 +6,6 @@ import OrderRepository from '../repositories/OrderRepository'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
 import { Equal, MoreThan, Not } from 'typeorm'
-import log from '../utils/log'
-// import { convertFillEventToDexTradeHistory } from '../utils/helpers'
 
 class V1OwnController {
   application: any

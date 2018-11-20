@@ -7,20 +7,34 @@ import log from '../utils/log'
 class TradeHistoryService {
   blockchainService: BlockchainService
   contractWrappers: ContractWrappers
+  wsContractWrappers: ContractWrappers
   contract: any
+  wsContract: any
   tradeHistoryRepository: TradeHistoryRepository
 
   constructor ({ connection, blockchainService }) {
     this.blockchainService = blockchainService
 
     this.contractWrappers = new ContractWrappers(
-      this.blockchainService.provider,
+      this.blockchainService.httpProvider,
+      {
+        networkId: parseInt(process.env.NETWORK_ID || '', 10)
+      }
+    )
+
+    this.wsContractWrappers = new ContractWrappers(
+      this.blockchainService.wsProvider,
       {
         networkId: parseInt(process.env.NETWORK_ID || '', 10)
       }
     )
 
     this.contract = new this.blockchainService.web3.eth.Contract(
+      this.contractWrappers.exchange.abi,
+      this.contractWrappers.exchange.address
+    )
+
+    this.wsContract = new this.blockchainService.wsWeb3.eth.Contract(
       this.contractWrappers.exchange.abi,
       this.contractWrappers.exchange.address
     )
@@ -63,16 +77,20 @@ class TradeHistoryService {
   }
 
   async subscribeToTradeHistoryEvents () {
-    log.info('Subscription to Fill event')
-    this.contract.events.Fill()
+    log.info('Subscription to Fill event via websocket provider')
+
+    this.wsContract.events.Fill()
       .on(
         'data',
         async fillEvent => {
-          log.info('New Fill event', fillEvent)
-          await this.tradeHistoryRepository.save(convertFillEventToDexTradeHistory(fillEvent))
+          await this.tradeHistoryRepository
+            .saveFullTradeHistory([convertFillEventToDexTradeHistory(fillEvent)])
         }
       )
-      .on('error', console.error)
+      .on('error', async error => {
+        console.error('Connection error: ', error, 'trying to reconnect')
+        await this.subscribeToTradeHistoryEvents()
+      })
   }
 }
 
