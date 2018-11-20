@@ -1,0 +1,12 @@
+build-and-test:
+  - cd /root
+  - rm -rf dex
+  - git clone git@github.com:lunochkin/dex.git
+  - cd /root/dex/app
+  - docker build --target=builder -t dex-app-builder .
+  - docker run -t dex-app-builder yarn test
+  - docker build -t maxlun86/dex-app .
+  - cd /root/dex/server
+  - docker build --target=builder -t dex-server-builder .
+  - docker run -t dex-server-builder yarn test
+  - docker build -t maxlun86/dex-server .
