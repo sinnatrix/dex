@@ -5,6 +5,23 @@ import config from '../config'
 import { convertOrderToSRA2Format } from '../utils/helpers'
 import { validateNetworkId, validateRequiredField } from '../validation'
 
+const validateNetworkIdRule = params => validateNetworkId(params.payload.networkId)
+const validateRequestIdRule = params => validateRequiredField('requestId', params.requestId)
+
+const channels = {
+  orders: {
+    rules: [
+      validateNetworkIdRule,
+      validateRequestIdRule
+    ]
+  },
+  tradeHistory: {
+    rules: [
+      validateRequestIdRule
+    ]
+  }
+}
+
 class WsRelayerServer {
   clients: any[]
   server: any
@@ -25,62 +42,12 @@ class WsRelayerServer {
     wss.on('connection', ws => {
       log.info('connection')
 
-      ws.on('message', async rawMessage => {
+      ws.on('message', rawMessage => {
         const message = JSON.parse(rawMessage)
         const { type, channel, requestId, payload } = message
 
-        /**
-         * Standard relayer API
-         * WebSocket API Specification v2
-         */
-        if (type === 'subscribe' && channel === 'orders') {
-          const validationErrors = [
-            validateNetworkId(payload.networkId),
-            validateRequiredField('requestId', requestId)
-          ].filter(one => !!one)
-
-          if (validationErrors.length) {
-            ws.send(JSON.stringify({
-              code: 100,
-              reason: 'Validation failed',
-              validationErrors
-            }))
-            return
-          }
-
-          const ordersPayload = {
-            channel: 'orders',
-            filter: payload
-          }
-
-          this.subscribeClient(ws, requestId, ordersPayload)
-          log.info('New subscription for orders was made')
-        }
-
-        /**
-         * Internal DEX subscription bellow
-         */
-        if (type === 'subscribe' && channel === 'tradeHistory') {
-          const validationErrors = [
-            validateRequiredField('requestId', requestId)
-          ].filter(one => !!one)
-
-          if (validationErrors.length) {
-            ws.send(JSON.stringify({
-              code: 100,
-              reason: 'Validation failed',
-              validationErrors
-            }))
-            return
-          }
-
-          const tradeHistoryPayload = {
-            channel: 'tradeHistory',
-            filter: payload
-          }
-
-          this.subscribeClient(ws, requestId, tradeHistoryPayload)
-          log.info('New subscription for tradeHistory was made')
+        if (type === 'subscribe') {
+          this.subscribeClient(ws, channel, requestId, payload)
         }
 
         if (type === 'unsubscribe') {
@@ -94,7 +61,33 @@ class WsRelayerServer {
     })
   }
 
-  subscribeClient (ws, requestId: string, payload: {}) {
+  subscribeClient (ws, channel, requestId: string, payload: {}) {
+    if (!channels[channel]) {
+      ws.send(JSON.stringify({
+        code: 100,
+        reason: 'Wrong channel'
+      }))
+
+      return
+    }
+
+    const { rules } = channels[channel]
+    const validationErrors = rules
+      .map(rule =>
+        rule({ payload, requestId })
+      )
+      .filter(one => !!one)
+
+    if (validationErrors.length) {
+      ws.send(JSON.stringify({
+        code: 100,
+        reason: 'Validation failed',
+        validationErrors
+      }))
+      log.info(`Validation for ${channel} failed`)
+      return
+    }
+
     const found = !!this.clients.filter(one => one.ws === ws)[0]
 
     if (!found) {
@@ -113,14 +106,16 @@ class WsRelayerServer {
         ...one,
         subscriptions: [
           ...one.subscriptions,
-          { payload, requestId }
+          { payload, channel, requestId }
         ]
       }
     })
+
+    log.info(`New subscription for ${channel} was made`)
   }
 
   unsubscribeClient (ws, channel = '') {
-    if (!!channel) {
+    if (channel === '') {
       this.clients = this.clients.filter(one => one.ws !== ws)
       return
     }
@@ -128,7 +123,7 @@ class WsRelayerServer {
     this.clients = this.clients
       .map(client => ({
         ...client,
-        subscriptions: client.subscriptions.filter(subscription => subscription.payload.channel !== channel)
+        subscriptions: client.subscriptions.filter(subscription => subscription.channel !== channel)
       }))
       .filter(one => one.subscriptions.length > 0)
   }
@@ -155,27 +150,27 @@ class WsRelayerServer {
     const clients = this.findClientSubscriptionsForChannel('orders')
 
     return clients.map(client => ({
-        ...client,
-        subscriptions: client.subscriptions
-          .filter(subscription => {
-            return R.equals(
-              R.pick(
-                Object.keys(subscription.payload.filter),
-                order
-              ),
-              subscription.payload.filter
-            )
-          }
-        )
-      }))
-      .filter(one => one.subscriptions.length > 0)
+      ...client,
+      subscriptions: client.subscriptions
+        .filter(subscription => {
+          return R.equals(
+            R.pick(
+              Object.keys(subscription.payload),
+              order
+            ),
+            subscription.payload
+          )
+        }
+      )
+    }))
+    .filter(one => one.subscriptions.length > 0)
   }
 
   findClientSubscriptionsForChannel (channel) {
     return this.clients
       .map(client => ({
         ...client,
-        subscriptions: client.subscriptions.filter(subscription => subscription.payload.channel === channel)
+        subscriptions: client.subscriptions.filter(subscription => subscription.channel === channel)
       }))
       .filter(one => one.subscriptions.length > 0)
   }
@@ -203,7 +198,7 @@ class WsRelayerServer {
     return clients.map(client => ({
       ...client,
       subscriptions: client.subscriptions.filter(subscription => {
-        const { makerAddress, takerAddress } = subscription.payload.filter
+        const { makerAddress, takerAddress } = subscription.payload
         const isMaker = R.whereEq({ makerAddress })
         const isTaker = R.whereEq({ takerAddress })
 

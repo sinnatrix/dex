@@ -53,7 +53,6 @@ class TradeHistory extends React.Component {
             id: 'sold',
             minWidth: 80,
             accessor: one => {
-              console.log(one)
               const [ makerToken ] = tokens.filter(token => token.address === one.makerAssetAddress)
               return `
                 ${formatAssetAmount(one.makerAssetFilledAmount, { decimals: makerToken.decimals })}
