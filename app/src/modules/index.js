@@ -380,8 +380,10 @@ export const loadAccountTradeHistory = () => async (dispatch, getState, { socket
     channel: 'tradeHistory',
     requestId: uuidv4(),
     payload: {
-      makerAddress: account,
-      takerAddress: account
+      $or: [
+        { makerAddress: account },
+        { takerAddress: account }
+      ]
     }
   }))
 }

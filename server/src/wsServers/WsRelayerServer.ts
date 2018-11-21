@@ -4,6 +4,7 @@ import log from '../utils/log'
 import config from '../config'
 import { convertOrderToSRA2Format } from '../utils/helpers'
 import { validateNetworkId, validateRequiredField } from '../validation'
+const sift = require('sift').default
 
 const validateNetworkIdRule = params => validateNetworkId(params.payload.networkId)
 const validateRequestIdRule = params => validateRequiredField('requestId', params.requestId)
@@ -123,7 +124,7 @@ class WsRelayerServer {
     this.clients = this.clients
       .map(client => ({
         ...client,
-        subscriptions: client.subscriptions.filter(subscription => subscription.channel !== channel)
+        subscriptions: sift({ channel: { $eq: channel }}, client.subscriptions) // .filter(subscription => subscription.channel !== channel)
       }))
       .filter(one => one.subscriptions.length > 0)
   }
@@ -153,13 +154,13 @@ class WsRelayerServer {
       ...client,
       subscriptions: client.subscriptions
         .filter(subscription => {
-          return R.equals(
+          return sift(
             R.pick(
               Object.keys(subscription.payload),
               order
             ),
-            subscription.payload
-          )
+            [ subscription.payload ]
+          ).length > 0
         }
       )
     }))
@@ -198,11 +199,10 @@ class WsRelayerServer {
     return clients.map(client => ({
       ...client,
       subscriptions: client.subscriptions.filter(subscription => {
-        const { makerAddress, takerAddress } = subscription.payload
-        const isMaker = R.whereEq({ makerAddress })
-        const isTaker = R.whereEq({ takerAddress })
-
-        return isMaker(tradeHistoryItem) || isTaker(tradeHistoryItem)
+        return sift(
+          subscription.payload,
+          [ tradeHistoryItem ]
+        ).length > 0
       })
     }))
     .filter(one => one.subscriptions.length > 0)
