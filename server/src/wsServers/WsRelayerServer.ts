@@ -1,9 +1,26 @@
 import * as WebSocket from 'ws'
-import * as R from 'ramda'
 import log from '../utils/log'
 import config from '../config'
 import { convertOrderToSRA2Format } from '../utils/helpers'
 import { validateNetworkId, validateRequiredField } from '../validation'
+const sift = require('sift').default
+
+const validateNetworkIdRule = params => validateNetworkId(params.payload.networkId)
+const validateRequestIdRule = params => validateRequiredField('requestId', params.requestId)
+
+const channels = {
+  orders: {
+    rules: [
+      validateNetworkIdRule,
+      validateRequestIdRule
+    ]
+  },
+  tradeHistory: {
+    rules: [
+      validateRequestIdRule
+    ]
+  }
+}
 
 class WsRelayerServer {
   clients: any[]
@@ -25,30 +42,16 @@ class WsRelayerServer {
     wss.on('connection', ws => {
       log.info('connection')
 
-      ws.on('message', async rawMessage => {
+      ws.on('message', rawMessage => {
         const message = JSON.parse(rawMessage)
         const { type, channel, requestId, payload } = message
 
-        if (type === 'subscribe' && channel === 'orders') {
-          const validationErrors = [
-            validateNetworkId(payload.networkId),
-            validateRequiredField('requestId', requestId)
-          ].filter(one => !!one)
-
-          if (validationErrors.length) {
-            ws.send(JSON.stringify({
-              code: 100,
-              reason: 'Validation failed',
-              validationErrors
-            }))
-            return
-          }
-
-          this.subscribeClient({ ws, payload, requestId })
+        if (type === 'subscribe') {
+          this.subscribeClient(ws, channel, requestId, payload)
         }
 
         if (type === 'unsubscribe') {
-          this.unsubscribeClient(ws)
+          this.unsubscribeClient(ws, channel)
         }
       })
 
@@ -58,7 +61,33 @@ class WsRelayerServer {
     })
   }
 
-  subscribeClient ({ ws, payload, requestId }) {
+  subscribeClient (ws, channel, requestId: string, payload: {}) {
+    if (!channels[channel]) {
+      ws.send(JSON.stringify({
+        code: 100,
+        reason: 'Wrong channel'
+      }))
+
+      return
+    }
+
+    const { rules } = channels[channel]
+    const validationErrors = rules
+      .map(rule =>
+        rule({ payload, requestId })
+      )
+      .filter(one => !!one)
+
+    if (validationErrors.length) {
+      ws.send(JSON.stringify({
+        code: 100,
+        reason: 'Validation failed',
+        validationErrors
+      }))
+      log.info(`Validation for ${channel} failed`)
+      return
+    }
+
     const found = !!this.clients.filter(one => one.ws === ws)[0]
 
     if (!found) {
@@ -77,49 +106,64 @@ class WsRelayerServer {
         ...one,
         subscriptions: [
           ...one.subscriptions,
-          { payload, requestId }
+          { payload, channel, requestId }
         ]
       }
     })
+
+    log.info(`New subscription for ${channel} was made`)
   }
 
-  unsubscribeClient (ws) {
-    this.clients = this.clients.filter(one => one.ws !== ws)
+  unsubscribeClient (ws, channel = '') {
+    if (channel === '') {
+      this.clients = this.clients.filter(one => one.ws !== ws)
+      return
+    }
+
+    this.clients = this.clients
+      .map(client => ({
+        ...client,
+        subscriptions: client.subscriptions.filter(subscription => subscription.channel !== channel)
+      }))
+      .filter(one => one.subscriptions.length > 0)
   }
 
-  pushOrder (order) {
-    const clients = this.findClientSubscriptionsForOrder(order)
-    const sra2Order = convertOrderToSRA2Format(order)
+  filterClientSubscriptions (channel, data) {
+    return this.clients
+      .map(client => ({
+        ...client,
+        subscriptions: client.subscriptions
+          .filter(subscription => subscription.channel === channel)
+          .filter(subscription => sift(subscription.payload,[ data ]))
+      }))
+      .filter(one => one.subscriptions.length > 0)
+  }
+
+  pushUpdate (channel, payload) {
+    const clients = this.filterClientSubscriptions(channel, payload)
 
     clients.forEach(client => {
-      client.subscriptions.forEach(subscription => {
+      client.subscriptions.forEach(({ requestId }) => {
         client.ws.send(JSON.stringify(
           {
             type: 'update',
-            channel: 'orders',
-            requestId: subscription.requestId,
-            payload: [ sra2Order ]
+            channel,
+            requestId,
+            payload
           }
         ))
       })
     })
   }
 
-  findClientSubscriptionsForOrder (order) {
-    return this.clients
-      .map(client => ({
-        ...client,
-        subscriptions: client.subscriptions.filter(subscription => {
-          return R.equals(
-            R.pick(
-              Object.keys(subscription.payload),
-              order
-            ),
-            subscription.payload
-          )
-        })
-      }))
-      .filter(one => one.subscriptions.length > 0)
+  pushOrder (order) {
+    const sra2Order = convertOrderToSRA2Format(order)
+
+    this.pushUpdate('orders', [ sra2Order ])
+  }
+
+  pushTradeHistory (tradeHistoryItem) {
+    this.pushUpdate('tradeHistory', [ tradeHistoryItem ])
   }
 }
 

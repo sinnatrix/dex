@@ -26,7 +26,7 @@ const initialState = {
   currentToken: {},
   account: '',
   accountOrders: [],
-  accountHistory: [],
+  accountTradeHistory: [],
   network: '',
   ethBalance: 0,
   tokenBalances: {},
@@ -71,7 +71,7 @@ export default (state = initialState, { type, payload }) => {
     case SET_ACCOUNT_ORDERS:
       return { ...state, accountOrders: payload }
     case SET_ACCOUNT_TRADE_HISTORY:
-      return { ...state, accountHistory: payload }
+      return { ...state, accountTradeHistory: payload }
     default:
       return state
   }
@@ -216,23 +216,22 @@ export const loadOrderbook = () => async (dispatch, getState, { socket }) => {
     channel: 'orders'
   }))
 
+  // TODO single subscription with MongoDB $or syntax or use normalizr
   socket.send(JSON.stringify({
     type: 'subscribe',
     channel: 'orders',
     requestId: uuidv4(),
     payload: {
-      makerAssetAddress: marketplaceToken.address,
-      takerAssetAddress: currentToken.address
-    }
-  }))
-
-  socket.send(JSON.stringify({
-    type: 'subscribe',
-    channel: 'orders',
-    requestId: uuidv4(),
-    payload: {
-      makerAssetAddress: currentToken.address,
-      takerAssetAddress: marketplaceToken.address
+      $or: [
+        {
+          makerAssetAddress: marketplaceToken.address,
+          takerAssetAddress: currentToken.address
+        },
+        {
+          makerAssetAddress: currentToken.address,
+          takerAssetAddress: marketplaceToken.address
+        }
+      ]
     }
   }))
 
@@ -367,12 +366,24 @@ export const loadActiveAccountOrders = address => async dispatch => {
   dispatch(setAccountOrders(data))
 }
 
-export const loadAccountTradeHistory = () => async (dispatch, getState) => {
+export const loadAccountTradeHistory = () => async (dispatch, getState, { socket }) => {
   const { account } = getState()
   const { data } = await axios.get(`/api/v1/accounts/${account}/history`)
   const expandedTradeHistory = data.map(expandAccountTradeHistory)
 
   dispatch(setAccountTradeHistory(expandedTradeHistory))
+
+  socket.send(JSON.stringify({
+    type: 'subscribe',
+    channel: 'tradeHistory',
+    requestId: uuidv4(),
+    payload: {
+      $or: [
+        { makerAddress: account },
+        { takerAddress: account }
+      ]
+    }
+  }))
 }
 
 const expandAccountTradeHistory = one => {
@@ -401,4 +412,13 @@ export const updateAccountData = () => async (dispatch, getState, { blockchainSe
   if (nextNetwork !== network) {
     dispatch(setNetwork(nextNetwork))
   }
+}
+
+export const addTradeHistory = tradeHistoryItems => (dispatch, getState) => {
+  const { accountTradeHistory } = getState()
+
+  dispatch(setAccountTradeHistory([
+    ...tradeHistoryItems.map(expandAccountTradeHistory),
+    ...accountTradeHistory
+  ]))
 }
