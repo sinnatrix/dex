@@ -1,5 +1,4 @@
 import * as WebSocket from 'ws'
-import * as R from 'ramda'
 import log from '../utils/log'
 import config from '../config'
 import { convertOrderToSRA2Format } from '../utils/helpers'
@@ -124,88 +123,47 @@ class WsRelayerServer {
     this.clients = this.clients
       .map(client => ({
         ...client,
-        subscriptions: sift({ channel: { $eq: channel }}, client.subscriptions) // .filter(subscription => subscription.channel !== channel)
+        subscriptions: client.subscriptions.filter(subscription => subscription.channel !== channel)
       }))
       .filter(one => one.subscriptions.length > 0)
   }
 
-  pushOrder (order) {
-    const clients = this.findClientSubscriptionsForOrder(order)
-    const sra2Order = convertOrderToSRA2Format(order)
-
-    clients.forEach(client => {
-      client.subscriptions.forEach(subscription => {
-        client.ws.send(JSON.stringify(
-          {
-            type: 'update',
-            channel: 'orders',
-            requestId: subscription.requestId,
-            payload: [ sra2Order ]
-          }
-        ))
-      })
-    })
-  }
-
-  findClientSubscriptionsForOrder (order) {
-    const clients = this.findClientSubscriptionsForChannel('orders')
-
-    return clients.map(client => ({
-      ...client,
-      subscriptions: client.subscriptions
-        .filter(subscription => {
-          return sift(
-            R.pick(
-              Object.keys(subscription.payload),
-              order
-            ),
-            [ subscription.payload ]
-          ).length > 0
-        }
-      )
-    }))
-    .filter(one => one.subscriptions.length > 0)
-  }
-
-  findClientSubscriptionsForChannel (channel) {
+  filterClientSubscriptions (channel, data) {
     return this.clients
       .map(client => ({
         ...client,
-        subscriptions: client.subscriptions.filter(subscription => subscription.channel === channel)
+        subscriptions: client.subscriptions
+          .filter(subscription => subscription.channel === channel)
+          .filter(subscription => sift(subscription.payload,[ data ]))
       }))
       .filter(one => one.subscriptions.length > 0)
   }
 
-  pushTradeHistory (tradeHistoryItem) {
-    const clients = this.findClientSubscriptionsForTradeHistory(tradeHistoryItem)
+  pushUpdate (channel, payload) {
+    const clients = this.filterClientSubscriptions(channel, payload)
 
     clients.forEach(client => {
-      client.subscriptions.forEach(subscription => {
+      client.subscriptions.forEach(({ requestId }) => {
         client.ws.send(JSON.stringify(
           {
             type: 'update',
-            channel: 'tradeHistory',
-            requestId: subscription.requestId,
-            payload: [ tradeHistoryItem ]
+            channel,
+            requestId,
+            payload
           }
         ))
       })
     })
   }
 
-  findClientSubscriptionsForTradeHistory (tradeHistoryItem) {
-    const clients = this.findClientSubscriptionsForChannel('tradeHistory')
+  pushOrder (order) {
+    const sra2Order = convertOrderToSRA2Format(order)
 
-    return clients.map(client => ({
-      ...client,
-      subscriptions: client.subscriptions.filter(subscription => {
-        return sift(
-          subscription.payload,
-          [ tradeHistoryItem ]
-        ).length > 0
-      })
-    }))
-    .filter(one => one.subscriptions.length > 0)
+    this.pushUpdate('orders', [ sra2Order ])
+  }
+
+  pushTradeHistory (tradeHistoryItem) {
+    this.pushUpdate('tradeHistory', [ tradeHistoryItem ])
   }
 }
 
