@@ -2,16 +2,19 @@ import OrderBlockchainService from './OrderBlockchainService'
 import { convertFillEventToDexTradeHistory } from '../utils/helpers'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import log from '../utils/log'
+import WsRelayerServer from '../wsServers/WsRelayerServer'
 
 class TradeHistoryService {
   WS_MAX_CONNECTION_ATTEMPTS = 10
 
   orderBlockchainService: OrderBlockchainService
   tradeHistoryRepository: TradeHistoryRepository
+  wsRelayerServer: WsRelayerServer
 
-  constructor ({ connection, orderBlockchainService }) {
+  constructor ({ connection, orderBlockchainService, wsRelayerServer }) {
     this.orderBlockchainService = orderBlockchainService
     this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
+    this.wsRelayerServer = wsRelayerServer
   }
 
   async attach () {
@@ -54,13 +57,18 @@ class TradeHistoryService {
     this.orderBlockchainService.subscribe(
       'Fill',
       fillEvent => {
-
         log.info('fillEvent', fillEvent)
+
+        const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEvent)
+
+        this.wsRelayerServer.pushTradeHistory(tradeHistoryItem)
+
         return this.tradeHistoryRepository
-          .saveFullTradeHistory([convertFillEventToDexTradeHistory(fillEvent)])
+          .saveFullTradeHistory([ tradeHistoryItem ])
       },
       async error => {
         console.error('Connection error: ', error, 'trying to reconnect #', attemptNumber)
+
         if (attemptNumber < this.WS_MAX_CONNECTION_ATTEMPTS) {
           await this.subscribeToTradeHistoryEvents(attemptNumber + 1)
         }

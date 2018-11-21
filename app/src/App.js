@@ -7,7 +7,7 @@ import { MuiThemeProvider } from '@material-ui/core/styles'
 import { Provider } from 'react-redux'
 import theme from './theme'
 import createStore from './createStore'
-import { addOrders } from './modules/index'
+import { addOrders, addTradeHistory } from './modules/index'
 import BlockchainService from './services/BlockchainService'
 import Web3 from 'web3'
 
@@ -39,10 +39,14 @@ class App extends React.Component {
   async componentDidMount () {
     this.socket.addEventListener('message', message => {
       const data = JSON.parse(message.data)
-      const { type, channel, payload: orders } = data
+      const { type, channel, payload } = data
 
       if (type === 'update' && channel === 'orders') {
-        this.store.dispatch(addOrders(orders))
+        this.store.dispatch(addOrders(payload))
+      }
+
+      if (type === 'update' && channel === 'tradeHistory') {
+        this.store.dispatch(addTradeHistory(payload))
       }
     })
 

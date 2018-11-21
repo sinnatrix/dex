@@ -22,7 +22,7 @@ const decorate = jss({
 
 const connector = connect(
   state => ({
-    accountHistory: state.accountHistory,
+    accountTradeHistory: state.accountTradeHistory,
     tokens: state.tokens
   }),
   { loadAccountTradeHistory }
@@ -34,18 +34,18 @@ class TradeHistory extends React.Component {
   }
 
   render () {
-    const { accountHistory, tokens, classes } = this.props
+    const { accountTradeHistory, tokens, classes } = this.props
 
-    if (accountHistory.length === 0) {
+    if (accountTradeHistory.length === 0) {
       return null
     }
 
     return (
       <ReactTable
-        data={accountHistory}
+        data={accountTradeHistory}
         showPagination={false}
-        defaultPageSize={accountHistory.length}
-        pageSize={accountHistory.length}
+        defaultPageSize={accountTradeHistory.length}
+        pageSize={accountTradeHistory.length}
         resizable={false}
         columns={[
           {
@@ -53,6 +53,7 @@ class TradeHistory extends React.Component {
             id: 'sold',
             minWidth: 80,
             accessor: one => {
+              console.log(one)
               const [ makerToken ] = tokens.filter(token => token.address === one.makerAssetAddress)
               return `
                 ${formatAssetAmount(one.makerAssetFilledAmount, { decimals: makerToken.decimals })}
