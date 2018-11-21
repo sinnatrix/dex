@@ -222,18 +222,16 @@ export const loadOrderbook = () => async (dispatch, getState, { socket }) => {
     channel: 'orders',
     requestId: uuidv4(),
     payload: {
-      makerAssetAddress: marketplaceToken.address,
-      takerAssetAddress: currentToken.address
-    }
-  }))
-
-  socket.send(JSON.stringify({
-    type: 'subscribe',
-    channel: 'orders',
-    requestId: uuidv4(),
-    payload: {
-      makerAssetAddress: currentToken.address,
-      takerAssetAddress: marketplaceToken.address
+      $or: [
+        {
+          makerAssetAddress: marketplaceToken.address,
+          takerAssetAddress: currentToken.address
+        },
+        {
+          makerAssetAddress: currentToken.address,
+          takerAssetAddress: marketplaceToken.address
+        }
+      ]
     }
   }))
 
