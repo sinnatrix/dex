@@ -18,12 +18,14 @@ const SET_TOKENS = 'SET_TOKENS'
 const SET_TOKEN_ALLOWANCE = 'SET_TOKEN_ALLOWANCE'
 const SET_ACCOUNT_ORDERS = 'SET_ACCOUNT_ORDERS'
 const SET_ACCOUNT_TRADE_HISTORY = 'SET_ACCOUNT_TRADE_HISTORY'
+const SET_ENABLED = 'SET_ENABLED'
 
 const initialState = {
   bids: [],
   asks: [],
   marketplaceToken: {},
   currentToken: {},
+  enabled: false,
   account: '',
   accountOrders: [],
   accountTradeHistory: [],
@@ -72,6 +74,8 @@ export default (state = initialState, { type, payload }) => {
       return { ...state, accountOrders: payload }
     case SET_ACCOUNT_TRADE_HISTORY:
       return { ...state, accountTradeHistory: payload }
+    case SET_ENABLED:
+      return { ...state, enabled: payload }
     default:
       return state
   }
@@ -89,6 +93,7 @@ const setEthBalance = payload => ({ type: SET_ETH_BALANCE, payload })
 const setTokenAllowance = (symbol, value) => ({ type: SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
 const setAccountOrders = payload => ({ type: SET_ACCOUNT_ORDERS, payload })
 const setAccountTradeHistory = payload => ({ type: SET_ACCOUNT_TRADE_HISTORY, payload })
+const setEnabled = payload => ({ type: SET_ENABLED, payload })
 
 export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState()
@@ -398,7 +403,18 @@ const expandAccountTradeHistory = one => {
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
 }
+
+export const makeConnectRequest = () => async (dispatch, getState, { blockchainService }) => {
+  await blockchainService.enable()
+  dispatch(setEnabled(true))
+}
+
 export const updateAccountData = () => async (dispatch, getState, { blockchainService }) => {
+  const { enabled } = getState()
+  if (!enabled) {
+    return
+  }
+
   const { network, account } = getState()
 
   const accounts = await blockchainService.getAccounts()
