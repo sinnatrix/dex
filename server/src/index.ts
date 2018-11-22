@@ -45,4 +45,6 @@ const { createContainer, asValue, asClass } = require('awilix')
   container.resolve('server').listen(process.env.PORT, () => {
     log.info('started server on port', process.env.PORT)
   })
-})().catch(log.error)
+})().catch(e => {
+  console.error(e)
+})

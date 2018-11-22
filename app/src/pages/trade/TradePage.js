@@ -3,7 +3,7 @@ import jss from 'react-jss'
 import Layout from 'components/Layout'
 import Wallet from './components/wallet/Wallet'
 import Marketplace from './components/Marketplace'
-import OrderPanel from './components/OrderPanel'
+import LimitOrderPanel from './components/LimitOrderPanel'
 import Orderbook from './components/orderbook/Orderbook'
 import routerListener from 'hocs/routerListener'
 import compose from 'ramda/es/compose'
@@ -48,7 +48,7 @@ const TradePage = ({ classes }) =>
     </div>
     <div className={classes.left}>
       <Marketplace />
-      <OrderPanel />
+      <LimitOrderPanel />
     </div>
     <div className={classes.right}>
       <Orderbook />
