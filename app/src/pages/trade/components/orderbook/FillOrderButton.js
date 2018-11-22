@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import SmartButton from 'material-ui-smart-button'
+import ProgressButton from 'components/ProgressButton'
 import axios from 'axios'
 import { fillOrder } from 'modules/index'
 
@@ -20,9 +20,9 @@ class FillOrderButton extends React.Component {
 
   render () {
     return (
-      <SmartButton onClick={this.handleClick} variant='contained'>
+      <ProgressButton onClick={this.handleClick} variant='contained' replaceContent>
         Fill
-      </SmartButton>
+      </ProgressButton>
     )
   }
 }

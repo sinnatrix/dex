@@ -92,7 +92,7 @@ class OrdersTable extends React.Component {
             Header: '',
             id: 'fill',
             Cell: ({ original: order }) => order.spread ? null : <FillOrderButton order={order} />,
-            width: 50,
+            width: 64,
             className: classes.controlColumn
           }
         ]}

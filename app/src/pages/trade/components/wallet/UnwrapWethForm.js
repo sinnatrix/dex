@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
-import SmartButton from 'material-ui-smart-button'
+import ProgressButton from 'components/ProgressButton'
 import { connect } from 'react-redux'
 import { unwrapWeth } from 'modules/index'
 
@@ -49,7 +49,7 @@ class UnwrapWethForm extends React.Component {
     return (
       <div className={classes.root}>
         <TextField value={value} onChange={this.handleChange} />
-        <SmartButton variant='contained' onClick={this.handleClick} className={classes.button}>Unwrap</SmartButton>
+        <ProgressButton variant='contained' onClick={this.handleClick} className={classes.button}>Unwrap</ProgressButton>
       </div>
     )
   }
