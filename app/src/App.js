@@ -29,7 +29,7 @@ class App extends React.Component {
   }
 
   createBlockchainService () {
-    const web3 = new Web3(window.web3.currentProvider)
+    const web3 = new Web3(window.ethereum)
     return new BlockchainService({
       web3,
       contractAddresses: null

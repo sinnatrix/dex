@@ -2,14 +2,14 @@ import React from 'react'
 import jss from 'react-jss'
 import EtherscanLink from 'components/EtherscanLink'
 import { connect } from 'react-redux'
-import { loadTokens, updateAccountData } from 'modules/index'
+import { loadTokens, updateAccountData, makeConnectRequest } from 'modules/index'
 
 const connector = connect(
   state => ({
     network: state.network,
     account: state.account
   }),
-  { loadTokens, updateAccountData }
+  { loadTokens, updateAccountData, makeConnectRequest }
 )
 
 const decorate = jss({
@@ -26,6 +26,7 @@ class ConnectionWidget extends React.Component {
   timeout
 
   async componentDidMount () {
+    this.props.makeConnectRequest()
     this.updateAccountDataWithTimeout()
     this.props.loadTokens()
   }

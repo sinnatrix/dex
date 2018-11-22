@@ -40,6 +40,10 @@ class BlockchainService {
     this.contractWrappers = new ContractWrappers(this.web3.currentProvider, config)
   }
 
+  enable () {
+    return this.web3.currentProvider.enable()
+  }
+
   async getAccounts () {
     return this.web3.eth.getAccounts()
   }
