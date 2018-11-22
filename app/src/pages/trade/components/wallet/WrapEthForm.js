@@ -3,7 +3,7 @@ import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import { connect } from 'react-redux'
 import { wrapEth } from 'modules/index'
-import SmartButton from 'material-ui-smart-button'
+import ProgressButton from 'components/ProgressButton'
 
 const connector = connect(
   null,
@@ -50,7 +50,7 @@ class WrapEthForm extends React.Component {
     return (
       <div className={classes.root}>
         <TextField value={value} onChange={this.handleChange} />
-        <SmartButton variant='contained' onClick={this.handleClick} className={classes.button}>Wrap</SmartButton>
+        <ProgressButton variant='contained' onClick={this.handleClick} className={classes.button}>Wrap</ProgressButton>
       </div>
     )
   }

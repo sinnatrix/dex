@@ -2,7 +2,7 @@ import React from 'react'
 import jss from 'react-jss'
 import axios from 'axios'
 import format from 'date-fns/format'
-import SmartButton from 'material-ui-smart-button'
+import ProgressButton from 'components/ProgressButton'
 
 const decorate = jss({
   root: {
@@ -61,7 +61,7 @@ class Order extends React.Component {
 
     return (
       <div className={classes.root}>
-        <SmartButton variant='contained' onClick={this.validate}>Validate</SmartButton>
+        <ProgressButton variant='contained' onClick={this.validate}>Validate</ProgressButton>
         {error || 'valid'}
         <div>
           {format(d, 'YYYY-MM-DD')}

@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
-import SmartButton from 'material-ui-smart-button'
+import ProgressButton from 'components/ProgressButton'
 import OrderModeRadio from './OrderModeRadio'
 import { makeMarketOrder } from 'modules/index'
 import { connect } from 'react-redux'
@@ -78,12 +78,12 @@ class MarketOrderForm extends React.Component {
           onChange={this.handleAmountChange}
         />
 
-        <SmartButton
+        <ProgressButton
           variant='contained'
           color='secondary'
           className={classes.button}
           onClick={this.handlePlaceOrder}
-        >Place order</SmartButton>
+        >Place order</ProgressButton>
       </div>
     )
   }

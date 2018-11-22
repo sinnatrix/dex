@@ -1,12 +1,12 @@
 import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
-import SmartButton from 'material-ui-smart-button'
 import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
 import { makeLimitOrder } from 'modules/index'
 import { BigNumber } from '@0x/utils'
 import OrderModeRadio from './OrderModeRadio'
+import ProgressButton from 'components/ProgressButton'
 
 const connector = connect(
   state => ({
@@ -89,12 +89,12 @@ class LimitOrderForm extends React.Component {
           onChange={this.handlePriceChange}
         />
 
-        <SmartButton
+        <ProgressButton
           className={classes.button}
           variant='contained'
           color='secondary'
           onClick={this.handlePlaceOrder}
-        >Place order</SmartButton>
+        >Place order</ProgressButton>
       </div>
     )
   }
