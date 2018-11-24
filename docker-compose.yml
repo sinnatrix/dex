@@ -1,6 +1,32 @@
 version: "3"
 
 services:
+  nginx:
+    build: ./nginx
+    image: dex-nginx
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
+      - server
+  app:
+    build: ./app
+    image: dex-app
+  server:
+    build: ./server
+    image: dex-server
+    depends_on:
+      - postgres
+    environment:
+      PORT: 80
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      BLOCKCHAIN_NODE_URL: ${BLOCKCHAIN_NODE_URL}
+      NETWORK_ID: ${NETWORK_ID}
+      WS_INFURA_HOST: ${WS_INFURA_HOST}
   postgres:
     image: postgres:10.5-alpine
     environment:
@@ -8,7 +34,5 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - ${POSTGRES_HOST}:${POSTGRES_PORT}:5432
     volumes:
       - ${POSTGRES_VOLUME}:${PGDATA}

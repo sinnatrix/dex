@@ -6,6 +6,8 @@
   "main": "index.js",
   "repository": "git@github.com:lunochkin/dex.git",
   "scripts": {
-    "docs": "grip"
+    "docs": "grip",
+    "start": "docker-compose up --build",
+    "stop": "docker-compose down"
   }
 }

@@ -15,6 +15,6 @@ FROM node:10.13.0-alpine
 COPY --from=builder /app /app
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
-EXPOSE 7001
+EXPOSE 80
 
 CMD ["yarn", "start"]
