@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  nginx:
+    ports:
+      - "3000:80"
+  server:
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      BLOCKCHAIN_NODE_URL: ${BLOCKCHAIN_NODE_URL}
+      NETWORK_ID: ${NETWORK_ID}
+      WS_INFURA_HOST: ${WS_INFURA_HOST}
+  postgres:
+    environment:
+      PGDATA: ${PGDATA}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${POSTGRES_VOLUME}:${PGDATA}
