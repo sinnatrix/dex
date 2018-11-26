@@ -19,3 +19,7 @@ _data
 
 # environment
 .env
+
+.gitsecret/keys/random_seed
+docker-compose.prod.yml
+
