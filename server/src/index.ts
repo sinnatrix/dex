@@ -15,8 +15,19 @@ import OrderBlochainService from './services/OrderBlockchainService'
 import TradeHistoryService from './services/TradeHistoryService'
 const { createContainer, asValue, asClass } = require('awilix')
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 ;(async () => {
-  const connection = await createConnection(ormconfig as any)
+  let connection
+  do {
+    try {
+      connection = await createConnection(ormconfig as any)
+    } catch (e) {
+      console.error(e.message)
+      await delay(2000)
+      console.log('Trying to connect to db...')
+    }
+  } while (!connection)
 
   const application = express()
 

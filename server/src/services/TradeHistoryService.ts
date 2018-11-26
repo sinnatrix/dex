@@ -4,6 +4,8 @@ import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import log from '../utils/log'
 import WsRelayerServer from '../wsServers/WsRelayerServer'
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 class TradeHistoryService {
   WS_MAX_CONNECTION_ATTEMPTS = 10
 
@@ -32,7 +34,11 @@ class TradeHistoryService {
     let fillEvents = []
 
     // TODO Remove when infura fixed
-    let attempts = 15
+    let attempts = 0
+    if (process.env.LOAD_HISTORY_ATTEMPTS_COUNT === undefined) {
+      attempts = parseInt(process.env.LOAD_HISTORY_ATTEMPTS_COUNT as any, 10)
+    }
+
     while (attempts > 0) {
       const result = await this.orderBlockchainService.getPastEvents('Fill', { fromBlock })
 
@@ -67,7 +73,9 @@ class TradeHistoryService {
           .saveFullTradeHistory([ tradeHistoryItem ])
       },
       async error => {
-        console.error('Connection error: ', error, 'trying to reconnect #', attemptNumber)
+        console.error('Connection error: ', error)
+        await delay(1000)
+        console.log('Trying to reconnect #', attemptNumber)
 
         if (attemptNumber < this.WS_MAX_CONNECTION_ATTEMPTS) {
           await this.subscribeToTradeHistoryEvents(attemptNumber + 1)
