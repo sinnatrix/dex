@@ -2,7 +2,7 @@ import OrderBlockchainService from './OrderBlockchainService'
 import { convertFillEventToDexTradeHistory } from '../utils/helpers'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import log from '../utils/log'
-import WsRelayerServer from '../wsServers/WsRelayerServer'
+import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -67,7 +67,7 @@ class TradeHistoryService {
 
         const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEvent)
 
-        this.wsRelayerServer.pushTradeHistory(tradeHistoryItem)
+        this.wsRelayerServer.pushUpdate('tradeHistory', [tradeHistoryItem], [tradeHistoryItem])
 
         return this.tradeHistoryRepository
           .saveFullTradeHistory([ tradeHistoryItem ])

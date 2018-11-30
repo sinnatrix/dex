@@ -2,9 +2,11 @@ import * as express from 'express'
 import { BigNumber } from '@0x/utils'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
+import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderRepository from '../repositories/OrderRepository'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
+import { convertOrderToSRA2Format } from '../utils/helpers'
 import { Equal, MoreThan, Not } from 'typeorm'
 
 class V1OwnController {
@@ -14,7 +16,7 @@ class V1OwnController {
   orderRepository: any
   tradeHistoryRepository: any
   orderBlockchainService: any
-  wsRelayerServer: any
+  wsRelayerServer: WsRelayerServer
 
   constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
     this.application = application
@@ -161,7 +163,7 @@ class V1OwnController {
 
     res.status(200).json(orderForSave)
 
-    this.wsRelayerServer.pushOrder(orderForSave)
+    this.wsRelayerServer.pushUpdate('orders', [convertOrderToSRA2Format(orderForSave)], [orderForSave])
   }
 }
 

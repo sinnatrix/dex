@@ -8,14 +8,15 @@ import OrderRepository from '../repositories/OrderRepository'
 import Token from '../entities/Token'
 import TokenPair from '../entities/TokenPair'
 import config from '../config'
-import { convertOrderToDexFormat } from '../utils/helpers'
+import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
+import { convertOrderToDexFormat, convertOrderToSRA2Format } from '../utils/helpers'
 import { validateRequiredField, validateNetworkId } from '../validation'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 class V0RelayerController {
   application: any
-  wsRelayerServer: any
+  wsRelayerServer: WsRelayerServer
   tokenRepository: any
   tokenPairRepository: any
   orderRepository: any
@@ -169,7 +170,7 @@ class V0RelayerController {
 
     res.status(201).end()
 
-    this.wsRelayerServer.pushOrder(orderToSave)
+    this.wsRelayerServer.pushUpdate('orders', [convertOrderToSRA2Format(orderToSave)], [orderToSave])
   }
 
   async checkFees (req, res) {
