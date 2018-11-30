@@ -2,11 +2,11 @@ import React from 'react'
 import jss from 'react-jss'
 import Switch from '@material-ui/core/Switch'
 import { connect } from 'react-redux'
-import { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance } from 'modules/index'
+import { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance } from 'modules/global'
 
 const connector = connect(
   (state, ownProps) => ({
-    allowance: state.tokenAllowances[ownProps.token.symbol]
+    allowance: state.global.tokenAllowances[ownProps.token.symbol]
   }),
   { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance }
 )

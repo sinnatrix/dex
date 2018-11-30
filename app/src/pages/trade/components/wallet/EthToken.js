@@ -1,14 +1,14 @@
 import React from 'react'
 import jss from 'react-jss'
 import { connect } from 'react-redux'
-import { loadEthBalance } from 'modules/index'
+import { loadEthBalance } from 'modules/global'
 import WrapEthForm from './WrapEthForm'
 import TokenHeader from './TokenHeader'
 import TokenBalance from './TokenBalance'
 
 const connector = connect(
   state => ({
-    ethBalance: state.ethBalance
+    ethBalance: state.global.ethBalance
   }),
   { loadEthBalance }
 )

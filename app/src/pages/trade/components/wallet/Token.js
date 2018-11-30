@@ -1,6 +1,6 @@
 import React from 'react'
 import jss from 'react-jss'
-import { loadTokenBalance } from 'modules/index'
+import { loadTokenBalance } from 'modules/global'
 import { connect } from 'react-redux'
 import TokenAllowance from './TokenAllowance'
 import TokenHeader from './TokenHeader'
@@ -8,7 +8,7 @@ import TokenBalance from './TokenBalance'
 
 const connector = connect(
   (state, ownProps) => ({
-    balance: state.tokenBalances[ownProps.token.symbol]
+    balance: state.global.tokenBalances[ownProps.token.symbol]
   }),
   { loadTokenBalance }
 )

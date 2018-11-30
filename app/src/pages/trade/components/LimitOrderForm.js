@@ -3,15 +3,15 @@ import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
-import { makeLimitOrder } from 'modules/index'
+import { makeLimitOrder } from 'modules/global'
 import { BigNumber } from '@0x/utils'
 import OrderModeRadio from './OrderModeRadio'
 import ProgressButton from 'components/ProgressButton'
 
 const connector = connect(
   state => ({
-    marketplaceToken: state.marketplaceToken,
-    currentToken: state.currentToken
+    marketplaceToken: state.global.marketplaceToken,
+    currentToken: state.global.currentToken
   }),
   { makeLimitOrder }
 )

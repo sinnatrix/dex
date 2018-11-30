@@ -271,26 +271,21 @@ class BlockchainService {
   }
 
   /**
-   *
-   * @param web3
    * @param account string Taker Address HexString leaded by 0x
-   * @param order {Object} Signed order with metaData
-   * @param amount number Will be converted to BigNumber and then to BaseUnitAmount
+   * @param signedOrder {Object} Signed order with metaData
+   * @param takerAssetFillAmount string The amount of the order (in taker asset baseUnits)
    * @returns {Promise} txHash
    */
-  async fillOrderAsync (account, order, amount) {
+  async fillOrderAsync (signedOrder, takerAssetFillAmount, account) {
     try {
-      await this.contractWrappers.exchange.validateOrderFillableOrThrowAsync(order)
+      await this.contractWrappers.exchange.validateOrderFillableOrThrowAsync(signedOrder)
     } catch (e) {
       console.warn('Order cannot be fulfilled')
       return null
     }
 
-    // TODO remove magic number '18' and get value from database token decimals
-    const takerAssetFillAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(amount), 18)
-
     return this.contractWrappers.exchange.fillOrderAsync(
-      order,
+      signedOrder,
       takerAssetFillAmount,
       account
     )

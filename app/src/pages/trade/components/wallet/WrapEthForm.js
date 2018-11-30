@@ -2,7 +2,7 @@ import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import { connect } from 'react-redux'
-import { wrapEth } from 'modules/index'
+import { wrapEth } from 'modules/global'
 import ProgressButton from 'components/ProgressButton'
 
 const connector = connect(

@@ -2,12 +2,12 @@ import React from 'react'
 import jss from 'react-jss'
 import EtherscanLink from 'components/EtherscanLink'
 import { connect } from 'react-redux'
-import { loadTokens, updateAccountData, makeConnectRequest } from 'modules/index'
+import { loadTokens, updateAccountData, makeConnectRequest } from 'modules/global'
 
 const connector = connect(
   state => ({
-    network: state.network,
-    account: state.account
+    network: state.global.network,
+    account: state.global.account
   }),
   { loadTokens, updateAccountData, makeConnectRequest }
 )

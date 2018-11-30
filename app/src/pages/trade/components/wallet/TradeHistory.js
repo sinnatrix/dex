@@ -1,10 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import jss from 'react-jss'
-import { loadAccountTradeHistory } from 'modules/index'
+import { wsUnsubscribe } from 'modules/subscriptions'
 import ReactTable from 'react-table'
 import { formatAssetAmount } from 'helpers/general'
 import EtherscanLink from 'components/EtherscanLink'
+import { getTokens } from 'modules/global/selectors'
 
 const cellStyle = {
   fontSize: '0.7em',
@@ -22,30 +23,25 @@ const decorate = jss({
 
 const connector = connect(
   state => ({
-    accountTradeHistory: state.accountTradeHistory,
-    tokens: state.tokens
+    tokens: getTokens(state)
   }),
-  { loadAccountTradeHistory }
+  { wsUnsubscribe }
 )
 
 class TradeHistory extends React.Component {
-  componentDidMount () {
-    this.props.loadAccountTradeHistory()
-  }
-
   render () {
-    const { accountTradeHistory, tokens, classes } = this.props
+    const { tradeHistory, tokens, classes } = this.props
 
-    if (accountTradeHistory.length === 0) {
+    if (tradeHistory.length === 0) {
       return null
     }
 
     return (
       <ReactTable
-        data={accountTradeHistory}
+        data={tradeHistory}
         showPagination={false}
-        defaultPageSize={accountTradeHistory.length}
-        pageSize={accountTradeHistory.length}
+        defaultPageSize={tradeHistory.length}
+        pageSize={tradeHistory.length}
         resizable={false}
         columns={[
           {
@@ -53,7 +49,7 @@ class TradeHistory extends React.Component {
             id: 'sold',
             minWidth: 80,
             accessor: one => {
-              const [ makerToken ] = tokens.filter(token => token.address === one.makerAssetAddress)
+              const [ makerToken ] = tokens.filter(token => token.assetData === one.makerAssetData)
               return `
                 ${formatAssetAmount(one.makerAssetFilledAmount, { decimals: makerToken.decimals })}
                 ${makerToken.symbol}
@@ -66,7 +62,7 @@ class TradeHistory extends React.Component {
             id: 'Bought',
             minWidth: 80,
             accessor: one => {
-              const [ takerToken ] = tokens.filter(token => token.address === one.takerAssetAddress)
+              const [ takerToken ] = tokens.filter(token => token.assetData === one.takerAssetData)
               return `
                 ${formatAssetAmount(one.takerAssetFilledAmount, { decimals: takerToken.decimals })}
                 ${takerToken.symbol}

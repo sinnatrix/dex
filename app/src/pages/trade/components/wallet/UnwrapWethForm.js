@@ -3,7 +3,7 @@ import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import ProgressButton from 'components/ProgressButton'
 import { connect } from 'react-redux'
-import { unwrapWeth } from 'modules/index'
+import { unwrapWeth } from 'modules/global'
 
 const connector = connect(
   null,

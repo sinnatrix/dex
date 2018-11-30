@@ -7,8 +7,8 @@ import { connect } from 'react-redux'
 
 const connector = connect(
   state => ({
-    account: state.account,
-    tokens: state.tokens
+    account: state.global.account,
+    tokens: state.global.tokens
   })
 )
 

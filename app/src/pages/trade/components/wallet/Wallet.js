@@ -7,6 +7,21 @@ import Tab from '@material-ui/core/Tab'
 import TokensList from './TokensList'
 import OrdersList from './OrdersList'
 import TradeHistory from './TradeHistory'
+import connect from 'react-redux/es/connect/connect'
+import compose from 'ramda/es/compose'
+import { loadAccountTradeHistory } from 'modules/tradeHistory'
+import { getAccountTradeHistory } from 'modules/tradeHistory/selectors'
+
+const TradeHistoryContainer = connect(
+  state => ({
+    tradeHistory: getAccountTradeHistory(state)
+  })
+)(TradeHistory)
+
+const connector = connect(
+  null,
+  { loadAccountTradeHistory }
+)
 
 const StyledTab = jss({
   root: {
@@ -36,6 +51,11 @@ class Wallet extends React.Component {
 
   handleChange = (e, value) => {
     this.setState({ value })
+
+    // FIXME
+    if (value === 2) {
+      this.props.loadAccountTradeHistory()
+    }
   }
 
   render () {
@@ -52,10 +72,13 @@ class Wallet extends React.Component {
         </Tabs>
         {value === 0 && <TokensList />}
         {value === 1 && <OrdersList />}
-        {value === 2 && <TradeHistory />}
+        {value === 2 && <TradeHistoryContainer />}
       </Panel>
     )
   }
 }
 
-export default decorate(Wallet)
+export default compose(
+  connector,
+  decorate
+)(Wallet)

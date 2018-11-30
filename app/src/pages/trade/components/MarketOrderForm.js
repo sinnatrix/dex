@@ -3,13 +3,13 @@ import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import ProgressButton from 'components/ProgressButton'
 import OrderModeRadio from './OrderModeRadio'
-import { makeMarketOrder } from 'modules/index'
+import { makeMarketOrder } from 'modules/global'
 import { connect } from 'react-redux'
 
 const connector = connect(
   state => ({
-    marketplaceToken: state.marketplaceToken,
-    currentToken: state.currentToken
+    marketplaceToken: state.global.marketplaceToken,
+    currentToken: state.global.currentToken
   }),
   { makeMarketOrder }
 )
