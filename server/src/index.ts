@@ -7,13 +7,14 @@ import * as http from 'http'
 import { createConnection } from 'typeorm'
 import log from './utils/log'
 import ormconfig from '../ormconfig'
-import WsRelayerServer from './wsServers/WsRelayerServer'
+import makeWebsocketServerFactory from './factories/makeWebsocketServerFactory'
+import WsRelayerServer from './wsRelayerServer/WsRelayerServer'
 import V1OwnController from './controllers/V1OwnController'
 import V0RelayerController from './controllers/V0RelayerController'
 import BlockchainService from './services/BlockchainService'
 import OrderBlochainService from './services/OrderBlockchainService'
 import TradeHistoryService from './services/TradeHistoryService'
-const { createContainer, asValue, asClass } = require('awilix')
+const { createContainer, asValue, asClass, asFunction } = require('awilix')
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -45,7 +46,8 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
     v0RelayerController: asClass(V0RelayerController).singleton(),
     blockchainService: asClass(BlockchainService).singleton(),
     orderBlockchainService: asClass(OrderBlochainService).singleton(),
-    tradeHistoryService: asClass(TradeHistoryService).singleton()
+    tradeHistoryService: asClass(TradeHistoryService).singleton(),
+    websocketServerFactory: asFunction(makeWebsocketServerFactory).singleton()
   })
 
   container.resolve('wsRelayerServer').attach()
