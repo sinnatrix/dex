@@ -23,9 +23,6 @@ class WsRelayerServerSubscriptionsStorage {
   }
 
   find (channel: TChannel, data: any[]): ISubscription[] {
-    console.log('all subscriptions: ', this.subscriptions)
-    console.log('channel: ', channel)
-    console.log('data: ', data)
     return this.subscriptions
       .filter(subscription => subscription.channel === channel)
       .filter(subscription => sift(subscription.payload, data).length > 0)
