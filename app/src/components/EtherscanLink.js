@@ -6,7 +6,7 @@ import Button from '@material-ui/core/Button'
 
 const connector = connect(
   state => ({
-    network: state.network
+    network: state.global.network
   })
 )
 

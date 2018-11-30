@@ -1,15 +1,14 @@
 import React from 'react'
 import jss from 'react-jss'
 import { connect } from 'react-redux'
-import Typography from '@material-ui/core/Typography'
-import Toolbar from '@material-ui/core/Toolbar'
 import compose from 'ramda/es/compose'
 import OrdersTable from './OrdersTable'
+import { getOrderbookBids, getOrderbookAsks } from 'modules/orders/selectors'
 
 const connector = connect(
   state => ({
-    bids: state.bids,
-    asks: state.asks
+    bids: getOrderbookBids(state),
+    asks: getOrderbookAsks(state)
   })
 )
 
@@ -22,30 +21,31 @@ const decorate = jss({
   }
 })
 
-const Orderbook = ({ classes, bids, asks }) => {
-  let orders = bids
-  if (bids.length && asks.length) {
-    const minBidPrice = bids[bids.length - 1].price
-    const maxAskPrice = asks[0].price
-    const spread = {
-      value: minBidPrice.minus(maxAskPrice)
+class Orderbook extends React.Component {
+  render () {
+    const { classes, bids, asks } = this.props
+
+    let orders = bids
+    if (bids.length && asks.length) {
+      const minBidPrice = bids[bids.length - 1].extra.price
+      const maxAskPrice = asks[0].extra.price
+      const spread = {
+        value: minBidPrice.minus(maxAskPrice)
+      }
+      orders = orders.concat({ spread })
     }
-    orders = orders.concat({ spread })
-  }
-  orders = orders.concat(asks)
+    orders = orders.concat(asks)
 
-  if (orders.length === 0) {
-    return null
-  }
+    if (orders.length === 0) {
+      return null
+    }
 
-  return (
-    <div className={classes.root}>
-      <Toolbar>
-        <Typography variant='h6'>Orderbook</Typography>
-      </Toolbar>
-      <OrdersTable orders={orders} />
-    </div>
-  )
+    return (
+      <div className={classes.root}>
+        <OrdersTable orders={orders} />
+      </div>
+    )
+  }
 }
 
 export default compose(

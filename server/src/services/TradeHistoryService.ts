@@ -20,7 +20,10 @@ class TradeHistoryService {
   }
 
   async attach () {
-    await this.loadFullTradeHistory()
+    if (!process.env.LOAD_TRADE_HISTORY_ON_STARTUP || process.env.LOAD_TRADE_HISTORY_ON_STARTUP === 'yes') {
+      await this.loadFullTradeHistory()
+    }
+
     await this.subscribeToTradeHistoryEvents()
   }
 
@@ -34,11 +37,7 @@ class TradeHistoryService {
     let fillEvents = []
 
     // TODO Remove when infura fixed
-    let attempts = 0
-    if (process.env.LOAD_HISTORY_ATTEMPTS_COUNT === undefined) {
-      attempts = parseInt(process.env.LOAD_HISTORY_ATTEMPTS_COUNT as any, 10)
-    }
-
+    let attempts = 10
     while (attempts > 0) {
       const result = await this.orderBlockchainService.getPastEvents('Fill', { fromBlock })
 

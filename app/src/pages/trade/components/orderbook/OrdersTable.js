@@ -48,28 +48,28 @@ class OrdersTable extends React.Component {
         getTrProps={(state, rowInfo, column) => {
           return {
             spread: rowInfo.original.spread,
-            highlightClassName: rowInfo.original.highlight ? classes.highlight : ''
+            highlightClassName: !rowInfo.original.spread && rowInfo.original.extra.highlight ? classes.highlight : ''
           }
         }}
         columns={[
           {
             Header: 'price',
             id: 'price',
-            accessor: order => order.spread ? null : order.price.toFixed(6)
+            accessor: order => order.spread ? null : order.extra.price.toFixed(6)
           },
           {
             Header: 'selling',
             id: 'selling',
             accessor: order => order.spread
               ? null
-              : `${order.remainingMakerAmount.toFixed(6)} ${order.makerToken.symbol}`
+              : `${order.metaData.remainingMakerAssetAmount.toFixed(6)} ${order.extra.makerToken.symbol}`
           },
           {
             Header: 'buying',
             id: 'buying',
             accessor: order => order.spread
               ? null
-              : `${order.remainingTakerAmount.toFixed(6)} ${order.takerToken.symbol}`
+              : `${order.metaData.remainingTakerAssetAmount.toFixed(6)} ${order.extra.takerToken.symbol}`
           },
           {
             Header: 'expires',

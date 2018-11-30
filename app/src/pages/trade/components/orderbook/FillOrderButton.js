@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import ProgressButton from 'components/ProgressButton'
 import axios from 'axios'
-import { fillOrder } from 'modules/index'
+import { fillOrder } from 'modules/global'
 
 const connector = connect(
   null,
@@ -15,7 +15,7 @@ class FillOrderButton extends React.Component {
 
     await this.props.fillOrder(order)
 
-    await axios.get(`/api/v1/orders/${order.order.orderHash}/refresh`)
+    await axios.get(`/api/v1/orders/${order.metaData.orderHash}/refresh`)
   }
 
   render () {

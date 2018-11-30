@@ -1,15 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { loadActiveAccountOrders } from 'modules/index'
+import { loadActiveAccountOrders } from 'modules/orders'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
 import { formatAssetAmount } from 'helpers/general'
+import { getAccount } from 'modules/global/selectors'
+import { getAccountOrders } from 'modules/orders/selectors'
 
 const connector = connect(
   state => ({
-    accountOrders: state.accountOrders,
-    account: state.account,
-    tokens: state.tokens
+    accountOrders: getAccountOrders(state),
+    account: getAccount(state)
   }),
   { loadActiveAccountOrders }
 )
@@ -20,7 +21,7 @@ class OrdersList extends React.Component {
   }
 
   render () {
-    const { accountOrders, tokens } = this.props
+    const { accountOrders } = this.props
 
     if (accountOrders.length === 0) {
       return null
@@ -35,14 +36,13 @@ class OrdersList extends React.Component {
         resizable={false}
         columns={[
           {
-            Header: 'S',
+            Header: 'Sold',
             id: 'selling',
             minWidth: 80,
             accessor: order => {
-              const [ makerToken ] = tokens.filter(token => token.address === order.makerAssetAddress)
               return `
-                ${formatAssetAmount(order.makerAssetAmount, { decimals: makerToken.decimals })}
-                ${makerToken.symbol}
+                ${formatAssetAmount(order.order.makerAssetAmount, { decimals: order.extra.makerToken.decimals })}
+                ${order.extra.makerToken.symbol}
               `
             },
             style: {
@@ -50,14 +50,13 @@ class OrdersList extends React.Component {
             }
           },
           {
-            Header: 'B',
+            Header: 'Bought',
             id: 'buying',
             minWidth: 80,
             accessor: order => {
-              const [ takerToken ] = tokens.filter(token => token.address === order.takerAssetAddress)
               return `
-                ${formatAssetAmount(order.takerAssetAmount, { decimals: takerToken.decimals })}
-                ${takerToken.symbol}
+                ${formatAssetAmount(order.order.takerAssetAmount, { decimals: order.extra.takerToken.decimals })}
+                ${order.extra.takerToken.symbol}
               `
             },
             style: {
@@ -65,7 +64,7 @@ class OrdersList extends React.Component {
             }
           },
           {
-            Header: 'EXP',
+            Header: 'Expires',
             id: 'expires',
             minWidth: 80,
             accessor: order => this.renderExpiresAt(order),
@@ -79,7 +78,7 @@ class OrdersList extends React.Component {
   }
 
   renderExpiresAt = order => {
-    const date = new Date(parseInt(order.expirationTimeSeconds, 0) * 1000)
+    const date = new Date(parseInt(order.order.expirationTimeSeconds, 0) * 1000)
     return format(date, 'MM/DD HH:mm')
   }
 }

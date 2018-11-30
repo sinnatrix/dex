@@ -38,6 +38,7 @@ class V1OwnController {
     router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.get('/accounts/:address/history', this.getAccountTradeHistory.bind(this))
+    router.get('/tradeHistory', this.getTradeHistory.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
@@ -111,16 +112,38 @@ class V1OwnController {
         id: 'DESC'
       }
     })
+    const sra2Orders = accountOrders.map(convertOrderToSRA2Format)
+    res.json(sra2Orders)
+  }
 
-    res.json(accountOrders)
+  async getTradeHistory (req, res) {
+    const {
+      baseAssetData,
+      quoteAssetData,
+      page = 1,
+      perPage: take = 50
+    } = req.query
+
+    const skip = take * (page - 1)
+    const records = await this.tradeHistoryRepository.createQueryBuilder()
+      .where('("makerAssetData" = :baseAssetData AND "takerAssetData" = :quoteAssetData)')
+      .orWhere('("makerAssetData" = :quoteAssetData AND "takerAssetData" = :baseAssetData)')
+      .setParameters({ baseAssetData: baseAssetData, quoteAssetData: quoteAssetData })
+      .skip(skip)
+      .take(take)
+      .orderBy('"blockNumber"', 'DESC')
+      .getMany()
+
+    res.json(records)
   }
 
   async getAccountTradeHistory (req, res) {
     const { address } = req.params
 
     const accountTradeHistory = await this.tradeHistoryRepository.createQueryBuilder()
-      .where('"makerAddress" = :address', { address })
-      .orWhere('"takerAddress" = :address', { address })
+      .where('"makerAddress" = :address')
+      .orWhere('"takerAddress" = :address')
+      .setParameters({ address })
       .orderBy('"blockNumber"', 'DESC')
       .addOrderBy('"id"', 'DESC')
       .getMany()

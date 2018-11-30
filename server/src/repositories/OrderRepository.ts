@@ -47,13 +47,13 @@ class OrderRepository extends Repository<any> {
       bids: {
         total: bidsCount,
         page,
-        take,
+        perPage: take,
         records: formattedBids
       },
       asks: {
         total: asksCount,
         page,
-        take,
+        perPage: take,
         records: formattedAsks
       }
     }
