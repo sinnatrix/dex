@@ -49,12 +49,12 @@ test('WsRelayerServer subscribe', t => {
     t.end()
   }
 
-  t.test('should subscribe to orders channel', async t => {
-    testSubscriptionToCorrectChannel(t, 'orders')
+  t.test('should subscribe to orders channel', t => {
+    return testSubscriptionToCorrectChannel(t, 'orders')
   })
 
-  t.test('should subscribe to tradeHistory channel', async t => {
-    testSubscriptionToCorrectChannel(t, 'tradeHistory')
+  t.test('should subscribe to tradeHistory channel', t => {
+    return testSubscriptionToCorrectChannel(t, 'tradeHistory')
   })
 
   t.test('should not subscribe to wrong channel', async t => {
