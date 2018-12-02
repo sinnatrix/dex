@@ -1,11 +1,11 @@
 import log from '../utils/log'
-import { ISubscription, TChannel } from './types'
-const sift = require('sift').default
+import { TChannel } from './types'
+import WsRelayerServerSubcsription from './WsRelayerServerSubscription'
 
 class WsRelayerServerSubscriptionsStorage {
-  subscriptions: ISubscription[] = []
+  subscriptions: WsRelayerServerSubcsription[] = []
 
-  add (subscription: ISubscription) {
+  add (subscription: WsRelayerServerSubcsription) {
     this.subscriptions = [...this.subscriptions, subscription]
 
     log.info(`New subscription for ${subscription.channel} was made`)
@@ -22,10 +22,8 @@ class WsRelayerServerSubscriptionsStorage {
     )
   }
 
-  find (channel: TChannel, data: any[]): ISubscription[] {
-    return this.subscriptions
-      .filter(subscription => subscription.channel === channel)
-      .filter(subscription => sift(subscription.payload, data).length > 0)
+  find (channel: TChannel, data: any[]): WsRelayerServerSubcsription[] {
+    return this.subscriptions.filter(subscription => subscription.isSuitable(channel, data))
   }
 
   getAll () {

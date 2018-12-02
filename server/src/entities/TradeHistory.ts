@@ -4,47 +4,47 @@ import { Entity, PrimaryColumn, Column, Unique } from 'typeorm'
 @Unique(['blockNumber', 'logIndex'])
 export default class TradeHistory {
   @PrimaryColumn()
-  id: 'string'
+  id: string
 
   @Column()
-  orderHash: 'string'
+  orderHash: string
 
   @Column()
-  transactionHash: 'string'
+  transactionHash: string
+
+  @Column('bigint')
+  blockNumber: number
+
+  @Column('bigint')
+  logIndex: number
 
   @Column()
-  blockNumber: 'string'
+  senderAddress: string
 
   @Column()
-  logIndex: 'bigint'
+  feeRecipientAddress: string
 
   @Column()
-  senderAddress: 'string'
+  makerAddress: string
 
   @Column()
-  feeRecipientAddress: 'string'
+  takerAddress: string
 
   @Column()
-  makerAddress: 'string'
+  makerAssetData: string
 
   @Column()
-  takerAddress: 'string'
+  takerAssetData: string
 
   @Column()
-  makerAssetData: 'string'
+  makerAssetFilledAmount: string
 
   @Column()
-  takerAssetData: 'string'
+  takerAssetFilledAmount: string
 
   @Column()
-  makerAssetFilledAmount: 'string'
+  makerFeePaid: string
 
   @Column()
-  takerAssetFilledAmount: 'string'
-
-  @Column()
-  makerFeePaid: 'string'
-
-  @Column()
-  takerFeePaid: 'string'
+  takerFeePaid: string
 }

@@ -1,8 +1,9 @@
 import log from '../utils/log'
 import config from '../config'
-import { ISubscription, IInputMessage, IOutputMessage, TChannel } from './types'
+import { IInputMessage, TChannel } from './types'
 import WsRelayerServerSubscriptionsStorage from './WsRelayerServerSubscriptionsStorage'
 import WsRelayerServerValidator from './WsRelayerServerValidator'
+import WsRelayerServerSubscription from './WsRelayerServerSubscription'
 import WsRelayerServerError from './WsRelayerServerError'
 
 interface IConstructorOptions {
@@ -63,12 +64,12 @@ class WsRelayerServer {
     try {
       this.validator.validateMessage(message)
 
-      const subscription: ISubscription = {
+      const subscription = new WsRelayerServerSubscription({
         ws,
         channel: message.channel,
         payload: message.payload,
         requestId: message.requestId
-      }
+      })
 
       this.subscriptionsStorage.add(subscription)
     } catch (e) {
@@ -88,20 +89,13 @@ class WsRelayerServer {
     this.subscriptionsStorage.remove(ws)
   }
 
-  pushUpdate (channel: TChannel, payload, toFilter) {
+  pushUpdate (channel: TChannel, data, toFilter) {
     this.validator.validateChannel(channel)
 
     const subscriptions = this.subscriptionsStorage.find(channel, toFilter)
 
-    subscriptions.forEach(({ ws, requestId }) => {
-      const message: IOutputMessage = {
-        type: 'update',
-        channel,
-        requestId,
-        payload
-      }
-
-      ws.send(JSON.stringify(message))
+    subscriptions.forEach(subscription => {
+      subscription.sendData(data)
     })
   }
 }

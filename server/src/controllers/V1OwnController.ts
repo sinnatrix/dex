@@ -7,6 +7,7 @@ import OrderRepository from '../repositories/OrderRepository'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
 import { convertOrderToSRA2Format } from '../utils/helpers'
+import { ISRA2Order } from '../types'
 import { Equal, MoreThan, Not } from 'typeorm'
 
 class V1OwnController {
@@ -112,7 +113,8 @@ class V1OwnController {
         id: 'DESC'
       }
     })
-    const sra2Orders = accountOrders.map(convertOrderToSRA2Format)
+
+    const sra2Orders: ISRA2Order[] = accountOrders.map(convertOrderToSRA2Format)
     res.json(sra2Orders)
   }
 

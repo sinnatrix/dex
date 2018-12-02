@@ -303,7 +303,7 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/samsam/-/samsam-2.1.2.tgz#16947fce5f57258d01f1688fdc32723093c55d3f"
   integrity sha512-ZwTHAlC9akprWDinwEPD4kOuwaYZlyMwVJIANsKNC3QVp0AHB04m7RnB4eqeWfgmxw8MGTzS9uMaw93Z3QcZbw==
 
-"@types/bn.js@^4.11.0":
+"@types/bn.js@*", "@types/bn.js@^4.11.0":
   version "4.11.3"
   resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-4.11.3.tgz#0f09e53e98659b007d7019261ddab9178135df38"
   integrity sha512-auZ3vEo3UW8tZc9NhF0MTnutKlf+YhsfC3+dwskFcil/EoqqZF60pGuJ2v2Ae1OJTUp3DJnjOJMqrpkmKB904w==
@@ -356,12 +356,25 @@
     "@types/prop-types" "*"
     csstype "^2.2.0"
 
+"@types/underscore@*":
+  version "1.8.9"
+  resolved "https://registry.yarnpkg.com/@types/underscore/-/underscore-1.8.9.tgz#fef41f800cd23db1b4f262ddefe49cd952d82323"
+  integrity sha512-vfzZGgZKRFy7KEWcBGfIFk+h6B+thDCLfkD1exMBMRlUsx2icA+J6y4kAbZs/TjSTeY1duw89QUU133TSzr60Q==
+
 "@types/web3-provider-engine@^14.0.0":
   version "14.0.0"
   resolved "https://registry.yarnpkg.com/@types/web3-provider-engine/-/web3-provider-engine-14.0.0.tgz#43adc3b39dc9812b82aef8cd2d66577665ad59b0"
   integrity sha512-yHr8mX2SoX3JNyfqdLXdO1UobsGhfiwSgtekbVxKLQrzD7vtpPkKbkIVsPFOhvekvNbPsCmDyeDCLkpeI9gSmA==
   dependencies:
     "@types/ethereum-protocol" "*"
+
+"@types/web3@^1.0.12":
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/@types/web3/-/web3-1.0.12.tgz#dd7867ca24040b89577a20b7b07ad662de49c2c0"
+  integrity sha512-CZDwP4Opy2BjWfux+o05DXG0SSIyj7BQt7kYR+M8a8f/wTjJgre1JEECYUQ8Yu9NQg4yX4g7BjW2/Bd1KbZHOg==
+  dependencies:
+    "@types/bn.js" "*"
+    "@types/underscore" "*"
 
 abbrev@1:
   version "1.1.1"

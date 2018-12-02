@@ -1,11 +1,12 @@
 import WsRelayerServerSubscriptionsStorage from './WsRelayerServerSubscriptionsStorage'
+import WsRelayerServerSubscription from './WsRelayerServerSubscription'
 const test = require('tape')
 const uuidv4 = require('uuid/v4')
 
 test('add', t => {
   t.test('should add subscription', t => {
     const storage = new WsRelayerServerSubscriptionsStorage()
-    const subscription: any = {}
+    const subscription = new WsRelayerServerSubscription({} as any)
 
     storage.add(subscription)
 
@@ -21,8 +22,8 @@ test('remove', t => {
     const ws: any = {}
     const ws2: any = {}
 
-    const subscription1: any = { ws }
-    const subscription2: any = { ws: ws2 }
+    const subscription1: any = new WsRelayerServerSubscription({ ws } as any)
+    const subscription2: any = new WsRelayerServerSubscription({ ws: ws2 } as any)
 
     storage.add(subscription1)
     storage.add(subscription1)
@@ -43,10 +44,10 @@ test('remove', t => {
     const requestId = uuidv4()
     const requestId2 = uuidv4()
 
-    const subscription1: any = { ws, requestId }
-    const subscription2: any = { ws, requestId: requestId2 }
-    const subscription3: any = { ws: ws2, requestId }
-    const subscription4: any = { ws: ws2, requestId: requestId2 }
+    const subscription1: any = new WsRelayerServerSubscription({ ws, requestId } as any)
+    const subscription2: any = new WsRelayerServerSubscription({ ws, requestId: requestId2 } as any)
+    const subscription3: any = new WsRelayerServerSubscription({ ws: ws2, requestId } as any)
+    const subscription4: any = new WsRelayerServerSubscription({ ws: ws2, requestId: requestId2 } as any)
 
     storage.add(subscription1)
     storage.add(subscription2)
@@ -74,25 +75,25 @@ test('find', t => {
 
     const key = uuidv4()
 
-    const subscription1: any = {
+    const subscription1: any = new WsRelayerServerSubscription({
       channel,
       payload: { key }
-    }
+    } as any)
 
-    const subscription2: any = {
+    const subscription2: any = new WsRelayerServerSubscription({
       channel,
       payload: { key: uuidv4() }
-    }
+    } as any)
 
-    const subscription3: any = {
+    const subscription3: any = new WsRelayerServerSubscription({
       channel: channel2,
       payload: { key }
-    }
+    } as any)
 
-    const subscription4: any = {
+    const subscription4: any = new WsRelayerServerSubscription({
       channel: channel2,
       payload: { key: uuidv4() }
-    }
+    } as any)
 
     storage.add(subscription1)
     storage.add(subscription2)
