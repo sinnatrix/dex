@@ -2,6 +2,7 @@ import OrderBlockchainService from './OrderBlockchainService'
 import { convertFillEventToDexTradeHistory } from '../utils/helpers'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import log from '../utils/log'
+import { IFillEventLog } from '../types'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -34,7 +35,7 @@ class TradeHistoryService {
 
     fromBlock++
 
-    let fillEvents = []
+    let fillEvents: IFillEventLog[] = []
 
     // TODO Remove when infura fixed
     let attempts = 10

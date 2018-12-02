@@ -2,70 +2,70 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
 
 @Entity('orders')
 export default class Order {
-  @PrimaryGeneratedColumn()
-  id: 'bigint'
+  @PrimaryGeneratedColumn({ type: 'bigint' })
+  id?: number
 
   /** SRA v2.0.0 order attributes */
   @Column()
-  makerAddress: 'string'
+  makerAddress: string
 
   @Column()
-  takerAddress: 'string'
+  takerAddress: string
 
   @Column()
-  feeRecipientAddress: 'string'
+  feeRecipientAddress: string
 
   @Column()
-  senderAddress: 'string'
+  senderAddress: string
 
   @Column()
-  makerAssetAmount: 'string'
+  makerAssetAmount: string
 
   @Column()
-  takerAssetAmount: 'string'
+  takerAssetAmount: string
 
   @Column()
-  makerFee: 'string'
+  makerFee: string
 
   @Column()
-  takerFee: 'string'
+  takerFee: string
 
   @Column()
-  expirationTimeSeconds: 'string'
+  expirationTimeSeconds: string
 
   @Column()
-  salt: 'string'
+  salt: string
 
   @Column()
-  makerAssetData: 'string'
+  makerAssetData: string
 
   @Column()
-  takerAssetData: 'string'
+  takerAssetData: string
 
   @Column()
-  exchangeAddress: 'string'
+  exchangeAddress: string
 
   @Column()
-  signature: 'string'
+  signature: string
   /** End of SRA v 2.0.0 order specification */
 
   /** Start metaData */
   @Column()
-  remainingTakerAssetAmount: 'string'
+  remainingTakerAssetAmount: string
 
   @Column()
-  orderHash: 'string'
+  orderHash: string
   /** End metaData */
 
   @Column()
-  makerAssetProxyId: 'string'
+  makerAssetProxyId: string
 
   @Column()
-  takerAssetProxyId: 'string'
+  takerAssetProxyId: string
 
   @Column()
-  makerAssetAddress: 'string'
+  makerAssetAddress: string
 
   @Column()
-  takerAssetAddress: 'string'
+  takerAssetAddress: string
 }

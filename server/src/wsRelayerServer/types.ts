@@ -3,13 +3,6 @@ export type TChannel = 'orders' | 'tradeHistory'
 type TInputMessageType = 'subscribe' | 'unsubscribe'
 type TOutputMessageType = 'update'
 
-export interface ISubscription {
-  ws: any
-  payload: any
-  channel: TChannel
-  requestId: string
-}
-
 interface IMessage {
   type: string
   channel: TChannel

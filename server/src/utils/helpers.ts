@@ -1,30 +1,32 @@
 import { assetDataUtils } from '@0x/order-utils'
-import * as R from 'ramda'
+import Order from '../entities/Order'
+import TradeHistory from '../entities/TradeHistory'
+import { ISRA2Order, IFillEventLog } from '../types'
 
-export const convertOrderToSRA2Format = order => ({
-  order: R.pick([
-    'makerAddress',
-    'takerAddress',
-    'feeRecipientAddress',
-    'senderAddress',
-    'makerAssetAmount',
-    'takerAssetAmount',
-    'makerFee',
-    'takerFee',
-    'expirationTimeSeconds',
-    'salt',
-    'makerAssetData',
-    'takerAssetData',
-    'exchangeAddress',
-    'signature'
-  ], order),
-  metaData: R.pick([
-    'orderHash',
-    'remainingTakerAssetAmount'
-  ], order)
+export const convertOrderToSRA2Format = (order: Order): ISRA2Order => ({
+  order: {
+    makerAddress: order.makerAddress,
+    takerAddress: order.takerAddress,
+    feeRecipientAddress: order.feeRecipientAddress,
+    senderAddress: order.senderAddress,
+    makerAssetAmount: order.makerAssetAmount,
+    takerAssetAmount: order.takerAssetAmount,
+    makerFee: order.makerFee,
+    takerFee: order.takerFee,
+    expirationTimeSeconds: order.expirationTimeSeconds,
+    salt: order.salt,
+    makerAssetData: order.makerAssetData,
+    takerAssetData: order.takerAssetData,
+    exchangeAddress: order.exchangeAddress,
+    signature: order.signature
+  },
+  metaData: {
+    orderHash: order.orderHash,
+    remainingTakerAssetAmount: order.remainingTakerAssetAmount
+  }
 })
 
-export const convertOrderToDexFormat = order => {
+export const convertOrderToDexFormat = (order: ISRA2Order): Order => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
   const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
 
@@ -38,7 +40,7 @@ export const convertOrderToDexFormat = order => {
   }
 }
 
-export const convertFillEventToDexTradeHistory = fillEvent => {
+export const convertFillEventToDexTradeHistory = (fillEvent: IFillEventLog): TradeHistory => {
   return {
     id: fillEvent.id,
     transactionHash: fillEvent.transactionHash,
