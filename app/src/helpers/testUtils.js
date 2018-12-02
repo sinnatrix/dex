@@ -23,8 +23,7 @@ export const initWeb3ByBalance = balance => {
 
 const deployZeroExContracts = async (web3, from) => {
   const txDefaults = {
-    from: from.toLowerCase(),
-    gasLimit: 700000000
+    from: from.toLowerCase()
   }
 
   const contractAddresses = await runMigrationsOnceAsync(web3.currentProvider, txDefaults)

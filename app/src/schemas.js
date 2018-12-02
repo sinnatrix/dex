@@ -11,7 +11,10 @@ export const txMinedSchema = Joi.object().keys({
   value: Joi.string().required(),
   gas: Joi.number().required(),
   gasPrice: Joi.string().required(),
-  input: Joi.string().required()
+  input: Joi.string().required(),
+  v: Joi.string(),
+  r: Joi.string(),
+  s: Joi.string()
 })
 
 export const signedOrderSchema = Joi.object().keys({
