@@ -4,63 +4,64 @@ import ConnectionWidget from './ConnectionWidget'
 import Enzyme, { mount } from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
 import { Provider } from 'react-redux'
-import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
-import moxios from 'moxios'
 import rootReducer from 'modules/index'
-import { initWeb3ByBalance } from 'helpers/testUtils'
 import BlockchainService from 'services/BlockchainService'
+import { initWeb3ByBalance } from 'helpers/testUtils'
 import { createStore, applyMiddleware } from 'redux'
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+import { delay } from 'helpers/general'
 
 Enzyme.configure({ adapter: new Adapter() })
 
-const wrappedTest = (title, cb) =>
-  test(`ConnectionWidget | ${title}`, async t => {
-    // import and pass your custom axios instance to this method
-    moxios.install()
-
-    await cb(t)
-
-    // import and pass your custom axios instance to this method
-    moxios.uninstall()
-  })
-
-wrappedTest('should render metamask link', async t => {
-  const mockStore = configureMockStore([
-    thunk
-  ])
-
-  const store = mockStore()
-
-  const wrapper = mount(<Provider store={store}><ConnectionWidget /></Provider>)
-
-  t.ok(wrapper.find('[href="https://metamask.io/"]').exists())
-
-  await delay(100)
-  wrapper.unmount()
-})
-
-wrappedTest('should render etherscan link', async t => {
+const initStore = () => {
   const web3 = initWeb3ByBalance(0)
   const blockchainService = new BlockchainService({ web3 })
 
   const store = createStore(rootReducer, applyMiddleware(
-    thunk.withExtraArgument({ blockchainService })
+    thunk.withExtraArgument({
+      blockchainService,
+      apiService: {
+        getTokens () {
+          return []
+        }
+      }
+    })
   ))
 
-  const wrapper = mount(
-    <Provider store={store}>
-      <ConnectionWidget />
-    </Provider>
-  )
+  return store
+}
 
-  await delay(200)
-  wrapper.update()
+test('ConnectionWidget', t => {
+  t.test('should render metamask link', async t => {
+    const wrapper = mount(
+      <Provider store={initStore()}>
+        <ConnectionWidget />
+      </Provider>
+    )
 
-  t.ok(wrapper.find('EtherscanLink').exists())
+    t.ok(wrapper.find('[href="https://metamask.io/"]').exists())
 
-  await delay(100)
-  wrapper.unmount()
+    await delay(100)
+    wrapper.unmount()
+
+    t.end()
+  })
+
+  t.test('should render etherscan link', async t => {
+    const wrapper = mount(
+      <Provider store={initStore()}>
+        <ConnectionWidget />
+      </Provider>
+    )
+
+    await delay(200)
+    wrapper.update()
+
+    t.ok(wrapper.find('EtherscanLink').exists())
+
+    await delay(100)
+    wrapper.unmount()
+
+    t.end()
+  })
 })

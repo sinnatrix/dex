@@ -41,7 +41,12 @@ class BlockchainService {
   }
 
   enable () {
-    return this.web3.currentProvider.enable()
+    const { currentProvider } = this.web3
+    if (currentProvider.enable) {
+      return currentProvider.enable()
+    }
+
+    return Promise.resolve(true)
   }
 
   async getAccounts () {

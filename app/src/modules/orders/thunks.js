@@ -1,24 +1,16 @@
 import complement from 'ramda/es/complement'
-import axios from 'axios'
 import * as actions from './actions'
 import { assetDataUtils } from '@0x/order-utils'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
 import { getSubscriptionsByListType } from '../subscriptions/selectors'
 
-export const loadOrderbook = () => async (dispatch, getState) => {
+export const loadOrderbook = () => async (dispatch, getState, { apiService }) => {
   const { marketplaceToken, currentToken } = getState().global
 
   const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
   const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
-  const { data } = await axios(
-    '/api/relayer/v0/orderbook',
-    {
-      params: {
-        baseAssetData,
-        quoteAssetData
-      }
-    }
-  )
+
+  const data = await apiService.getOrderbook({ baseAssetData, quoteAssetData })
 
   dispatch(actions.setOrderbookBids(data.bids.records))
   dispatch(actions.setOrderbookAsks(data.asks.records))
@@ -63,11 +55,11 @@ export const addOrders = orders => async (dispatch, getState) => {
   dispatch(actions.resetHighlighting())
 }
 
-export const loadActiveAccountOrders = address => async (dispatch, getState) => {
-  const { data } = await axios.get(`/api/v1/accounts/${address}/orders`)
+export const loadActiveAccountOrders = () => async (dispatch, getState, { apiService }) => {
+  const orders = await apiService.getAccountOrders()
   const { account } = getState().global
 
-  dispatch(actions.setAccountOrders(data))
+  dispatch(actions.setAccountOrders(orders))
 
   const [ subscription ] = getSubscriptionsByListType(getState(), 'accountOrders')
   if (subscription) {

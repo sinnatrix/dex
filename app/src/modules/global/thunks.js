@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { getTokenBySymbol } from './selectors'
 import * as actions from './actions'
 import { getAccount } from 'modules/global/selectors'
@@ -56,19 +55,19 @@ export const setZeroTokenAllowance = token => async (dispatch, getState, { block
   await dispatch(loadTokenAllowance(token))
 }
 
-export const loadMarketplaceToken = symbol => async dispatch => {
-  const { data } = await axios(`/api/v1/tokens/${symbol}`)
-  dispatch(actions.setMarketplaceToken(data))
+export const loadMarketplaceToken = symbol => async (dispatch, getState, { apiService }) => {
+  const token = await apiService.getTokenBySymbol(symbol)
+  dispatch(actions.setMarketplaceToken(token))
 }
 
-export const loadCurrentToken = symbol => async dispatch => {
-  const { data } = await axios(`/api/v1/tokens/${symbol}`)
-  dispatch(actions.setCurrentToken(data))
+export const loadCurrentToken = symbol => async (dispatch, getState, { apiService }) => {
+  const token = await apiService.getTokenBySymbol(symbol)
+  dispatch(actions.setCurrentToken(token))
 }
 
-export const loadTokens = () => async dispatch => {
-  const { data } = await axios.get('/api/v1/tokens')
-  dispatch(actions.setTokens(data))
+export const loadTokens = () => async (dispatch, getState, { apiService }) => {
+  const tokens = await apiService.getTokens()
+  dispatch(actions.setTokens(tokens))
 }
 
 export const loadTokenBalance = token => async (dispatch, getState, { blockchainService }) => {
@@ -78,7 +77,7 @@ export const loadTokenBalance = token => async (dispatch, getState, { blockchain
   dispatch(actions.setTokenBalance(token.symbol, balance))
 }
 
-export const fillOrder = order => async (dispatch, getState, { blockchainService }) => {
+export const fillOrder = order => async (dispatch, getState, { blockchainService, apiService }) => {
   const account = getAccount(getState())
 
   const txHash = await blockchainService.fillOrderAsync(
@@ -92,9 +91,11 @@ export const fillOrder = order => async (dispatch, getState, { blockchainService
   }
 
   await blockchainService.awaitTransaction(txHash)
+
+  await apiService.refreshOrder(order.metaData.orderHash)
 }
 
-export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { blockchainService }) => {
+export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { blockchainService, apiService }) => {
   const { marketplaceToken, currentToken, account } = getState().global
 
   let data
@@ -117,7 +118,7 @@ export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getS
 
   const signedOrder = await blockchainService.makeLimitOrderAsync(account, data)
 
-  await axios.post('/api/relayer/v0/order', signedOrder)
+  await apiService.createOrder(signedOrder)
 }
 
 export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState, { blockchainService }) => {

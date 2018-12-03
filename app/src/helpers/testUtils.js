@@ -1,14 +1,22 @@
 import Web3 from 'web3'
 import ganache from 'ganache-cli'
-import BlockchainService from '../services/BlockchainService'
 import { runMigrationsOnceAsync } from '@0x/migrations'
+import { orderHashUtils } from '0x.js'
+import BlockchainService from '../services/BlockchainService'
+const Chance = require('chance')
 const wethToken = require('../fixtures/wethToken.json')
 
+const chance = new Chance()
+
 export const initWeb3 = (opts = {}) => {
-  return new Web3(ganache.provider({
+  const provider = ganache.provider({
     network_id: 50, // setUnlimitedTokenAllowanceAsync works with fixed set of network ids: https://github.com/0xProject/0x-monorepo/blob/083319786fad31dfde16cb9e06e893bfeb23785d/packages/contract-wrappers/src/schemas/contract_wrappers_public_network_config_schema.ts
     ...opts
-  }))
+  })
+
+  const web3 = new Web3(provider)
+
+  return web3
 }
 
 export const initWeb3ByBalance = balance => {
@@ -57,4 +65,54 @@ export const deployWethContract = async (blockchainService, from) => {
   const txHash = await blockchainService.sendTransaction(rawTx)
   const { contractAddress } = await blockchainService.getTransactionReceipt(txHash)
   return contractAddress
+}
+
+const generateHexString = length => '0x' + chance.string({ length, pool: 'abcdef0123456789' })
+
+export const generateAddress = () => generateHexString(40)
+const generateTokenSymbol = () => chance.string({ length: 5, pool: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' })
+const generateTokenName = () => chance.sentence({ words: 2 }).substr(1)
+
+export const generateERC20Token = () => ({
+  abi: null,
+  address: generateAddress(),
+  decimals: 18,
+  maxAmount: '999999999999999999999',
+  minAmount: '1',
+  name: generateTokenName(),
+  precision: 8,
+  symbol: generateTokenSymbol()
+})
+
+export const generateSignedOrder = ({ makerAssetData, takerAssetData }) => ({
+  makerAssetData,
+  takerAssetData,
+  makerAddress: generateAddress(),
+  takerAddress: '0x0000000000000000000000000000000000000000',
+  feeRecipientAddress: '0x0000000000000000000000000000000000000000',
+  senderAddress: '0x0000000000000000000000000000000000000000',
+  makerAssetAmount: '2000000000000000',
+  takerAssetAmount: '1000000000000000000',
+  makerFee: '0',
+  takerFee: '0',
+  expirationTimeSeconds: '1543931584',
+  salt: '21848223970004495557684610382298847442980093760216666848435317872291226961471',
+  exchangeAddress: generateAddress(),
+  signature: generateHexString(132)
+})
+
+export const generateSRA2Order = ({ makerAssetData, takerAssetData }) => {
+  const signedOrder = generateSignedOrder({ makerAssetData, takerAssetData })
+
+  const metaData = {
+    orderHash: orderHashUtils.getOrderHashHex(signedOrder),
+    remainingTakerAssetAmount: signedOrder.takerAssetAmount
+  }
+
+  const sra2Order = {
+    order: signedOrder,
+    metaData
+  }
+
+  return sra2Order
 }

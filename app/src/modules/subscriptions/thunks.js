@@ -34,24 +34,19 @@ export const processSocketMessage = message => (dispatch, getState) => {
   const [subscription] = getSubscriptionByRequestId(getState(), requestId)
 
   if (type === 'update') {
-    switch (subscription.listType) {
+    switch (subscription.name) {
       case 'orders':
-        dispatch(addOrders(payload))
-        break
-
+        return dispatch(addOrders(payload))
       case 'accountOrders':
-        dispatch(addAccountOrders(payload))
-        break
-
+        return dispatch(addAccountOrders(payload))
       case 'assetPairTradeHistory':
-        dispatch(addAssetPairTradeHistory(payload))
-        break
-
+        return dispatch(addAssetPairTradeHistory(payload))
       case 'accountTradeHistory':
-        dispatch(addAccountTradeHistory(payload))
-        break
-
+        return dispatch(addAccountTradeHistory(payload))
       default:
+        return null
     }
   }
+
+  return null
 }
