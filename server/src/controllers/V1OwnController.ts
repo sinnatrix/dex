@@ -1,5 +1,4 @@
 import * as express from 'express'
-import { BigNumber } from '@0x/utils'
 import Relayer from '../entities/Relayer'
 import Token from '../entities/Token'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
@@ -8,7 +7,6 @@ import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
 import { convertOrderToSRA2Format } from '../utils/helpers'
 import { ISRA2Order } from '../types'
-import { Equal, MoreThan, Not } from 'typeorm'
 
 class V1OwnController {
   application: any
@@ -36,7 +34,6 @@ class V1OwnController {
     router.get('/relayers', this.getRelayers.bind(this))
     router.get('/tokens', this.getTokens.bind(this))
     router.get('/tokens/:symbol', this.getTokenBySymbol.bind(this))
-    router.get('/orders/:hash/refresh', this.refreshOrder.bind(this))
     router.get('/accounts/:address/orders', this.getActiveAccountOrders.bind(this))
     router.get('/accounts/:address/history', this.getAccountTradeHistory.bind(this))
     router.get('/tradeHistory', this.getTradeHistory.bind(this))
@@ -100,19 +97,8 @@ class V1OwnController {
 
   async getActiveAccountOrders (req, res) {
     const { address } = req.params
-    const currentUnixtime = Math.trunc((new Date().getTime()) / 1000)
 
-    const accountOrders = await this.orderRepository.find({
-      where: {
-        makerAddress: address,
-        expirationTimeSeconds: MoreThan(currentUnixtime),
-        remainingTakerAssetAmount: Not(Equal('0'))
-      },
-      order: {
-        expirationTimeSeconds: 'ASC',
-        id: 'DESC'
-      }
-    })
+    const accountOrders = await this.orderRepository.getActiveAccountOrders(address)
 
     const sra2Orders: ISRA2Order[] = accountOrders.map(convertOrderToSRA2Format)
     res.json(sra2Orders)
@@ -158,37 +144,6 @@ class V1OwnController {
     const tradeHistory = await this.orderBlockchainService.loadOrderHistory(orderHash)
 
     res.json(tradeHistory)
-  }
-
-  async refreshOrder (req, res) {
-    const { hash: orderHash } = req.params
-
-    const order = await this.orderRepository.findOne({ orderHash })
-
-    if (!order) {
-      res.status(404).send('Not found')
-      return
-    }
-
-    const filledTakerAssetAmount = await this.orderBlockchainService.getFilledTakerAssetAmount(orderHash)
-    const remainingTakerAssetAmount = (new BigNumber(order.takerAssetAmount))
-      .minus(new BigNumber(filledTakerAssetAmount)).toString()
-
-    if (order.remainingTakerAssetAmount === remainingTakerAssetAmount) {
-      res.status(200).json(order)
-      return
-    }
-
-    const orderForSave = {
-      ...order,
-      remainingTakerAssetAmount
-    }
-
-    await this.orderRepository.save(orderForSave)
-
-    res.status(200).json(orderForSave)
-
-    this.wsRelayerServer.pushUpdate('orders', [convertOrderToSRA2Format(orderForSave)], [orderForSave])
   }
 }
 

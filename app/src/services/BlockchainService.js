@@ -285,6 +285,7 @@ class BlockchainService {
     try {
       await this.contractWrappers.exchange.validateOrderFillableOrThrowAsync(signedOrder)
     } catch (e) {
+      // TODO update orderStatus in DB and update state
       console.warn('Order cannot be fulfilled')
       return null
     }

@@ -5,6 +5,7 @@ import {
   resetItemsReducer,
   removeOrphanedItemsReducer
 } from 'modules/reducerHelpers'
+import { OrderStatus } from '@0x/contract-wrappers'
 
 const HIGHLIGHT_PATH = ['extra', 'highlight']
 
@@ -64,7 +65,7 @@ export const highlightItems = (state, itemsList) => itemsList.map(item => {
 
 const removeFulfilledOrdersReducer = state => {
   const keysToRemove = Object.keys(state[ENTITY_STORE_KEY]).filter(
-    key => state[ENTITY_STORE_KEY][key].metaData.remainingTakerAssetAmount === '0'
+    key => state[ENTITY_STORE_KEY][key].metaData.orderStatus !== OrderStatus.FILLABLE
   )
 
   if (keysToRemove.length === 0) {

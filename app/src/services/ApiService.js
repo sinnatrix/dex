@@ -40,10 +40,6 @@ class ApiService {
 
     return data
   }
-
-  async refreshOrder (orderHash) {
-    await axios.get(`/api/v1/orders/${orderHash}/refresh`)
-  }
 }
 
 export default ApiService

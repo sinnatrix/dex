@@ -2,15 +2,20 @@ import * as R from 'ramda'
 import * as express from 'express'
 import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
-import { orderHashUtils } from '0x.js'
 import log from '../utils/log'
 import OrderRepository from '../repositories/OrderRepository'
 import Token from '../entities/Token'
 import TokenPair from '../entities/TokenPair'
 import config from '../config'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
-import { convertOrderToDexFormat, convertOrderToSRA2Format } from '../utils/helpers'
+import {
+  convertSignedOrderWithStringToSignedOrder,
+  convertOrderToDexFormat,
+  convertOrderToSRA2Format,
+  getDefaultOrderMetaData
+} from '../utils/helpers'
 import { validateRequiredField, validateNetworkId } from '../validation'
+import OrderBlockchainService from '../services/OrderBlockchainService'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -20,14 +25,17 @@ class V0RelayerController {
   tokenRepository: any
   tokenPairRepository: any
   orderRepository: any
+  orderBlockchainService: OrderBlockchainService
 
-  constructor ({ application, connection, wsRelayerServer }) {
+  constructor ({ application, connection, wsRelayerServer, orderBlockchainService }) {
     this.application = application
     this.wsRelayerServer = wsRelayerServer
 
     this.tokenRepository = connection.getRepository(Token)
     this.tokenPairRepository = connection.getRepository(TokenPair)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
+
+    this.orderBlockchainService = orderBlockchainService
   }
 
   attach () {
@@ -153,15 +161,14 @@ class V0RelayerController {
   }
 
   async createOrder (req, res) {
-    const order = req.body
-    log.info({ order }, 'HTTP: POST order')
+    log.info(req.body, 'HTTP: POST order')
+
+    const order = convertSignedOrderWithStringToSignedOrder(req.body)
+    const metaData = getDefaultOrderMetaData(order)
 
     const sra2Order = {
       order,
-      metaData: {
-        orderHash: orderHashUtils.getOrderHashHex(order),
-        remainingTakerAssetAmount: order.takerAssetAmount
-      }
+      metaData
     }
 
     const orderToSave = convertOrderToDexFormat(sra2Order)
@@ -170,7 +177,11 @@ class V0RelayerController {
 
     res.status(201).end()
 
-    this.wsRelayerServer.pushUpdate('orders', [convertOrderToSRA2Format(orderToSave)], [orderToSave])
+    this.wsRelayerServer.pushUpdate(
+      'orders',
+      [convertOrderToSRA2Format(orderToSave)],
+      [orderToSave]
+    )
   }
 
   async checkFees (req, res) {

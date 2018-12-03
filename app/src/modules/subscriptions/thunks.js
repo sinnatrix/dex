@@ -31,7 +31,11 @@ export const processSocketMessage = message => (dispatch, getState) => {
   const data = JSON.parse(message.data)
   const { type, payload, requestId } = data
 
-  const [subscription] = getSubscriptionByRequestId(getState(), requestId)
+  const subscription = getSubscriptionByRequestId(getState(), requestId)
+
+  if (!subscription) {
+    return
+  }
 
   if (type === 'update') {
     switch (subscription.name) {

@@ -1,11 +1,7 @@
 import { ContractWrappers } from '0x.js'
 import BlockchainService from './BlockchainService'
-
-interface IEventFilters {
-  fromBlock?: number, // Default 0
-  toBlock?: number | string // Default 'latest'
-  filter?: Object // Default {}
-}
+import { IEventFilters } from '../types'
+import { Order, SignedOrder, MethodOpts } from '@0x/contract-wrappers'
 
 class OrderBlockchainService {
   blockchainService: BlockchainService
@@ -44,10 +40,6 @@ class OrderBlockchainService {
     )
   }
 
-  getFilledTakerAssetAmount (orderHash) {
-    return this.httpContractWrappers.exchange.getFilledTakerAssetAmountAsync(orderHash)
-  }
-
   /**
    * Load order history from blockchain.
    * We load info about past fill events filtered by orderHash so result may contain
@@ -75,6 +67,10 @@ class OrderBlockchainService {
     return this.wsContract.events[event]()
       .on('data', onData)
       .on('error', onError)
+  }
+
+  getOrderInfoAsync (order: Order | SignedOrder, opts: MethodOpts = {}) {
+    return this.httpContractWrappers.exchange.getOrderInfoAsync(order, opts)
   }
 }
 

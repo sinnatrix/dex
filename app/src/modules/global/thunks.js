@@ -77,7 +77,7 @@ export const loadTokenBalance = token => async (dispatch, getState, { blockchain
   dispatch(actions.setTokenBalance(token.symbol, balance))
 }
 
-export const fillOrder = order => async (dispatch, getState, { blockchainService, apiService }) => {
+export const fillOrder = order => async (dispatch, getState, { blockchainService }) => {
   const account = getAccount(getState())
 
   const txHash = await blockchainService.fillOrderAsync(
@@ -91,8 +91,6 @@ export const fillOrder = order => async (dispatch, getState, { blockchainService
   }
 
   await blockchainService.awaitTransaction(txHash)
-
-  await apiService.refreshOrder(order.metaData.orderHash)
 }
 
 export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { blockchainService, apiService }) => {

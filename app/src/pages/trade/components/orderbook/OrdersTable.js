@@ -39,6 +39,7 @@ class OrdersTable extends React.Component {
   render () {
     /** @var orders array of bids */
     const { classes, orders } = this.props
+
     return (
       <ReactTable
         data={orders}
@@ -62,14 +63,14 @@ class OrdersTable extends React.Component {
             id: 'selling',
             accessor: order => order.spread
               ? null
-              : `${order.metaData.remainingMakerAssetAmount.toFixed(6)} ${order.extra.makerToken.symbol}`
+              : `${order.extra.remainingMakerAssetAmount.toFixed(6)} ${order.extra.makerToken.symbol}`
           },
           {
             Header: 'buying',
             id: 'buying',
             accessor: order => order.spread
               ? null
-              : `${order.metaData.remainingTakerAssetAmount.toFixed(6)} ${order.extra.takerToken.symbol}`
+              : `${order.extra.remainingTakerAssetAmount.toFixed(6)} ${order.extra.takerToken.symbol}`
           },
           {
             Header: 'expires',

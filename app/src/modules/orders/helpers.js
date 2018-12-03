@@ -12,7 +12,7 @@ export const convertOrderDecimalsToBigNumber = order => {
       takerAssetAmount: toBN
     },
     metaData: {
-      remainingTakerAssetAmount: toBN
+      orderTakerAssetFilledAmount: toBN
     }
   }
 

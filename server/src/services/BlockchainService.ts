@@ -1,5 +1,5 @@
 import log from '../utils/log'
-import * as Web3 from 'web3'
+const Web3 = require('web3')
 
 class BlockchainService {
   httpProvider: any
@@ -8,9 +8,9 @@ class BlockchainService {
   wsWeb3: any
 
   constructor () {
-    this.httpProvider = new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL)
+    this.httpProvider = new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL as string)
     this.httpWeb3 = new Web3(this.httpProvider)
-    this.wsProvider = new Web3.providers.WebsocketProvider(process.env.WS_INFURA_HOST)
+    this.wsProvider = new Web3.providers.WebsocketProvider(process.env.WS_INFURA_HOST as string)
     this.wsWeb3 = new Web3(this.wsProvider)
   }
 

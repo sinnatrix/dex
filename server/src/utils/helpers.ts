@@ -1,28 +1,40 @@
 import { assetDataUtils } from '@0x/order-utils'
 import Order from '../entities/Order'
 import TradeHistory from '../entities/TradeHistory'
-import { ISRA2Order, IFillEventLog } from '../types'
+import { ISRA2Order, IFillEventLog, ISignedOrderWithStrings } from '../types'
+import { BigNumber } from '@0x/utils'
+import { orderHashUtils } from '0x.js'
+import { OrderStatus, OrderInfo, SignedOrder } from '@0x/contract-wrappers'
+import * as R from 'ramda'
+
+const toBN = value => new BigNumber(value)
+const toString10 = (value: BigNumber) => value.toString(10)
+
+const createOrderTransformation = fn => ({
+  makerFee: fn,
+  takerFee: fn,
+  makerAssetAmount: fn,
+  takerAssetAmount: fn,
+  salt: fn,
+  expirationTimeSeconds: fn
+})
+
+export const convertSignedOrderWithStringToSignedOrder = (signedOrderWithStrings: ISignedOrderWithStrings): SignedOrder => {
+  const transformation = createOrderTransformation(toBN)
+  return R.evolve(transformation, signedOrderWithStrings)
+}
+
+export const convertSignedOrderToSignedOrderWithStrings = (signedOrder: SignedOrder): ISignedOrderWithStrings => {
+  const transformation = createOrderTransformation(toString10)
+  return R.evolve(transformation, signedOrder)
+}
 
 export const convertOrderToSRA2Format = (order: Order): ISRA2Order => ({
-  order: {
-    makerAddress: order.makerAddress,
-    takerAddress: order.takerAddress,
-    feeRecipientAddress: order.feeRecipientAddress,
-    senderAddress: order.senderAddress,
-    makerAssetAmount: order.makerAssetAmount,
-    takerAssetAmount: order.takerAssetAmount,
-    makerFee: order.makerFee,
-    takerFee: order.takerFee,
-    expirationTimeSeconds: order.expirationTimeSeconds,
-    salt: order.salt,
-    makerAssetData: order.makerAssetData,
-    takerAssetData: order.takerAssetData,
-    exchangeAddress: order.exchangeAddress,
-    signature: order.signature
-  },
+  order: convertSignedOrderWithStringToSignedOrder(order),
   metaData: {
     orderHash: order.orderHash,
-    remainingTakerAssetAmount: order.remainingTakerAssetAmount
+    orderStatus: order.orderStatus,
+    orderTakerAssetFilledAmount: toBN(order.orderTakerAssetFilledAmount)
   }
 })
 
@@ -31,14 +43,25 @@ export const convertOrderToDexFormat = (order: ISRA2Order): Order => {
   const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
 
   return {
-    ...order.order,
-    ...order.metaData,
+    // SignedOrder
+    ...convertSignedOrderToSignedOrderWithStrings(order.order),
+    // OrderInfo
+    orderTakerAssetFilledAmount: toString10(order.metaData.orderTakerAssetFilledAmount),
+    orderHash: order.metaData.orderHash,
+    orderStatus: order.metaData.orderStatus,
+    // extra
     makerAssetAddress: decodedMakerAssetData.tokenAddress,
     takerAssetAddress: decodedTakerAssetData.tokenAddress,
     makerAssetProxyId: decodedMakerAssetData.assetProxyId,
     takerAssetProxyId: decodedTakerAssetData.assetProxyId
   }
 }
+
+export const getDefaultOrderMetaData = (order: SignedOrder): OrderInfo => ({
+  orderStatus: OrderStatus.FILLABLE,
+  orderHash: orderHashUtils.getOrderHashHex(order),
+  orderTakerAssetFilledAmount: new BigNumber(0)
+})
 
 export const convertFillEventToDexTradeHistory = (fillEvent: IFillEventLog): TradeHistory => {
   return {
