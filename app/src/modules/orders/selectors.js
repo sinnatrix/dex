@@ -21,7 +21,7 @@ export const getOrderbookAsks = state =>
 const getOrderAsBidByHash = (hash, state) =>
   orderAsBid(getOrderByHash(hash, state), getMarketplaceToken(state), getCurrentToken(state), state)
 
-const getOrderByHash = (hash, state) => state.orders.orders[hash]
+export const getOrderByHash = (hash, state) => state.orders.orders[hash]
 
 const orderAsBid = (order, baseToken, quoteToken, state) => {
   const orderWithBN = convertOrderDecimalsToBigNumber(order)

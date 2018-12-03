@@ -4,20 +4,18 @@ import { loadActiveAccountOrders } from 'modules/orders'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
 import { formatAssetAmount } from 'helpers/general'
-import { getAccount } from 'modules/global/selectors'
 import { getAccountOrders } from 'modules/orders/selectors'
 
 const connector = connect(
   state => ({
-    accountOrders: getAccountOrders(state),
-    account: getAccount(state)
+    accountOrders: getAccountOrders(state)
   }),
   { loadActiveAccountOrders }
 )
 
 class OrdersList extends React.Component {
   componentDidMount () {
-    this.props.loadActiveAccountOrders(this.props.account)
+    this.props.loadActiveAccountOrders()
   }
 
   render () {

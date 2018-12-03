@@ -1,7 +1,6 @@
 import React from 'react'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
-import OrdersPage from 'pages/orders/OrdersPage'
 import TradePage from 'pages/trade/TradePage'
 import { MuiThemeProvider } from '@material-ui/core/styles'
 import { Provider } from 'react-redux'
@@ -9,6 +8,7 @@ import theme from './theme'
 import createStore from './createStore'
 import { processSocketMessage } from 'modules/subscriptions'
 import BlockchainService from './services/BlockchainService'
+import ApiService from './services/ApiService'
 import Web3 from 'web3'
 
 class App extends React.Component {
@@ -24,7 +24,8 @@ class App extends React.Component {
 
     this.store = createStore({
       socket: this.socket,
-      blockchainService: this.blockchainService
+      blockchainService: this.blockchainService,
+      apiService: new ApiService()
     })
   }
 
@@ -53,7 +54,6 @@ class App extends React.Component {
             <Router>
               <Switch>
                 <Route exact path='/' render={() => <Redirect to='/WETH/ZRX' />} />
-                <Route path='/orders' component={OrdersPage} />
                 <Route path='/:marketplace?/:token?' component={TradePage} />
               </Switch>
             </Router>
