@@ -9,7 +9,7 @@ import TokenPair from '../entities/TokenPair'
 import config from '../config'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import {
-  convertSignedOrderWithStringToSignedOrder,
+  convertSignedOrderWithStringsToSignedOrder,
   convertOrderToDexFormat,
   convertOrderToSRA2Format,
   getDefaultOrderMetaData
@@ -26,10 +26,12 @@ class V0RelayerController {
   tokenPairRepository: any
   orderRepository: any
   orderBlockchainService: OrderBlockchainService
+  networkId: string
 
-  constructor ({ application, connection, wsRelayerServer, orderBlockchainService }) {
+  constructor ({ application, connection, wsRelayerServer, orderBlockchainService, networkId }) {
     this.application = application
     this.wsRelayerServer = wsRelayerServer
+    this.networkId = networkId
 
     this.tokenRepository = connection.getRepository(Token)
     this.tokenPairRepository = connection.getRepository(TokenPair)
@@ -120,7 +122,7 @@ class V0RelayerController {
     const validationErrors = [
       validateRequiredField('quoteAssetData', params.quoteAssetData),
       validateRequiredField('baseAssetData', params.baseAssetData),
-      validateNetworkId(params.networkId)
+      validateNetworkId(params.networkId, this.networkId)
     ].filter(one => !!one)
 
     if (validationErrors.length > 0) {
@@ -163,7 +165,7 @@ class V0RelayerController {
   async createOrder (req, res) {
     log.info(req.body, 'HTTP: POST order')
 
-    const order = convertSignedOrderWithStringToSignedOrder(req.body)
+    const order = convertSignedOrderWithStringsToSignedOrder(req.body)
     const metaData = getDefaultOrderMetaData(order)
 
     const sra2Order = {

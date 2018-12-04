@@ -1,6 +1,12 @@
 import * as rp from 'request-promise-native'
 
 class RelayerService {
+  networkId: string
+
+  constructor ({ networkId }) {
+    this.networkId = networkId
+  }
+
   async loadOrderbook (relayer, { baseAssetAddress, quoteAssetAddress }) {
     if (!baseAssetAddress) {
       throw new Error('baseAssetAddress is a required parameter')
@@ -27,7 +33,7 @@ class RelayerService {
   }
 
   getNetwork (relayer) {
-    const network = relayer.networks.find(one => one.networkId === parseInt(process.env.NETWORK_ID as string, 10))
+    const network = relayer.networks.find(one => one.networkId === this.networkId)
 
     if (!network) {
       throw new Error('network unavailable')

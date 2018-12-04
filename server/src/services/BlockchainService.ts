@@ -7,10 +7,10 @@ class BlockchainService {
   httpWeb3: any
   wsWeb3: any
 
-  constructor () {
-    this.httpProvider = new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL as string)
+  constructor ({ httpProvider, wsProvider }) {
+    this.httpProvider = httpProvider
+    this.wsProvider = wsProvider
     this.httpWeb3 = new Web3(this.httpProvider)
-    this.wsProvider = new Web3.providers.WebsocketProvider(process.env.WS_INFURA_HOST as string)
     this.wsWeb3 = new Web3(this.wsProvider)
   }
 

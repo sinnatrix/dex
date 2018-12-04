@@ -1,6 +1,7 @@
 import OrderBlockchainService from './OrderBlockchainService'
-import { convertFillEventToDexTradeHistory } from '../utils/helpers'
+import { convertFillEventToDexTradeHistory, convertOrderToSRA2Format } from '../utils/helpers'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
+import OrderRepository from '../repositories/OrderRepository'
 import log from '../utils/log'
 import { IFillEventLog } from '../types'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
@@ -15,12 +16,14 @@ class TradeHistoryService {
   tradeHistoryRepository: TradeHistoryRepository
   wsRelayerServer: WsRelayerServer
   orderService: OrderService
+  orderRepository: OrderRepository
 
   constructor ({ connection, orderBlockchainService, wsRelayerServer, orderService }) {
     this.orderBlockchainService = orderBlockchainService
     this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
     this.wsRelayerServer = wsRelayerServer
     this.orderService = orderService
+    this.orderRepository = connection.getCustomRepository(OrderRepository)
   }
 
   async attach () {
@@ -29,30 +32,24 @@ class TradeHistoryService {
     }
 
     await this.subscribeToTradeHistoryEvents()
+
+    // await this.orderService.updateOrdersInfo()
   }
 
   async loadFullTradeHistory () {
     log.info('Loading full trade history from exchange')
 
-    let fromBlock = await this.tradeHistoryRepository.getMaxBlockNumber()
-
-    fromBlock++
-
-    let fillEvents: IFillEventLog[] = []
-
-    // TODO Remove when infura fixed
-    let attempts = 10
-    while (attempts > 0) {
-      const result = await this.orderBlockchainService.getPastEvents('Fill', { fromBlock })
-
-      if (result.length > fillEvents.length) {
-        fillEvents = result
-      }
-
-      log.info(`Attempts left ${attempts}: Loaded ${fillEvents.length} events from #${fromBlock} blocks`)
-
-      attempts--
+    let fromBlock
+    if (process.env.LOAD_TRADE_HISTORY_FROM_BLOCK) {
+      fromBlock = parseInt(process.env.LOAD_TRADE_HISTORY_FROM_BLOCK, 10)
+    } else {
+      fromBlock = await this.tradeHistoryRepository.getMaxBlockNumber()
+      fromBlock++
     }
+
+    const fillEvents: IFillEventLog[] = await this.orderBlockchainService.getPastEvents('Fill', { fromBlock })
+
+    log.info(`Loaded ${fillEvents.length} events from #${fromBlock} blocks`)
 
     const tradeHistoryItems = fillEvents.map(convertFillEventToDexTradeHistory)
     await this.tradeHistoryRepository.saveFullTradeHistory(tradeHistoryItems)
@@ -82,6 +79,10 @@ class TradeHistoryService {
     log.info('fillEvent', fillEvent)
 
     const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEvent)
+
+    await this.tradeHistoryRepository
+      .saveFullTradeHistory([tradeHistoryItem])
+
     this.wsRelayerServer.pushUpdate(
       'tradeHistory',
       [tradeHistoryItem],
@@ -90,8 +91,15 @@ class TradeHistoryService {
 
     await this.orderService.updateOrderInfoByHash(tradeHistoryItem.orderHash)
 
-    return this.tradeHistoryRepository
-      .saveFullTradeHistory([tradeHistoryItem])
+    const order = await this.orderRepository.findOne({
+      where: { orderHash: tradeHistoryItem.orderHash }
+    })
+
+    this.wsRelayerServer.pushUpdate(
+      'orders',
+      [convertOrderToSRA2Format(order)],
+      [order]
+    )
   }
 }
 

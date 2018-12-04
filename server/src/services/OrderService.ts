@@ -1,17 +1,24 @@
 import OrderRepository from '../repositories/OrderRepository'
 import OrderBlockchainService from './OrderBlockchainService'
 import { convertOrderToSRA2Format } from '../utils/helpers'
-import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
+import log from '../utils/log'
 
 export default class OrderService {
   orderRepository: OrderRepository
   orderBlockchainService: OrderBlockchainService
-  wsRelayerServer: WsRelayerServer
 
-  constructor ({ connection, orderBlockchainService, wsRelayerServer }) {
+  constructor ({ connection, orderBlockchainService }) {
     this.orderRepository = connection.getCustomRepository(OrderRepository)
     this.orderBlockchainService = orderBlockchainService
-    this.wsRelayerServer = wsRelayerServer
+  }
+
+  async updateOrdersInfo () {
+    const orders = await this.orderRepository.find()
+    log.info(`Updating info for ${orders.length} orders`)
+
+    for (let order of orders) {
+      await this.updateOrderInfoByHash(order.orderHash)
+    }
   }
 
   async updateOrderInfoByHash (orderHash: string) {
@@ -25,17 +32,10 @@ export default class OrderService {
 
     const orderForSave = {
       ...order,
-      ...orderInfo
+      ...orderInfo,
+      orderTakerAssetFilledAmount: orderInfo.orderTakerAssetFilledAmount.toString(10)
     }
 
     await this.orderRepository.save(orderForSave)
-
-    this.wsRelayerServer.pushUpdate(
-      'orders',
-      [convertOrderToSRA2Format(orderForSave)],
-      [orderForSave]
-    )
-
-    return orderForSave
   }
 }

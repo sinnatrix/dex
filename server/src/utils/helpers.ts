@@ -19,7 +19,7 @@ const createOrderTransformation = fn => ({
   expirationTimeSeconds: fn
 })
 
-export const convertSignedOrderWithStringToSignedOrder = (signedOrderWithStrings: ISignedOrderWithStrings): SignedOrder => {
+export const convertSignedOrderWithStringsToSignedOrder = (signedOrderWithStrings: ISignedOrderWithStrings): SignedOrder => {
   const transformation = createOrderTransformation(toBN)
   return R.evolve(transformation, signedOrderWithStrings)
 }
@@ -30,7 +30,7 @@ export const convertSignedOrderToSignedOrderWithStrings = (signedOrder: SignedOr
 }
 
 export const convertOrderToSRA2Format = (order: Order): ISRA2Order => ({
-  order: convertSignedOrderWithStringToSignedOrder(order),
+  order: convertSignedOrderWithStringsToSignedOrder(order),
   metaData: {
     orderHash: order.orderHash,
     orderStatus: order.orderStatus,

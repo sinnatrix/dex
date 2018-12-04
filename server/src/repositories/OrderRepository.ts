@@ -15,7 +15,6 @@ class OrderRepository extends Repository<any> {
   async getOrderbook ({
     baseAssetData,
     quoteAssetData,
-    networkId = process.env.NETWORK_ID,
     page = 1,
     perPage: take = 100
   }) {
