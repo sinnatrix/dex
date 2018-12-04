@@ -1,6 +1,14 @@
-import { EntityRepository, Repository, Not, LessThan, Equal } from 'typeorm'
+import {
+  Repository,
+  EntityRepository,
+  Not,
+  LessThan,
+  Equal,
+  MoreThan
+} from 'typeorm'
 import Order from '../entities/Order'
 import { convertOrderToSRA2Format } from '../utils/helpers'
+import { OrderStatus } from '@0x/contract-wrappers'
 
 @EntityRepository(Order as any)
 class OrderRepository extends Repository<any> {
@@ -21,7 +29,7 @@ class OrderRepository extends Repository<any> {
         takerAssetData: baseAssetData,
         makerAssetData: quoteAssetData,
         expirationTimeSeconds: Not(LessThan(currentTs)),
-        remainingTakerAssetAmount: Not(Equal('0'))
+        orderStatus: OrderStatus.FILLABLE
       },
       skip,
       take
@@ -32,7 +40,7 @@ class OrderRepository extends Repository<any> {
         takerAssetData: quoteAssetData,
         makerAssetData: baseAssetData,
         expirationTimeSeconds: Not(LessThan(currentTs)),
-        remainingTakerAssetAmount: Not(Equal('0'))
+        orderStatus: OrderStatus.FILLABLE
       },
       skip,
       take
@@ -57,6 +65,22 @@ class OrderRepository extends Repository<any> {
         records: formattedAsks
       }
     }
+  }
+
+  async getActiveAccountOrders (address) {
+    const currentUnixtime = Math.trunc((new Date().getTime()) / 1000)
+
+    return this.find({
+      where: {
+        makerAddress: address,
+        expirationTimeSeconds: MoreThan(currentUnixtime),
+        orderStatus: OrderStatus.FILLABLE
+      },
+      order: {
+        expirationTimeSeconds: 'ASC',
+        id: 'DESC'
+      }
+    })
   }
 }
 

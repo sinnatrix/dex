@@ -3,6 +3,7 @@ import * as actions from './actions'
 import { assetDataUtils } from '@0x/order-utils'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
 import { getSubscriptionsByListType } from '../subscriptions/selectors'
+import { getAccount } from 'modules/global/selectors'
 
 export const loadOrderbook = () => async (dispatch, getState, { apiService }) => {
   const { marketplaceToken, currentToken } = getState().global
@@ -56,8 +57,8 @@ export const addOrders = orders => async (dispatch, getState) => {
 }
 
 export const loadActiveAccountOrders = () => async (dispatch, getState, { apiService }) => {
-  const orders = await apiService.getAccountOrders()
-  const { account } = getState().global
+  const account = getAccount(getState())
+  const orders = await apiService.getAccountOrders(account)
 
   dispatch(actions.setAccountOrders(orders))
 

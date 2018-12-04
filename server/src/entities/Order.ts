@@ -1,11 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { OrderStatus } from '@0x/contract-wrappers'
 
 @Entity('orders')
 export default class Order {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id?: number
 
-  /** SRA v2.0.0 order attributes */
+  /** SignedOrder */
   @Column()
   makerAddress: string
 
@@ -47,16 +48,20 @@ export default class Order {
 
   @Column()
   signature: string
-  /** End of SRA v 2.0.0 order specification */
+  /** /SignedOrder */
 
-  /** Start metaData */
-  @Column()
-  remainingTakerAssetAmount: string
+  /** OrderInfo */
+  @Column({ default: '0' })
+  orderTakerAssetFilledAmount: string
 
   @Column()
   orderHash: string
-  /** End metaData */
 
+  @Column({ default: OrderStatus.FILLABLE })
+  orderStatus: number
+  /** /OrderInfo */
+
+  /** extra */
   @Column()
   makerAssetProxyId: string
 
@@ -68,4 +73,5 @@ export default class Order {
 
   @Column()
   takerAssetAddress: string
+  /** /extra */
 }

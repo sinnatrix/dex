@@ -4,6 +4,7 @@ import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import log from '../utils/log'
 import { IFillEventLog } from '../types'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
+import OrderService from './OrderService'
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -13,11 +14,13 @@ class TradeHistoryService {
   orderBlockchainService: OrderBlockchainService
   tradeHistoryRepository: TradeHistoryRepository
   wsRelayerServer: WsRelayerServer
+  orderService: OrderService
 
-  constructor ({ connection, orderBlockchainService, wsRelayerServer }) {
+  constructor ({ connection, orderBlockchainService, wsRelayerServer, orderService }) {
     this.orderBlockchainService = orderBlockchainService
     this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
     this.wsRelayerServer = wsRelayerServer
+    this.orderService = orderService
   }
 
   async attach () {
@@ -62,16 +65,7 @@ class TradeHistoryService {
 
     this.orderBlockchainService.subscribe(
       'Fill',
-      fillEvent => {
-        log.info('fillEvent', fillEvent)
-
-        const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEvent)
-
-        this.wsRelayerServer.pushUpdate('tradeHistory', [tradeHistoryItem], [tradeHistoryItem])
-
-        return this.tradeHistoryRepository
-          .saveFullTradeHistory([ tradeHistoryItem ])
-      },
+      this.handleFillEvent.bind(this),
       async error => {
         console.error('Connection error: ', error)
         await delay(1000)
@@ -82,6 +76,22 @@ class TradeHistoryService {
         }
       }
     )
+  }
+
+  async handleFillEvent (fillEvent) {
+    log.info('fillEvent', fillEvent)
+
+    const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEvent)
+    this.wsRelayerServer.pushUpdate(
+      'tradeHistory',
+      [tradeHistoryItem],
+      [tradeHistoryItem]
+    )
+
+    await this.orderService.updateOrderInfoByHash(tradeHistoryItem.orderHash)
+
+    return this.tradeHistoryRepository
+      .saveFullTradeHistory([tradeHistoryItem])
   }
 }
 

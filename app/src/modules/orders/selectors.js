@@ -45,9 +45,11 @@ const getBidExtraFields = (orderWithBN, baseToken, quoteToken, state) => {
   const takerAmount = orderWithBN.order.takerAssetAmount.dividedBy(
     Math.pow(10, takerToken.decimals)
   )
-  const remainingTakerAssetAmount = orderWithBN.metaData.remainingTakerAssetAmount.dividedBy(
+  const orderTakerAssetFilledAmount = orderWithBN.metaData.orderTakerAssetFilledAmount.dividedBy(
     Math.pow(10, takerToken.decimals)
   )
+
+  const remainingTakerAssetAmount = takerAmount.minus(orderTakerAssetFilledAmount)
 
   const coefficient = takerAmount.dividedBy(remainingTakerAssetAmount)
 
@@ -63,16 +65,14 @@ const getBidExtraFields = (orderWithBN, baseToken, quoteToken, state) => {
   }
 
   return {
-    metaData: {
-      remainingMakerAssetAmount,
-      remainingTakerAssetAmount
-    },
     extra: {
       price,
       makerToken,
       takerToken,
       makerAmount,
-      takerAmount
+      takerAmount,
+      remainingMakerAssetAmount,
+      remainingTakerAssetAmount
     }
   }
 }
