@@ -10,7 +10,7 @@ import ormconfig from '../ormconfig'
 import makeWebsocketServerFactory from './factories/makeWebsocketServerFactory'
 import WsRelayerServer from './wsRelayerServer/WsRelayerServer'
 import V1OwnController from './controllers/V1OwnController'
-import V0RelayerController from './controllers/V0RelayerController'
+import V2RelayerController from './controllers/V2RelayerController'
 import BlockchainService from './services/BlockchainService'
 import OrderBlochainService from './services/OrderBlockchainService'
 import TradeHistoryService from './services/TradeHistoryService'
@@ -54,7 +54,7 @@ const makeWsProvider = () => {
     networkId: asValue(parseInt(process.env.NETWORK_ID as string, 10)),
     wsRelayerServer: asClass(WsRelayerServer).singleton(),
     v1OwnController: asClass(V1OwnController).singleton(),
-    v0RelayerController: asClass(V0RelayerController).singleton(),
+    v2RelayerController: asClass(V2RelayerController).singleton(),
     contractAddresses: asValue(undefined),
     httpProvider: asFunction(makeHttpProvider).singleton(),
     wsProvider: asFunction(makeWsProvider).singleton(),
@@ -67,7 +67,7 @@ const makeWsProvider = () => {
 
   container.resolve('wsRelayerServer').attach()
   container.resolve('v1OwnController').attach()
-  container.resolve('v0RelayerController').attach()
+  container.resolve('v2RelayerController').attach()
   container.resolve('tradeHistoryService').attach()
 
   container.resolve('server').listen(process.env.PORT, () => {

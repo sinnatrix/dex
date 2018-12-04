@@ -12,11 +12,11 @@ class ApiService {
   }
 
   async createOrder (signedOrder) {
-    await axios.post('/api/relayer/v0/order', signedOrder)
+    await axios.post('/api/relayer/v2/order', signedOrder)
   }
 
   async getOrderbook (params) {
-    const { data } = await axios('/api/relayer/v0/orderbook', { params })
+    const { data } = await axios('/api/relayer/v2/orderbook', { params })
     return data
   }
 
