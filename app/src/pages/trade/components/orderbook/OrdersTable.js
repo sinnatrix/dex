@@ -48,6 +48,7 @@ class OrdersTable extends React.Component {
         pageSize={orders.length}
         getTrProps={(state, rowInfo, column) => {
           return {
+            key: rowInfo.original.spread ? 'spread' : rowInfo.original.metaData.orderHash,
             spread: rowInfo.original.spread,
             highlightClassName: !rowInfo.original.spread && rowInfo.original.extra.highlight ? classes.highlight : ''
           }

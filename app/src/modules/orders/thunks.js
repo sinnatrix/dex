@@ -1,6 +1,7 @@
 import complement from 'ramda/es/complement'
-import * as actions from './actions'
 import { assetDataUtils } from '@0x/order-utils'
+import { Web3Wrapper } from '@0x/web3-wrapper'
+import * as actions from './actions'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
 import { getSubscriptionsByListType } from '../subscriptions/selectors'
 import { getAccount } from 'modules/global/selectors'
@@ -77,4 +78,57 @@ export const loadActiveAccountOrders = () => async (dispatch, getState, { apiSer
       ]
     }
   ))
+}
+
+export const fillOrder = order => async (dispatch, getState, { blockchainService }) => {
+  const account = getAccount(getState())
+
+  const txHash = await blockchainService.fillOrderAsync(
+    order.order,
+    Web3Wrapper.toBaseUnitAmount(order.order.takerAssetAmount, order.extra.takerToken.decimals),
+    account
+  )
+
+  if (!txHash) {
+    throw new Error('txHash is invalid!')
+  }
+
+  await blockchainService.awaitTransaction(txHash)
+}
+
+export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { blockchainService, apiService }) => {
+  const { marketplaceToken, currentToken, account } = getState().global
+
+  let data
+
+  if (type === 'buy') {
+    data = {
+      takerToken: currentToken,
+      takerAmount: amount,
+      makerToken: marketplaceToken,
+      makerAmount: price.times(amount)
+    }
+  } else {
+    data = {
+      takerToken: marketplaceToken,
+      takerAmount: price.times(amount),
+      makerToken: currentToken,
+      makerAmount: amount
+    }
+  }
+
+  const signedOrder = await blockchainService.makeLimitOrderAsync(account, data)
+
+  await apiService.createOrder(signedOrder)
+}
+
+export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState, { blockchainService }) => {
+  const { account } = getState().global
+  const { bids, asks } = getState().subscriptions.orderbook.payload
+
+  const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order)
+
+  const fillTxHash = await blockchainService.makeMarketOrderAsync(account, ordersToCheck, amount)
+
+  console.log('fillTxHash: ', fillTxHash)
 }

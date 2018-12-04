@@ -1,7 +1,5 @@
 import { getTokenBySymbol } from './selectors'
 import * as actions from './actions'
-import { getAccount } from 'modules/global/selectors'
-import { Web3Wrapper } from '@0x/web3-wrapper'
 
 export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState().global
@@ -75,59 +73,6 @@ export const loadTokenBalance = token => async (dispatch, getState, { blockchain
   const balance = await blockchainService.getTokenBalance(account, token.address)
 
   dispatch(actions.setTokenBalance(token.symbol, balance))
-}
-
-export const fillOrder = order => async (dispatch, getState, { blockchainService }) => {
-  const account = getAccount(getState())
-
-  const txHash = await blockchainService.fillOrderAsync(
-    order.order,
-    Web3Wrapper.toBaseUnitAmount(order.order.takerAssetAmount, order.extra.takerToken.decimals),
-    account
-  )
-
-  if (!txHash) {
-    throw new Error('txHash is invalid!')
-  }
-
-  await blockchainService.awaitTransaction(txHash)
-}
-
-export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { blockchainService, apiService }) => {
-  const { marketplaceToken, currentToken, account } = getState().global
-
-  let data
-
-  if (type === 'buy') {
-    data = {
-      takerToken: currentToken,
-      takerAmount: amount,
-      makerToken: marketplaceToken,
-      makerAmount: price.times(amount)
-    }
-  } else {
-    data = {
-      takerToken: marketplaceToken,
-      takerAmount: price.times(amount),
-      makerToken: currentToken,
-      makerAmount: amount
-    }
-  }
-
-  const signedOrder = await blockchainService.makeLimitOrderAsync(account, data)
-
-  await apiService.createOrder(signedOrder)
-}
-
-export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState, { blockchainService }) => {
-  const { account } = getState().global
-  const { bids, asks } = getState().subscriptions.orderbook.payload
-
-  const ordersToCheck = (type === 'buy' ? bids : asks).map(one => one.order)
-
-  const fillTxHash = await blockchainService.makeMarketOrderAsync(account, ordersToCheck, amount)
-
-  console.log('fillTxHash: ', fillTxHash)
 }
 
 export const wrapEth = amount => async (dispatch, getState, { blockchainService }) => {

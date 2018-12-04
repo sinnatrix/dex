@@ -1,10 +1,10 @@
 import React from 'react'
 import jss from 'react-jss'
+import { connect } from 'react-redux'
 import TextField from '@material-ui/core/TextField'
 import ProgressButton from 'components/ProgressButton'
 import OrderModeRadio from './OrderModeRadio'
-import { makeMarketOrder } from 'modules/global'
-import { connect } from 'react-redux'
+import { makeMarketOrder } from 'modules/orders'
 
 const connector = connect(
   state => ({
