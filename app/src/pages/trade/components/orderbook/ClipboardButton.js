@@ -2,6 +2,7 @@ import React from 'react'
 import jss from 'react-jss'
 import IconButton from '@material-ui/core/IconButton'
 import CopyIcon from '@material-ui/icons/FileCopy'
+import { convertOrderToClipboardData } from 'modules/orders/selectors'
 
 const copyToClipboard = str => {
   const el = document.createElement('textarea')
@@ -30,21 +31,10 @@ const decorate = jss({
 class ClipboardButton extends React.Component {
   handleClick = () => {
     const { order } = this.props
-    copyToClipboard(JSON.stringify({
-      signedOrder: order.order,
-      metadata: {
-        makerToken: {
-          name: order.makerToken.name,
-          symbol: order.makerToken.symbol,
-          decimals: order.makerToken.decimals
-        },
-        takerToken: {
-          name: order.takerToken.name,
-          symbol: order.takerToken.symbol,
-          decimals: order.takerToken.decimals
-        }
-      }
-    }))
+
+    copyToClipboard(JSON.stringify(
+      convertOrderToClipboardData(order)
+    ))
   }
 
   render () {

@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import ganache from 'ganache-cli'
 import { runMigrationsOnceAsync } from '@0x/migrations'
+import { assetDataUtils } from '@0x/order-utils'
 import { orderHashUtils } from '0x.js'
 import BlockchainService from '../services/BlockchainService'
 const Chance = require('chance')
@@ -84,29 +85,35 @@ export const generateERC20Token = () => ({
   symbol: generateTokenSymbol()
 })
 
-export const generateSignedOrder = ({ makerAssetData, takerAssetData }) => ({
-  makerAssetData,
-  takerAssetData,
-  makerAddress: generateAddress(),
-  takerAddress: '0x0000000000000000000000000000000000000000',
-  feeRecipientAddress: '0x0000000000000000000000000000000000000000',
-  senderAddress: '0x0000000000000000000000000000000000000000',
-  makerAssetAmount: '2000000000000000',
-  takerAssetAmount: '1000000000000000000',
-  makerFee: '0',
-  takerFee: '0',
-  expirationTimeSeconds: '1543931584',
-  salt: '21848223970004495557684610382298847442980093760216666848435317872291226961471',
-  exchangeAddress: generateAddress(),
-  signature: generateHexString(132)
-})
+export const generateSignedOrder = (...params) => {
+  const makerAssetData = assetDataUtils.encodeERC20AssetData(generateAddress())
+  const takerAssetData = assetDataUtils.encodeERC20AssetData(generateAddress())
 
-export const generateSRA2Order = ({ makerAssetData, takerAssetData }) => {
-  const signedOrder = generateSignedOrder({ makerAssetData, takerAssetData })
+  return {
+    makerAssetData,
+    takerAssetData,
+    makerAddress: generateAddress(),
+    takerAddress: '0x0000000000000000000000000000000000000000',
+    feeRecipientAddress: '0x0000000000000000000000000000000000000000',
+    senderAddress: '0x0000000000000000000000000000000000000000',
+    makerAssetAmount: '2000000000000000',
+    takerAssetAmount: '1000000000000000000',
+    makerFee: '0',
+    takerFee: '0',
+    expirationTimeSeconds: '1543931584',
+    salt: '21848223970004495557684610382298847442980093760216666848435317872291226961471',
+    exchangeAddress: generateAddress(),
+    signature: generateHexString(132),
+    ...params
+  }
+}
+
+export const generateSRA2Order = (...params) => {
+  const signedOrder = generateSignedOrder(params)
 
   const metaData = {
     orderHash: orderHashUtils.getOrderHashHex(signedOrder),
-    remainingTakerAssetAmount: signedOrder.takerAssetAmount
+    orderTakerAssetFilledAmount: '0'
   }
 
   const sra2Order = {

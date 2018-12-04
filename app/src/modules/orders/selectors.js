@@ -1,5 +1,6 @@
 import { convertOrderDecimalsToBigNumber } from './helpers'
-import { getTokenByAssetData, getMarketplaceToken, getCurrentToken } from 'modules/global/selectors'
+import { getMarketplaceToken, getCurrentToken } from 'modules/global/selectors'
+import { assetDataUtils } from '@0x/order-utils'
 import { BigNumber } from '@0x/utils'
 import mergeWith from 'ramda/es/mergeWith'
 import descend from 'ramda/es/descend'
@@ -19,22 +20,26 @@ export const getOrderbookAsks = state =>
   sortByPriceDesc(state.orders.asks.map(hash => getOrderAsBidByHash(hash, state)))
 
 const getOrderAsBidByHash = (hash, state) =>
-  orderAsBid(getOrderByHash(hash, state), getMarketplaceToken(state), getCurrentToken(state), state)
+  orderAsBid(
+    getOrderByHash(hash, state),
+    getMarketplaceToken(state),
+    getCurrentToken(state)
+  )
 
 export const getOrderByHash = (hash, state) => state.orders.orders[hash]
 
-const orderAsBid = (order, baseToken, quoteToken, state) => {
+export const orderAsBid = (order, baseToken, quoteToken) => {
   const orderWithBN = convertOrderDecimalsToBigNumber(order)
 
   return ordersMergeDeepRightCustom(
     orderWithBN,
-    getBidExtraFields(orderWithBN, baseToken, quoteToken, state)
+    getBidExtraFields(orderWithBN, baseToken, quoteToken)
   )
 }
 
-const getBidExtraFields = (orderWithBN, baseToken, quoteToken, state) => {
-  const { address: makerAssetAddress } = getTokenByAssetData(orderWithBN.order.makerAssetData, state)
-  const { address: takerAssetAddress } = getTokenByAssetData(orderWithBN.order.takerAssetData, state)
+const getBidExtraFields = (orderWithBN, baseToken, quoteToken) => {
+  const { tokenAddress: makerAssetAddress } = assetDataUtils.decodeAssetDataOrThrow(orderWithBN.order.makerAssetData)
+  const { tokenAddress: takerAssetAddress } = assetDataUtils.decodeAssetDataOrThrow(orderWithBN.order.takerAssetData)
 
   const makerToken = makerAssetAddress === baseToken.address ? baseToken : quoteToken
   const takerToken = takerAssetAddress === baseToken.address ? baseToken : quoteToken
@@ -86,3 +91,19 @@ const ordersMergeDeepRightCustom = (o1, o2) => {
   }
   return mergeWith(fn, o1, o2)
 }
+
+export const convertOrderToClipboardData = extendedSRA2Order => ({
+  signedOrder: extendedSRA2Order.order,
+  metadata: {
+    makerToken: {
+      name: extendedSRA2Order.extra.makerToken.name,
+      symbol: extendedSRA2Order.extra.makerToken.symbol,
+      decimals: extendedSRA2Order.extra.makerToken.decimals
+    },
+    takerToken: {
+      name: extendedSRA2Order.extra.takerToken.name,
+      symbol: extendedSRA2Order.extra.takerToken.symbol,
+      decimals: extendedSRA2Order.extra.takerToken.decimals
+    }
+  }
+})
