@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape'
+import test from 'tape'
 import { assetDataUtils } from '@0x/order-utils'
 import { generateSRA2Order, generateERC20Token } from 'helpers/testUtils'
 import { convertOrderToClipboardData, orderAsBid } from './selectors'
@@ -20,4 +20,6 @@ test('convertOrderToClipboardData', async t => {
   const clipboardData = convertOrderToClipboardData(bid)
 
   t.ok(clipboardData)
+
+  t.end()
 })

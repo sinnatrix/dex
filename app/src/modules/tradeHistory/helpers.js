@@ -1,6 +1,6 @@
 import { assetDataUtils } from '@0x/order-utils'
-import { toBN } from 'helpers/general'
 import evolve from 'ramda/es/evolve'
+import { toBN } from 'helpers/general'
 
 export const expandTradeHistory = one => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(one.makerAssetData)

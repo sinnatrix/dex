@@ -1,6 +1,6 @@
 import { convertOrderDecimalsToBigNumber } from './helpers'
-import { getMarketplaceToken, getCurrentToken } from 'modules/global/selectors'
 import { assetDataUtils } from '@0x/order-utils'
+import { getMarketplaceToken, getCurrentToken } from 'modules/global/selectors'
 import { BigNumber } from '@0x/utils'
 import mergeWith from 'ramda/es/mergeWith'
 import descend from 'ramda/es/descend'

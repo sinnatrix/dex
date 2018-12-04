@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape'
+import test from 'tape'
 import React from 'react'
 import ConnectionWidget from './ConnectionWidget'
 import Enzyme, { mount } from 'enzyme'
@@ -15,7 +15,7 @@ Enzyme.configure({ adapter: new Adapter() })
 
 const initStore = () => {
   const web3 = initWeb3ByBalance(0)
-  const blockchainService = new BlockchainService({ web3 })
+  const blockchainService = new BlockchainService({ web3, contractAddresses: null })
 
   const store = createStore(rootReducer, applyMiddleware(
     thunk.withExtraArgument({

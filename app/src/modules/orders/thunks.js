@@ -3,7 +3,7 @@ import { assetDataUtils } from '@0x/order-utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import * as actions from './actions'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
-import { getSubscriptionsByListType } from '../subscriptions/selectors'
+import { getSubscriptionsByListType } from 'modules/subscriptions/selectors'
 import { getAccount } from 'modules/global/selectors'
 
 export const loadOrderbook = () => async (dispatch, getState, { apiService }) => {

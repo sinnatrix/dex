@@ -1,10 +1,10 @@
-import test from 'tape-promise/tape'
-import { txMinedSchema } from '../schemas'
+import test from 'tape'
+import { txMinedSchema } from 'schemas'
 import Joi from 'joi'
 import { BigNumber } from '@0x/utils'
 import { initWeb3ByBalance, initBlockchainService, initWeb3, deployWethContract } from 'helpers/testUtils'
-import BlockchainService from 'services/BlockchainService'
-const wethToken = require('../fixtures/wethToken.json')
+import BlockchainService from './BlockchainService'
+const wethToken = require('fixtures/wethToken.json')
 
 /* eslint-env jest */
 
@@ -18,6 +18,8 @@ test('getEthBalance', async t => {
   const balanceInEth = await blockchainService.getEthBalance(accounts[0])
 
   t.equal(balanceInEth, balance / Math.pow(10, 18))
+
+  t.end()
 })
 
 test('sendTransaction', async t => {
@@ -45,6 +47,8 @@ test('sendTransaction', async t => {
 
   const balanceInEth = await blockchainService.getEthBalance(accounts[1])
   t.equal(balanceInEth, 1 / Math.pow(10, 18))
+
+  t.end()
 })
 
 test('awaitTransaction', async t => {
@@ -79,6 +83,8 @@ test('awaitTransaction', async t => {
 
   const validation = Joi.validate(txInfo, txMinedSchema)
   t.equal(validation.error, null)
+
+  t.end()
 })
 
 test('getTokenBalance', async t => {
@@ -94,6 +100,8 @@ test('getTokenBalance', async t => {
   const result = await blockchainService.getTokenBalance(accounts[0], wethAddress)
 
   t.equal(result, 0)
+
+  t.end()
 })
 
 test('setUnlimitedTokenAllowanceAsync', async t => {
@@ -109,6 +117,8 @@ test('setUnlimitedTokenAllowanceAsync', async t => {
   const isUnlimited = await blockchainService.isUnlimitedTokenAllowance(accounts[0], wethAddress)
 
   t.equal(isUnlimited, true)
+
+  t.end()
 })
 
 test('getTokenAllowance', async t => {
@@ -124,6 +134,8 @@ test('getTokenAllowance', async t => {
   const allowance = await blockchainService.getTokenAllowance(accounts[0], wethAddress)
 
   t.equal(allowance.isZero(), true)
+
+  t.end()
 })
 
 test('setZeroTokenAllowanceAsync', async t => {
@@ -140,6 +152,8 @@ test('setZeroTokenAllowanceAsync', async t => {
   const allowance = await blockchainService.getTokenAllowance(accounts[0], wethAddress)
 
   t.equal(allowance.isZero(), true)
+
+  t.end()
 })
 
 test('makeLimitOrderAsync', async t => {
@@ -179,4 +193,6 @@ test('makeLimitOrderAsync', async t => {
   } catch (e) {
     console.error('e: ', e)
   }
+
+  t.end()
 })

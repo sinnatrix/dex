@@ -1,5 +1,5 @@
-import { toBN } from 'helpers/general'
 import evolve from 'ramda/es/evolve'
+import { toBN } from 'helpers/general'
 
 export const convertOrderDecimalsToBigNumber = order => {
   const transformation = {

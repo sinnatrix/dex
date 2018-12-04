@@ -1,5 +1,5 @@
-import test from 'tape-promise/tape'
 import createStore from 'createStore'
+import test from 'tape'
 import { assetDataUtils } from '@0x/order-utils'
 import { addSubscription } from './actions'
 import { setCurrentToken, setMarketplaceToken, setTokens } from 'modules/global/actions'
