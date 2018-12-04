@@ -19,7 +19,7 @@ import OrderBlockchainService from '../services/OrderBlockchainService'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-class V0RelayerController {
+class V2RelayerController {
   application: any
   wsRelayerServer: WsRelayerServer
   tokenRepository: any
@@ -50,7 +50,7 @@ class V0RelayerController {
     router.post('/order', this.createOrder.bind(this))
     router.post('/fees', this.checkFees.bind(this))
 
-    this.application.use(config.RELAYER_API_PATH, router)
+    this.application.use(config.RELAYER_API_V2_PATH, router)
   }
 
   async getTokenPairs (req, res) {
@@ -200,4 +200,4 @@ class V0RelayerController {
   }
 }
 
-export default V0RelayerController
+export default V2RelayerController
