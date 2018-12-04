@@ -1,5 +1,5 @@
 import OrderBlockchainService from './OrderBlockchainService'
-import { convertFillEventToDexTradeHistory, convertOrderToSRA2Format } from '../utils/helpers'
+import { convertFillEventToDexTradeHistory, convertDexOrderToSRA2Format } from '../utils/helpers'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import OrderRepository from '../repositories/OrderRepository'
 import log from '../utils/log'
@@ -97,7 +97,7 @@ class TradeHistoryService {
 
     this.wsRelayerServer.pushUpdate(
       'orders',
-      [convertOrderToSRA2Format(order)],
+      [convertDexOrderToSRA2Format(order)],
       [order]
     )
   }

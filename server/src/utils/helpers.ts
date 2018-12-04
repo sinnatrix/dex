@@ -29,8 +29,23 @@ export const convertSignedOrderToSignedOrderWithStrings = (signedOrder: SignedOr
   return R.evolve(transformation, signedOrder)
 }
 
-export const convertOrderToSRA2Format = (order: Order): ISRA2Order => ({
-  order: convertSignedOrderWithStringsToSignedOrder(order),
+export const convertDexOrderToSRA2Format = (order: Order): ISRA2Order => ({
+  order: convertSignedOrderWithStringsToSignedOrder(R.pick([
+    'senderAddress',
+    'makerAddress',
+    'takerAddress',
+    'makerFee',
+    'takerFee',
+    'makerAssetAmount',
+    'takerAssetAmount',
+    'makerAssetData',
+    'takerAssetData',
+    'salt',
+    'exchangeAddress',
+    'feeRecipientAddress',
+    'expirationTimeSeconds',
+    'signature'
+  ], order)),
   metaData: {
     orderHash: order.orderHash,
     orderStatus: order.orderStatus,
