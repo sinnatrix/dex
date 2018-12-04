@@ -1,6 +1,6 @@
 import * as types from './types'
 import prop from 'ramda/es/prop'
-import { mergeItemsReducer, resetItemsReducer } from '../reducerHelpers'
+import { mergeItemsReducer, resetItemsReducer } from 'modules/reducerHelpers'
 
 const getId = prop('id')
 

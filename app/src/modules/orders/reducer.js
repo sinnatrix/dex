@@ -1,11 +1,11 @@
 import * as types from './types'
 import { map, path, dissocPath, assocPath, without } from 'ramda/es/index'
+import { OrderStatus } from '@0x/contract-wrappers'
 import {
   mergeItemsReducer,
   resetItemsReducer,
   removeOrphanedItemsReducer
 } from 'modules/reducerHelpers'
-import { OrderStatus } from '@0x/contract-wrappers'
 
 const HIGHLIGHT_PATH = ['extra', 'highlight']
 

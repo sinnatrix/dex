@@ -3,9 +3,9 @@ import ganache from 'ganache-cli'
 import { runMigrationsOnceAsync } from '@0x/migrations'
 import { assetDataUtils } from '@0x/order-utils'
 import { orderHashUtils } from '0x.js'
-import BlockchainService from '../services/BlockchainService'
+import BlockchainService from 'services/BlockchainService'
 const Chance = require('chance')
-const wethToken = require('../fixtures/wethToken.json')
+const wethToken = require('fixtures/wethToken.json')
 
 const chance = new Chance()
 

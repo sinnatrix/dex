@@ -22,7 +22,7 @@ const decorate = jss({
   }
 })
 
-class ConnectionWidget extends React.Component {
+class ConnectionWidget extends React.Component<any> {
   timeout
 
   async componentDidMount () {
