@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "0x.js": "^2.0.6",
-    "@types/web3": "^1.0.12",
+    "@types/web3": "^1.0.13",
     "awilix": "^4.0.1",
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
@@ -42,6 +42,8 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
+    "@0x/migrations": "^2.2.0",
+    "chance": "^1.0.18",
     "ganache-cli": "^6.2.3",
     "mock-socket": "^8.0.5",
     "nodemon": "^1.18.7",

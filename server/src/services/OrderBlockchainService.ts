@@ -1,7 +1,7 @@
 import { ContractWrappers } from '0x.js'
 import BlockchainService from './BlockchainService'
 import { IEventFilters } from '../types'
-import { Order, SignedOrder, MethodOpts } from '@0x/contract-wrappers'
+import { Order, SignedOrder, MethodOpts, OrderInfo } from '@0x/contract-wrappers'
 
 class OrderBlockchainService {
   blockchainService: BlockchainService
@@ -10,14 +10,15 @@ class OrderBlockchainService {
   httpContract: any
   wsContract: any
 
-  constructor ({ blockchainService }) {
+  constructor ({ blockchainService, networkId, contractAddresses }) {
     this.blockchainService = blockchainService
 
     /** HTTP transport */
     this.httpContractWrappers = new ContractWrappers(
       this.blockchainService.httpProvider,
       {
-        networkId: parseInt(process.env.NETWORK_ID || '', 10)
+        networkId,
+        contractAddresses
       }
     )
 
@@ -30,7 +31,8 @@ class OrderBlockchainService {
     this.wsContractWrappers = new ContractWrappers(
       this.blockchainService.wsProvider,
       {
-        networkId: parseInt(process.env.NETWORK_ID || '', 10)
+        networkId,
+        contractAddresses
       }
     )
 
@@ -69,7 +71,7 @@ class OrderBlockchainService {
       .on('error', onError)
   }
 
-  getOrderInfoAsync (order: Order | SignedOrder, opts: MethodOpts = {}) {
+  getOrderInfoAsync (order: Order | SignedOrder, opts: MethodOpts = {}): Promise<OrderInfo> {
     return this.httpContractWrappers.exchange.getOrderInfoAsync(order, opts)
   }
 }

@@ -2,7 +2,7 @@ import { validateNetworkId, validateRequiredField } from '../validation'
 import { IInputMessage, IValidationError, TChannel } from './types'
 import WsRelayerServerError from './WsRelayerServerError'
 
-const validateNetworkIdRule: Function = params => validateNetworkId(params.payload.networkId)
+const validateNetworkIdRule: Function = params => validateNetworkId(params.payload.networkId, process.env.NETWORK_ID as string)
 const validateRequestIdRule: Function = params => validateRequiredField('requestId', params.requestId)
 
 const channelsRules = {

@@ -10,12 +10,11 @@ export const validateRequiredField = (field, value) => {
   }
 }
 
-export const validateNetworkId = value => {
+export const validateNetworkId = (value, currentNetworkId) => {
   if (!value) {
     return null
   }
 
-  const currentNetworkId = parseInt(process.env.NETWORK_ID as string, 10)
   if (value !== currentNetworkId) {
     return {
       field: 'networkId',

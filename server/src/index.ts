@@ -16,8 +16,17 @@ import OrderBlochainService from './services/OrderBlockchainService'
 import TradeHistoryService from './services/TradeHistoryService'
 import OrderService from './services/OrderService'
 const { createContainer, asValue, asClass, asFunction } = require('awilix')
+const Web3 = require('web3')
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+const makeHttpProvider = () => {
+  return new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL as string)
+}
+
+const makeWsProvider = () => {
+  return new Web3.providers.WebsocketProvider(process.env.WS_INFURA_HOST as string)
+}
 
 ;(async () => {
   let connection
@@ -42,9 +51,13 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
     application: asValue(application),
     server: asValue(server),
     connection: asValue(connection),
+    networkId: asValue(parseInt(process.env.NETWORK_ID as string, 10)),
     wsRelayerServer: asClass(WsRelayerServer).singleton(),
     v1OwnController: asClass(V1OwnController).singleton(),
     v0RelayerController: asClass(V0RelayerController).singleton(),
+    contractAddresses: asValue(undefined),
+    httpProvider: asFunction(makeHttpProvider).singleton(),
+    wsProvider: asFunction(makeWsProvider).singleton(),
     blockchainService: asClass(BlockchainService).singleton(),
     orderBlockchainService: asClass(OrderBlochainService).singleton(),
     tradeHistoryService: asClass(TradeHistoryService).singleton(),
