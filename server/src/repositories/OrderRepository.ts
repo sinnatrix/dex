@@ -7,7 +7,7 @@ import {
   MoreThan
 } from 'typeorm'
 import Order from '../entities/Order'
-import { convertOrderToSRA2Format } from '../utils/helpers'
+import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { OrderStatus } from '@0x/contract-wrappers'
 
 @EntityRepository(Order as any)
@@ -47,8 +47,8 @@ class OrderRepository extends Repository<any> {
 
     // TODO sort
 
-    const formattedBids = bids.map(convertOrderToSRA2Format)
-    const formattedAsks = asks.map(convertOrderToSRA2Format)
+    const formattedBids = bids.map(convertDexOrderToSRA2Format)
+    const formattedAsks = asks.map(convertDexOrderToSRA2Format)
 
     return {
       bids: {

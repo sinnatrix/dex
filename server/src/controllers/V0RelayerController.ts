@@ -11,7 +11,7 @@ import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import {
   convertSignedOrderWithStringsToSignedOrder,
   convertOrderToDexFormat,
-  convertOrderToSRA2Format,
+  convertDexOrderToSRA2Format,
   getDefaultOrderMetaData
 } from '../utils/helpers'
 import { validateRequiredField, validateNetworkId } from '../validation'
@@ -181,7 +181,7 @@ class V0RelayerController {
 
     this.wsRelayerServer.pushUpdate(
       'orders',
-      [convertOrderToSRA2Format(orderToSave)],
+      [convertDexOrderToSRA2Format(orderToSave)],
       [orderToSave]
     )
   }

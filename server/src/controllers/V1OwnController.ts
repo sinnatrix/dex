@@ -5,7 +5,7 @@ import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderRepository from '../repositories/OrderRepository'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
-import { convertOrderToSRA2Format } from '../utils/helpers'
+import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { ISRA2Order } from '../types'
 
 class V1OwnController {
@@ -100,7 +100,7 @@ class V1OwnController {
 
     const accountOrders = await this.orderRepository.getActiveAccountOrders(address)
 
-    const sra2Orders: ISRA2Order[] = accountOrders.map(convertOrderToSRA2Format)
+    const sra2Orders: ISRA2Order[] = accountOrders.map(convertDexOrderToSRA2Format)
     res.json(sra2Orders)
   }
 

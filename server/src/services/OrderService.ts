@@ -1,6 +1,6 @@
 import OrderRepository from '../repositories/OrderRepository'
 import OrderBlockchainService from './OrderBlockchainService'
-import { convertOrderToSRA2Format } from '../utils/helpers'
+import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import log from '../utils/log'
 
 export default class OrderService {
@@ -26,7 +26,7 @@ export default class OrderService {
       where: { orderHash }
     })
 
-    const { order: signedOrder } = convertOrderToSRA2Format(order)
+    const { order: signedOrder } = convertDexOrderToSRA2Format(order)
 
     const orderInfo = await this.orderBlockchainService.getOrderInfoAsync(signedOrder)
 
