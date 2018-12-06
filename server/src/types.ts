@@ -23,11 +23,15 @@ export interface ISignedOrderWithStrings {
   signature: string
 }
 
-export interface IFillEventLog extends EventLog {
+export interface IDexEventLog extends EventLog {
   id: string
   transactionHash: string
   blockNumber: number
   logIndex: number
+  returnValues: any
+}
+
+export interface IFillEventLog extends IDexEventLog {
   returnValues: {
     orderHash: string
     senderAddress: string
@@ -47,4 +51,20 @@ export interface IEventFilters {
   fromBlock?: number
   toBlock?: number | string
   filter?: Object
+}
+
+export interface ICancelEventLog extends IDexEventLog {
+  returnValues: {
+    makerAddress: string
+    feeRecipientAddress: string
+    senderAddress: string
+    orderHash: string
+    makerAssetData: string
+    takerAssetData: string
+  }
+}
+
+export enum EventType {
+  FILL = 'Fill',
+  CANCEL = 'Cancel'
 }

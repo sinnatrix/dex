@@ -1,11 +1,13 @@
 import { assetDataUtils } from '@0x/order-utils'
 import Order from '../entities/Order'
 import TradeHistory from '../entities/TradeHistory'
-import { ISRA2Order, IFillEventLog, ISignedOrderWithStrings } from '../types'
+import { ISRA2Order, IFillEventLog, ISignedOrderWithStrings, ICancelEventLog } from '../types'
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
 import { OrderStatus, OrderInfo, SignedOrder } from '@0x/contract-wrappers'
 import * as R from 'ramda'
+
+export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const toBN = value => new BigNumber(value)
 const toString10 = (value: BigNumber) => value.toString(10)
@@ -78,22 +80,39 @@ export const getDefaultOrderMetaData = (order: SignedOrder): OrderInfo => ({
   orderTakerAssetFilledAmount: new BigNumber(0)
 })
 
-export const convertFillEventToDexTradeHistory = (fillEvent: IFillEventLog): TradeHistory => {
+export const convertFillEventToDexTradeHistory = (event: IFillEventLog): TradeHistory => {
   return {
-    id: fillEvent.id,
-    transactionHash: fillEvent.transactionHash,
-    blockNumber: fillEvent.blockNumber,
-    logIndex: fillEvent.logIndex,
-    orderHash: fillEvent.returnValues.orderHash,
-    senderAddress: fillEvent.returnValues.senderAddress.toLowerCase(),
-    feeRecipientAddress: fillEvent.returnValues.feeRecipientAddress,
-    makerAddress: fillEvent.returnValues.makerAddress.toLowerCase(),
-    takerAddress: fillEvent.returnValues.takerAddress.toLowerCase(),
-    makerAssetData: fillEvent.returnValues.makerAssetData,
-    takerAssetData: fillEvent.returnValues.takerAssetData,
-    makerAssetFilledAmount: fillEvent.returnValues.makerAssetFilledAmount,
-    takerAssetFilledAmount: fillEvent.returnValues.takerAssetFilledAmount,
-    makerFeePaid: fillEvent.returnValues.makerFeePaid,
-    takerFeePaid: fillEvent.returnValues.takerFeePaid
+    id: event.id,
+    event: event.event,
+    transactionHash: event.transactionHash,
+    blockNumber: event.blockNumber,
+    logIndex: event.logIndex,
+    orderHash: event.returnValues.orderHash,
+    senderAddress: event.returnValues.senderAddress.toLowerCase(),
+    feeRecipientAddress: event.returnValues.feeRecipientAddress,
+    makerAddress: event.returnValues.makerAddress.toLowerCase(),
+    takerAddress: event.returnValues.takerAddress.toLowerCase(),
+    makerAssetData: event.returnValues.makerAssetData,
+    takerAssetData: event.returnValues.takerAssetData,
+    makerAssetFilledAmount: event.returnValues.makerAssetFilledAmount,
+    takerAssetFilledAmount: event.returnValues.takerAssetFilledAmount,
+    makerFeePaid: event.returnValues.makerFeePaid,
+    takerFeePaid: event.returnValues.takerFeePaid
+  }
+}
+
+export const convertCancelEventToDexEventLogItem = (event: ICancelEventLog): TradeHistory => {
+  return {
+    id: event.id,
+    event: event.event,
+    transactionHash: event.transactionHash,
+    blockNumber: event.blockNumber,
+    logIndex: event.logIndex,
+    orderHash: event.returnValues.orderHash,
+    senderAddress: event.returnValues.senderAddress.toLowerCase(),
+    feeRecipientAddress: event.returnValues.feeRecipientAddress,
+    makerAddress: event.returnValues.makerAddress.toLowerCase(),
+    makerAssetData: event.returnValues.makerAssetData,
+    takerAssetData: event.returnValues.takerAssetData
   }
 }

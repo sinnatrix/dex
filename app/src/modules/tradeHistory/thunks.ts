@@ -4,7 +4,6 @@ import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
 import { getSubscriptionsByListType } from 'modules/subscriptions/selectors'
 import { expandTradeHistory } from './helpers'
 
-// TODO subscription for accountTradeHistory
 export const loadAccountTradeHistory = () => async (dispatch, getState, { apiService }) => {
   const { account } = getState().global
   const tradeHistory = await apiService.getAccountTradeHistory(account)

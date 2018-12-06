@@ -1,7 +1,8 @@
 import test from 'tape'
 import { assetDataUtils } from '@0x/order-utils'
 import { generateSRA2Order, generateERC20Token } from 'helpers/testUtils'
-import { convertOrderToClipboardData, orderAsBid } from './selectors'
+import { orderAsBid } from './selectors'
+import { convertOrderToClipboardData } from './helpers'
 
 test('convertOrderToClipboardData', async t => {
   const currentToken = generateERC20Token()

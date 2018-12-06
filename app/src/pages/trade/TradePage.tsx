@@ -108,8 +108,8 @@ class TradePage extends React.Component<any> {
 
 export default compose(
   routerListener({
-    onEnter (params, dispatch) {
-      Promise.all([
+    async onEnter (params, dispatch) {
+      await Promise.all([
         dispatch(loadMarketplaceToken(params.marketplace)),
         dispatch(loadCurrentToken(params.token))
       ]).then(() => {
