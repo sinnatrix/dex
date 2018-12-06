@@ -82,7 +82,7 @@ export interface ISubscription {
   payload: Object
 }
 
-export declare enum EventType {
+export enum EventType {
   FILL = 'Fill',
   CANCEL = 'Cancel'
 }

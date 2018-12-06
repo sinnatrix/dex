@@ -25,7 +25,7 @@ export default class OrderService {
 
   async updateOrderInfo (orderHash: string) {
     const orderInfo = await this.getOrderInfo(orderHash)
-    await this.saveOrderInfoByOrderHash(orderHash, orderInfo)
+    await this.saveOrderInfo(orderInfo)
   }
 
   async pushOrder (order: OrderEntity) {
@@ -55,7 +55,7 @@ export default class OrderService {
     return order
   }
 
-  async saveOrderInfoByOrderHash (orderHash: string, orderInfo: OrderInfo) {
+  async saveOrderInfo (orderInfo: OrderInfo) {
     await this.orderRepository.save({
       ...orderInfo,
       orderTakerAssetFilledAmount: orderInfo.orderTakerAssetFilledAmount.toString(10)
