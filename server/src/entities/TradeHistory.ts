@@ -7,6 +7,9 @@ export default class TradeHistory {
   id: string
 
   @Column()
+  event: string
+
+  @Column()
   orderHash: string
 
   @Column()
@@ -27,8 +30,8 @@ export default class TradeHistory {
   @Column()
   makerAddress: string
 
-  @Column()
-  takerAddress: string
+  @Column({ default: null })
+  takerAddress?: string
 
   @Column()
   makerAssetData: string
@@ -36,15 +39,15 @@ export default class TradeHistory {
   @Column()
   takerAssetData: string
 
-  @Column()
-  makerAssetFilledAmount: string
+  @Column({ default: null })
+  makerAssetFilledAmount?: string
 
-  @Column()
-  takerAssetFilledAmount: string
+  @Column({ default: null })
+  takerAssetFilledAmount?: string
 
-  @Column()
-  makerFeePaid: string
+  @Column({ default: null })
+  makerFeePaid?: string
 
-  @Column()
-  takerFeePaid: string
+  @Column({ default: null })
+  takerFeePaid?: string
 }

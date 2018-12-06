@@ -1,7 +1,7 @@
 import { ContractWrappers } from '0x.js'
 import BlockchainService from './BlockchainService'
 import { IEventFilters } from '../types'
-import { Order, SignedOrder, MethodOpts, OrderInfo } from '@0x/contract-wrappers'
+import { Order, MethodOpts, OrderInfo } from '@0x/contract-wrappers'
 
 class OrderBlockchainService {
   blockchainService: BlockchainService
@@ -71,7 +71,7 @@ class OrderBlockchainService {
       .on('error', onError)
   }
 
-  getOrderInfoAsync (order: Order | SignedOrder, opts: MethodOpts = {}): Promise<OrderInfo> {
+  getOrderInfoAsync (order: Order, opts: MethodOpts = {}): Promise<OrderInfo> {
     return this.httpContractWrappers.exchange.getOrderInfoAsync(order, opts)
   }
 }

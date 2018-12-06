@@ -1,15 +1,7 @@
 import * as types from './types'
+import { ISubscription } from 'types'
 
-/**
- * {
-    requestId: '',
-    channel: '',
-    payload: {},
-    name: ''
-  }
- * @type {Array}
- */
-const initialState = []
+const initialState: ISubscription[] = []
 
 const subscriptionsReducer = (state = initialState, { type, payload }) => {
   switch (type) {
@@ -17,7 +9,7 @@ const subscriptionsReducer = (state = initialState, { type, payload }) => {
       return [ ...state, payload ]
 
     case types.REMOVE_SUBSCRIPTION:
-      return state.filter((one: any) => one.requestId !== payload.requestId)
+      return state.filter((one: ISubscription) => one.requestId !== payload.requestId)
 
     default:
       return state

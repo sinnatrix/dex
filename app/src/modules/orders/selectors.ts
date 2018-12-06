@@ -91,19 +91,3 @@ const ordersMergeDeepRightCustom = (o1, o2) => {
   }
   return mergeWith(fn, o1, o2)
 }
-
-export const convertOrderToClipboardData = extendedSRA2Order => ({
-  signedOrder: extendedSRA2Order.order,
-  metadata: {
-    makerToken: {
-      name: extendedSRA2Order.extra.makerToken.name,
-      symbol: extendedSRA2Order.extra.makerToken.symbol,
-      decimals: extendedSRA2Order.extra.makerToken.decimals
-    },
-    takerToken: {
-      name: extendedSRA2Order.extra.takerToken.name,
-      symbol: extendedSRA2Order.extra.takerToken.symbol,
-      decimals: extendedSRA2Order.extra.takerToken.decimals
-    }
-  }
-})

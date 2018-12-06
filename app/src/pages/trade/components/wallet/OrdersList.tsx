@@ -1,10 +1,13 @@
 import React from 'react'
+import jss from 'react-jss'
 import { connect } from 'react-redux'
 import { loadActiveAccountOrders } from 'modules/orders'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
 import { formatAssetAmount } from 'helpers/general'
 import { getAccountOrders } from 'modules/orders/selectors'
+import CancelOrderButton from './CancelOrderButton'
+import compose from 'ramda/es/compose'
 
 const connector = connect(
   state => ({
@@ -13,13 +16,22 @@ const connector = connect(
   { loadActiveAccountOrders }
 )
 
+const decorate = jss({
+  controlColumn: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '0 !important'
+  }
+})
+
 class OrdersList extends React.Component<any> {
   componentDidMount () {
     this.props.loadActiveAccountOrders()
   }
 
   render () {
-    const { accountOrders } = this.props
+    const { accountOrders, classes } = this.props
 
     if (accountOrders.length === 0) {
       return null
@@ -32,6 +44,9 @@ class OrdersList extends React.Component<any> {
         defaultPageSize={accountOrders.length}
         pageSize={accountOrders.length}
         resizable={false}
+        getTrProps={(state, rowInfo) => ({
+          key: rowInfo.original.metaData.orderHash
+        })}
         columns={[
           {
             Header: 'Sold',
@@ -69,6 +84,13 @@ class OrdersList extends React.Component<any> {
             style: {
               fontSize: '.7em'
             }
+          },
+          {
+            Header: '',
+            id: 'cancel',
+            Cell: ({ original: order }) => <CancelOrderButton order={order} />,
+            width: 30,
+            className: classes.controlColumn
           }
         ]}
       />
@@ -81,4 +103,7 @@ class OrdersList extends React.Component<any> {
   }
 }
 
-export default connector(OrdersList)
+export default compose(
+  connector,
+  decorate
+)(OrdersList)

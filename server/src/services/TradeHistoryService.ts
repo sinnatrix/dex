@@ -1,13 +1,16 @@
 import OrderBlockchainService from './OrderBlockchainService'
-import { convertFillEventToDexTradeHistory, convertDexOrderToSRA2Format } from '../utils/helpers'
+import {
+  convertCancelEventToDexEventLogItem,
+  convertFillEventToDexTradeHistory,
+  delay
+} from '../utils/helpers'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import OrderRepository from '../repositories/OrderRepository'
 import log from '../utils/log'
-import { IFillEventLog } from '../types'
+import { IFillEventLog, EventType } from '../types'
+import TradeHistoryEntity from '../entities/TradeHistory'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderService from './OrderService'
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 class TradeHistoryService {
   WS_MAX_CONNECTION_ATTEMPTS = 10
@@ -32,6 +35,7 @@ class TradeHistoryService {
     }
 
     await this.subscribeToTradeHistoryEvents()
+    await this.subscribeToCancelOrderEvents()
 
     // await this.orderService.updateOrdersInfo()
   }
@@ -61,7 +65,7 @@ class TradeHistoryService {
     log.info('Subscription to Fill event via websocket provider')
 
     this.orderBlockchainService.subscribe(
-      'Fill',
+      EventType.FILL,
       this.handleFillEvent.bind(this),
       async error => {
         console.error('Connection error: ', error)
@@ -78,28 +82,52 @@ class TradeHistoryService {
   async handleFillEvent (fillEvent) {
     log.info('fillEvent', fillEvent)
 
-    const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEvent)
+    const eventLogItem = convertFillEventToDexTradeHistory(fillEvent)
+    await this.saveTradeHistoryAndPush(eventLogItem)
 
-    await this.tradeHistoryRepository
-      .saveFullTradeHistory([tradeHistoryItem])
+    await this.orderService.updateOrderInfoAndPush(eventLogItem.orderHash)
+  }
 
+  async saveTradeHistoryAndPush (tradeHistoryItem: TradeHistoryEntity) {
+    await this.tradeHistoryRepository.saveFullTradeHistory([tradeHistoryItem])
+    this.pushTradeHistory(tradeHistoryItem)
+  }
+
+  pushTradeHistory (tradeHistoryItem: TradeHistoryEntity) {
     this.wsRelayerServer.pushUpdate(
       'tradeHistory',
       [tradeHistoryItem],
       [tradeHistoryItem]
     )
+  }
 
-    await this.orderService.updateOrderInfoByHash(tradeHistoryItem.orderHash)
+  async subscribeToCancelOrderEvents (attemptNumber = 1) {
+    log.info('Subscription to Cancel event via websocket provider')
 
-    const order = await this.orderRepository.findOne({
-      where: { orderHash: tradeHistoryItem.orderHash }
-    })
+    this.orderBlockchainService.subscribe(
+      EventType.CANCEL,
+      this.handleCancelEvent.bind(this),
+      async error => {
+        console.error('Connection error: ', error)
+        await delay(1000)
+        console.log('Trying to reconnect #', attemptNumber)
 
-    this.wsRelayerServer.pushUpdate(
-      'orders',
-      [convertDexOrderToSRA2Format(order)],
-      [order]
+        if (attemptNumber < this.WS_MAX_CONNECTION_ATTEMPTS) {
+          await this.subscribeToCancelOrderEvents(attemptNumber + 1)
+        }
+      }
     )
+  }
+
+  async handleCancelEvent (cancelEvent) {
+    log.info('cancelEvent', cancelEvent)
+
+    const eventLogItem = convertCancelEventToDexEventLogItem(cancelEvent)
+
+    await this.orderService.updateOrderInfoAndPush(eventLogItem.orderHash)
+
+    return this.tradeHistoryRepository
+      .saveFullTradeHistory([eventLogItem])
   }
 }
 

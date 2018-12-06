@@ -1,11 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, PrimaryColumn, Column } from 'typeorm'
 import { OrderStatus } from '@0x/contract-wrappers'
 
 @Entity('orders')
 export default class Order {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id?: number
-
   /** SignedOrder */
   @Column()
   makerAddress: string
@@ -54,7 +51,7 @@ export default class Order {
   @Column({ default: '0' })
   orderTakerAssetFilledAmount: string
 
-  @Column()
+  @PrimaryColumn()
   orderHash: string
 
   @Column({ default: OrderStatus.FILLABLE })

@@ -5,6 +5,7 @@ import * as actions from './actions'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
 import { getSubscriptionsByListType } from 'modules/subscriptions/selectors'
 import { getAccount } from 'modules/global/selectors'
+import { IDexOrder, ISRA2Order } from 'types'
 
 export const loadOrderbook = () => async (dispatch, getState, { apiService }) => {
   const { marketplaceToken, currentToken } = getState().global
@@ -34,7 +35,7 @@ export const loadOrderbook = () => async (dispatch, getState, { apiService }) =>
   ))
 }
 
-export const addOrders = orders => async (dispatch, getState) => {
+export const addOrders = (orders: ISRA2Order[]) => async (dispatch, getState) => {
   const { marketplaceToken, currentToken } = getState().global
   const baseAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
   const quoteAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
@@ -80,7 +81,7 @@ export const loadActiveAccountOrders = () => async (dispatch, getState, { apiSer
   ))
 }
 
-export const fillOrder = order => async (dispatch, getState, { blockchainService }) => {
+export const fillOrder = (order: IDexOrder) => async (dispatch, getState, { blockchainService }) => {
   const account = getAccount(getState())
 
   const txHash = await blockchainService.fillOrderAsync(
@@ -88,6 +89,16 @@ export const fillOrder = order => async (dispatch, getState, { blockchainService
     Web3Wrapper.toBaseUnitAmount(order.order.takerAssetAmount, order.extra.takerToken.decimals),
     account
   )
+
+  if (!txHash) {
+    throw new Error('txHash is invalid!')
+  }
+
+  await blockchainService.awaitTransaction(txHash)
+}
+
+export const cancelOrder = (order: IDexOrder) => async (dispatch, getState, { blockchainService }) => {
+  const txHash = await blockchainService.contractWrappers.exchange.cancelOrderAsync(order.order)
 
   if (!txHash) {
     throw new Error('txHash is invalid!')

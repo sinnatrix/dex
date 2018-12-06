@@ -76,8 +76,7 @@ class OrderRepository extends Repository<any> {
         orderStatus: OrderStatus.FILLABLE
       },
       order: {
-        expirationTimeSeconds: 'ASC',
-        id: 'DESC'
+        expirationTimeSeconds: 'ASC'
       }
     })
   }

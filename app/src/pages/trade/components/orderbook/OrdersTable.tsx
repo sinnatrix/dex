@@ -37,7 +37,6 @@ class OrdersTable extends React.Component<any> {
   }
 
   render () {
-    /** @var orders array of bids */
     const { classes, orders } = this.props
 
     return (

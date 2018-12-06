@@ -26,9 +26,9 @@ class ConnectionWidget extends React.Component<any> {
   timeout
 
   async componentDidMount () {
-    this.props.makeConnectRequest()
-    this.updateAccountDataWithTimeout()
-    this.props.loadTokens()
+    await this.props.makeConnectRequest()
+    await this.updateAccountDataWithTimeout()
+    await this.props.loadTokens()
   }
 
   componentWillUnmount () {
@@ -41,6 +41,7 @@ class ConnectionWidget extends React.Component<any> {
     try {
       await this.props.updateAccountData()
     } catch (e) {
+      console.log('updateAccountData error', e)
     }
 
     this.timeout = setTimeout(this.updateAccountDataWithTimeout, 100)

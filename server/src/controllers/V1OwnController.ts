@@ -113,28 +113,19 @@ class V1OwnController {
     } = req.query
 
     const skip = take * (page - 1)
-    const records = await this.tradeHistoryRepository.createQueryBuilder()
-      .where('("makerAssetData" = :baseAssetData AND "takerAssetData" = :quoteAssetData)')
-      .orWhere('("makerAssetData" = :quoteAssetData AND "takerAssetData" = :baseAssetData)')
-      .setParameters({ baseAssetData: baseAssetData, quoteAssetData: quoteAssetData })
-      .skip(skip)
-      .take(take)
-      .orderBy('"blockNumber"', 'DESC')
-      .getMany()
+    const records = await this.tradeHistoryRepository.getAssetPairTradeHistoryAsync({
+      baseAssetData,
+      quoteAssetData,
+      skip,
+      take
+    })
 
     res.json(records)
   }
 
   async getAccountTradeHistory (req, res) {
     const { address } = req.params
-
-    const accountTradeHistory = await this.tradeHistoryRepository.createQueryBuilder()
-      .where('"makerAddress" = :address')
-      .orWhere('"takerAddress" = :address')
-      .setParameters({ address })
-      .orderBy('"blockNumber"', 'DESC')
-      .addOrderBy('"id"', 'DESC')
-      .getMany()
+    const accountTradeHistory = await this.tradeHistoryRepository.getAccountTradeHistoryAsync(address)
 
     res.json(accountTradeHistory)
   }

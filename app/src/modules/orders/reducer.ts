@@ -55,13 +55,7 @@ const resetHighlightReducer = state => ({
   [ENTITY_STORE_KEY]: map(dissocPath(HIGHLIGHT_PATH), state[ENTITY_STORE_KEY])
 })
 
-export const highlightItems = (state, itemsList) => itemsList.map(item => {
-  if (state[ENTITY_STORE_KEY][getId(item)]) {
-    return item
-  }
-
-  return assocPath(HIGHLIGHT_PATH, true, item)
-})
+export const highlightItems = (state, itemsList) => itemsList.map(assocPath(HIGHLIGHT_PATH, true))
 
 const removeFulfilledOrdersReducer = state => {
   const keysToRemove = Object.keys(state[ENTITY_STORE_KEY]).filter(
