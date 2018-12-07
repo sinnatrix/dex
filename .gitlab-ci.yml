@@ -8,14 +8,14 @@ build-app:
   script:
     - cd app
     - docker build --target=builder -t dex-app-builder .
-    - docker build -t maxlun86/dex-app .
+    - docker build -t dex-app .
 
 build-server:
   stage: build
   script:
     - cd server
     - docker build --target=builder -t dex-server-builder .
-    - docker build -t maxlun86/dex-server .
+    - docker build -t dex-server .
 
 build-nginx:
   stage: build
