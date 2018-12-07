@@ -18,8 +18,7 @@ RUN yarn build
 
 # production environment
 FROM nginx:1.15.5-alpine
-RUN rm -rf /etc/nginx/conf.d
-COPY conf /etc/nginx
+COPY conf/nginx.conf /etc/nginx
 COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
