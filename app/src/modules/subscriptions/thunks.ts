@@ -5,8 +5,8 @@ import { getSubscriptionByRequestId } from './selectors'
 
 const uuidv4 = require('uuid/v4')
 
-export const wsUnsubscribe = (requestId = null) => async (dispatch, getState, { socket }) => {
-  socket.send(JSON.stringify({
+export const wsUnsubscribe = (requestId = null) => async (dispatch, getState, { socketService }) => {
+  socketService.send(JSON.stringify({
     type: 'unsubscribe',
     requestId
   }))
@@ -14,10 +14,10 @@ export const wsUnsubscribe = (requestId = null) => async (dispatch, getState, { 
   dispatch(actions.removeSubscription({ requestId }))
 }
 
-export const wsSubscribe = (name, channel, payload) => async (dispatch, getState, { socket }) => {
+export const wsSubscribe = (name, channel, payload) => async (dispatch, getState, { socketService }) => {
   const requestId = uuidv4()
 
-  socket.send(JSON.stringify({
+  socketService.send(JSON.stringify({
     type: 'subscribe',
     channel,
     requestId,
