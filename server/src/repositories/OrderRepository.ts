@@ -3,23 +3,22 @@ import {
   EntityRepository,
   Not,
   LessThan,
-  Equal,
   MoreThan
 } from 'typeorm'
-import Order from '../entities/Order'
+import OrderEntity from '../entities/Order'
 import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { OrderStatus } from '@0x/contract-wrappers'
+import { IOrderbook } from '../types'
 
-@EntityRepository(Order as any)
-class OrderRepository extends Repository<any> {
+@EntityRepository(OrderEntity)
+export default class OrderRepository extends Repository<OrderEntity> {
   async getOrderbook ({
     baseAssetData,
     quoteAssetData,
     page = 1,
     perPage: take = 100
-  }) {
+  }): Promise<IOrderbook> {
     // TODO validate page / perPage parameters
-
     const currentTs = (Date.now() / 1000).toFixed(0)
     const skip = take * (page - 1)
 
@@ -66,7 +65,7 @@ class OrderRepository extends Repository<any> {
     }
   }
 
-  async getActiveAccountOrders (address) {
+  async getActiveAccountOrders (address: string): Promise<OrderEntity[]> {
     const currentUnixtime = Math.trunc((new Date().getTime()) / 1000)
 
     return this.find({
@@ -81,5 +80,3 @@ class OrderRepository extends Repository<any> {
     })
   }
 }
-
-export default OrderRepository

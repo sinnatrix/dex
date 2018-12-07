@@ -1,5 +1,5 @@
 import { assetDataUtils } from '@0x/order-utils'
-import Order from '../entities/Order'
+import OrderEntity from '../entities/Order'
 import TradeHistory from '../entities/TradeHistory'
 import { ISRA2Order, IFillEventLog, ISignedOrderWithStrings, ICancelEventLog } from '../types'
 import { BigNumber } from '@0x/utils'
@@ -31,7 +31,7 @@ export const convertSignedOrderToSignedOrderWithStrings = (signedOrder: SignedOr
   return R.evolve(transformation, signedOrder)
 }
 
-export const convertDexOrderToSRA2Format = (order: Order): ISRA2Order => ({
+export const convertDexOrderToSRA2Format = (order: OrderEntity): ISRA2Order => ({
   order: convertSignedOrderWithStringsToSignedOrder(R.pick([
     'senderAddress',
     'makerAddress',
@@ -55,7 +55,7 @@ export const convertDexOrderToSRA2Format = (order: Order): ISRA2Order => ({
   }
 })
 
-export const convertOrderToDexFormat = (order: ISRA2Order): Order => {
+export const convertOrderToDexFormat = (order: ISRA2Order): OrderEntity => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
   const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
 

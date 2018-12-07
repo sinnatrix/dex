@@ -68,3 +68,38 @@ export enum EventType {
   FILL = 'Fill',
   CANCEL = 'Cancel'
 }
+
+export interface IRelayer {
+  id: string
+  name: string
+  homepage_url: string
+  logo_img?: string
+  header_img: string
+  networks: IRelayerNetwork[]
+}
+
+export interface IRelayerNetwork {
+  networkId: number
+  sra_ws_endpoint: string
+  sra_http_endpoint: string
+  static_order_fields?: IRelayerNetworkStaticOrderFields
+}
+
+export interface IRelayerNetworkStaticOrderFields {
+  fee_recipient_addresses: string[]
+}
+
+export interface IOrderbook {
+  bids: {
+    total: number
+    page: number
+    perPage: number
+    records: ISRA2Order[]
+  }
+  asks: {
+    total: number
+    page: number
+    perPage: number
+    records: ISRA2Order[]
+  }
+}
