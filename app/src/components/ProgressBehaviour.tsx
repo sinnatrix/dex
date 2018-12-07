@@ -1,14 +1,30 @@
 import React from 'react'
 
 class ProgressBehaviour extends React.Component<any> {
+  mounted
+
   state = {
     loading: false,
     loaded: false,
     error: false
   }
 
+  componentDidMount () {
+    this.mounted = true
+  }
+
+  componentWillUnmount () {
+    this.mounted = false
+  }
+
+  setStateIfMounted (value) {
+    if (this.mounted) {
+      this.setState(value)
+    }
+  }
+
   handleStart = async (...args) => {
-    this.setState({
+    this.setStateIfMounted({
       loading: true,
       loaded: false,
       error: false
@@ -16,25 +32,23 @@ class ProgressBehaviour extends React.Component<any> {
 
     try {
       await this.props.onStart(...args)
-      this.setState({
+      this.setStateIfMounted({
         loading: false,
         loaded: true,
         error: false
       })
     } catch (e) {
       console.error(e)
-      this.setState({
+      this.setStateIfMounted({
         loading: false,
         loaded: false,
         error: true
       })
     }
 
-    await new Promise(resolve => {
-      setTimeout(resolve, 2000)
-    })
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
-    this.setState({
+    this.setStateIfMounted({
       loaded: false,
       loading: false,
       error: false

@@ -1,10 +1,10 @@
 import log from '../utils/log'
 
 class SendEthTask {
-  blockchainService: any
+  transactionBlockchainService: any
 
-  constructor ({ blockchainService }) {
-    this.blockchainService = blockchainService
+  constructor ({ transactionBlockchainService }) {
+    this.transactionBlockchainService = transactionBlockchainService
   }
 
   async run () {
@@ -14,7 +14,7 @@ class SendEthTask {
       gas: 21000
     }
 
-    const result = await this.blockchainService.sendTx(tx)
+    const result = await this.transactionBlockchainService.sendTx(tx)
 
     log.info(result, 'result')
   }
