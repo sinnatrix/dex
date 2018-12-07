@@ -8,22 +8,27 @@ import theme from './theme'
 import createStore from './createStore'
 import { processSocketMessage } from 'modules/subscriptions'
 import BlockchainService from './services/BlockchainService'
+import SocketService from './services/SocketService'
 import ApiService from './services/ApiService'
 import Web3 from 'web3'
 
 class App extends React.Component<any> {
-  socket
   blockchainService
+  socketService
   store
 
   constructor (props) {
     super(props)
 
-    this.socket = new WebSocket(`ws://${window.location.host}/api/relayer/v2`)
+    this.socketService = new SocketService(`ws://${window.location.host}/api/relayer/v2`)
+    this.socketService.addMessageListener(message => {
+      this.store.dispatch(processSocketMessage(message))
+    })
+
     this.blockchainService = this.createBlockchainService()
 
     this.store = createStore({
-      socket: this.socket,
+      socketService: this.socketService,
       blockchainService: this.blockchainService,
       apiService: new ApiService()
     })
@@ -38,11 +43,8 @@ class App extends React.Component<any> {
   }
 
   async componentDidMount () {
-    this.socket.addEventListener('message', message => {
-      this.store.dispatch(processSocketMessage(message))
-    })
-
     await this.blockchainService.init()
+    await this.socketService.init()
   }
 
   render () {
