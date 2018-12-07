@@ -4,6 +4,7 @@ import ormconfig from '../ormconfig'
 import RelayerService from './services/RelayerService'
 import BlockchainService from './services/BlockchainService'
 import OrderBlockchainService from './services/OrderBlockchainService'
+import RelayerRegistryService from './services/RelayerRegistryService'
 const argv = require('yargs').argv
 const { createContainer, asValue, asClass } = require('awilix')
 
@@ -18,12 +19,13 @@ const { createContainer, asValue, asClass } = require('awilix')
   container.register({
     connection: asValue(connection),
     relayerService: asClass(RelayerService).singleton(),
+    relayerRegistryService: asClass(RelayerRegistryService).singleton(),
     blockchainService: asClass(BlockchainService).singleton(),
     orderBlockchainService: asClass(OrderBlockchainService).singleton(),
-    [fullTaskName]: asClass(Task).singleton()
+    [taskName]: asClass(Task).singleton()
   })
 
-  await container.resolve(fullTaskName).run()
+  await container.resolve(taskName).run()
 })().then(() => {
   process.exit()
 }).catch(e => {

@@ -1,24 +1,31 @@
 import { getRepository } from 'typeorm'
 import log from '../utils/log'
 import Relayer from '../entities/Relayer'
+import RelayerRegistryService from '../services/RelayerRegistryService'
+import * as R from 'ramda'
+import * as R_ from 'ramda-extension'
+import RelayerRepository from '../repositories/RelayerRepository'
 
 class LoadRelayersTask {
-  relayerRegistryService: any
+  relayerRegistryService: RelayerRegistryService
+  relayerRepository: RelayerRepository
 
-  constructor ({ relayerRegistryService }) {
+  constructor ({ connection, relayerRegistryService }) {
     this.relayerRegistryService = relayerRegistryService
+    this.relayerRepository = connection.getCustomRepository(RelayerRepository)
   }
 
   async run () {
-    const items = await this.relayerRegistryService.loadRelayers()
-    log.info({ count: items.length }, 'loaded')
+    const itemsWithUnderscores = await this.relayerRegistryService.loadRelayers()
 
-    const repository = getRepository(Relayer as any)
+    const itemsWithCamelCase = R.map(R_.mapKeys(R_.toCamelCase), itemsWithUnderscores)
 
-    await repository.clear()
-    await repository.save(items)
+    const itemsToSave = R.values(R.mapObjIndexed((v, id, o) => ({
+      id,
+      ...v
+    }), itemsWithCamelCase))
 
-    log.info('saved')
+    await this.relayerRepository.insertIfNotExists(itemsToSave)
   }
 }
 

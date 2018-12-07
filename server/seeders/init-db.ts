@@ -1,7 +1,7 @@
 import Token from '../src/entities/Token'
 import TokenPair from '../src/entities/TokenPair'
-import Order from '../src/entities/Order'
-import Relayer from '../src/entities/Relayer'
+import RelayerRepository from '../src/repositories/RelayerRepository'
+import OrderRepository from '../src/repositories/OrderRepository'
 
 const tokens = require('./tokens.json')
 const tokenPairs = require('./tokenPairs.json')
@@ -24,8 +24,8 @@ export const up = async connection => {
     })
   }
 
-  await connection.getRepository(Relayer).save(relayers)
-  await connection.getRepository(Order).save(orders)
+  await connection.getCustomRepository(RelayerRepository).save(relayers)
+  await connection.getCustomRepository(OrderRepository).save(orders)
 }
 
 export const down = async () => {}
