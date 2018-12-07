@@ -1,27 +1,23 @@
 import { BigNumber } from '@0x/utils'
-import BlockchainService from './BlockchainService'
 import OrderBlockchainService from './OrderBlockchainService'
 import { generateSignedOrder, createProviderByBalance, deployZeroExContracts } from '../utils/testUtils'
 const test = require('tape')
+const Web3 = require('web3')
 
 test('getOrderInfoAsync', async t => {
   const balance = Math.pow(10, 18).toString()
   const provider = createProviderByBalance(balance)
 
-  const blockchainService = new BlockchainService({
-    httpProvider: provider,
-    wsProvider: provider
-  })
-
-  const web3 = blockchainService.httpWeb3
+  const web3 = new Web3(provider)
   const accounts = await web3.eth.getAccounts()
 
   const contractAddresses = await deployZeroExContracts(web3, accounts[0])
 
   const orderBlockchainService = new OrderBlockchainService({
-    blockchainService,
     networkId: provider.options.network_id,
-    contractAddresses
+    contractAddresses,
+    websocketProviderWrapper: {} as any,
+    httpProvider: provider
   })
 
   const signedOrder = generateSignedOrder()

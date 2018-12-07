@@ -1,45 +1,55 @@
 import { ContractWrappers } from '0x.js'
-import BlockchainService from './BlockchainService'
+import log from '../utils/log'
+import WebsocketProviderWrapper from './WebsocketProviderWrapper'
 import { IEventFilters } from '../types'
 import { Order, MethodOpts, OrderInfo } from '@0x/contract-wrappers'
+const Web3 = require('web3')
 
 class OrderBlockchainService {
-  blockchainService: BlockchainService
   httpContractWrappers: ContractWrappers
-  wsContractWrappers: ContractWrappers
   httpContract: any
-  wsContract: any
+  httpProvider: any
+  websocketProviderWrapper: WebsocketProviderWrapper
+  networkId: number
+  contractAddresses: any
 
-  constructor ({ blockchainService, networkId, contractAddresses }) {
-    this.blockchainService = blockchainService
+  constructor ({ networkId, contractAddresses, websocketProviderWrapper, httpProvider }) {
+    this.httpProvider = httpProvider
+    this.networkId = networkId
+    this.contractAddresses = contractAddresses
 
     /** HTTP transport */
-    this.httpContractWrappers = new ContractWrappers(
-      this.blockchainService.httpProvider,
-      {
-        networkId,
-        contractAddresses
-      }
-    )
-
-    this.httpContract = new this.blockchainService.httpWeb3.eth.Contract(
-      this.httpContractWrappers.exchange.abi,
-      this.httpContractWrappers.exchange.address
-    )
+    this.httpContractWrappers = this.getExchangeContractWrappers(this.httpProvider)
+    this.httpContract = this.getExchangeContract(this.httpProvider, this.httpContractWrappers)
 
     /** websocket transport */
-    this.wsContractWrappers = new ContractWrappers(
-      this.blockchainService.wsProvider,
+    this.websocketProviderWrapper = websocketProviderWrapper
+  }
+
+  getExchangeWsContract () {
+    const provider = this.websocketProviderWrapper.getProvider()
+    const contractWrappers = this.getExchangeContractWrappers(provider)
+    return this.getExchangeContract(provider, contractWrappers)
+  }
+
+  getExchangeContractWrappers (provider) {
+    return new ContractWrappers(
+      provider,
       {
-        networkId,
-        contractAddresses
+        networkId: this.networkId,
+        contractAddresses: this.contractAddresses
       }
     )
+  }
 
-    this.wsContract = new this.blockchainService.wsWeb3.eth.Contract(
-      this.wsContractWrappers.exchange.abi,
-      this.wsContractWrappers.exchange.address
+  getExchangeContract (provider, contractWrappers) {
+    const web3 = new Web3(provider)
+    const contract = new web3.eth.Contract(
+      contractWrappers.exchange.abi,
+      contractWrappers.exchange.address
     )
+
+    return contract
   }
 
   /**
@@ -66,7 +76,21 @@ class OrderBlockchainService {
   }
 
   subscribe (event, onData: Function, onError: Function) {
-    return this.wsContract.events[event]()
+    let subscription
+    this.websocketProviderWrapper.onConnect(() => {
+      log.info('subscribing to event: ', event)
+      const wsContract = this.getExchangeWsContract()
+      if (subscription) {
+        subscription.unsubscribe()
+        log.info('unsubscribed from previous subscription on event: ', event)
+      }
+      subscription = this.subscribeOnContract(wsContract, event, onData, onError)
+      log.info('subscribed to event: ', event)
+    })
+  }
+
+  subscribeOnContract (wsContract, event, onData: Function, onError: Function) {
+    return wsContract.events[event]()
       .on('data', onData)
       .on('error', onError)
   }
