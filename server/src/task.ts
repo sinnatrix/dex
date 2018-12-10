@@ -17,6 +17,7 @@ const { createContainer, asValue, asClass } = require('awilix')
 
   const container = createContainer()
   container.register({
+    networkId: asValue(parseInt(process.env.NETWORK_ID as string, 10)),
     connection: asValue(connection),
     relayerService: asClass(RelayerService).singleton(),
     relayerRegistryService: asClass(RelayerRegistryService).singleton(),

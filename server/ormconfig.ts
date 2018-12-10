@@ -1,8 +1,8 @@
-import Token from './src/entities/Token'
-import TokenPair from './src/entities/TokenPair'
-import Order from './src/entities/Order'
-import Relayer from './src/entities/Relayer'
-import TradeHistory from './src/entities/TradeHistory'
+import AssetEntity from './src/entities/Asset'
+import AssetPairEntity from './src/entities/AssetPair'
+import OrderEntity from './src/entities/Order'
+import RelayerEntity from './src/entities/Relayer'
+import TradeHistoryEntity from './src/entities/TradeHistory'
 
 const ormconfig = {
   type: 'postgres',
@@ -15,11 +15,11 @@ const ormconfig = {
   synchronize: true,
   logging: false,
   entities: [
-    Token,
-    TokenPair,
-    Order,
-    Relayer,
-    TradeHistory
+    AssetEntity,
+    AssetPairEntity,
+    OrderEntity,
+    RelayerEntity,
+    TradeHistoryEntity
   ]
 }
 

@@ -1,35 +1,42 @@
-import { getRepository, getCustomRepository } from 'typeorm'
-import log from '../utils/log'
-import Relayer from '../entities/Relayer'
 import OrderRepository from '../repositories/OrderRepository'
+import RelayerRepository from '../repositories/RelayerRepository'
+import RelayerService from '../services/RelayerService'
+import { convertOrderToDexFormat, getDefaultOrderMetaData } from '../utils/helpers'
 
-class LoadOrdersTask {
-  relayerService: any
+export default class LoadOrdersTask {
+  relayerRepository: RelayerRepository
+  orderRepository: OrderRepository
+  relayerService: RelayerService
 
-  constructor ({ relayerService }) {
+  constructor ({ connection, relayerService }) {
+    this.orderRepository = connection.getCustomRepository(OrderRepository)
+    this.relayerRepository = connection.getCustomRepository(RelayerRepository)
     this.relayerService = relayerService
   }
 
   async run () {
-    const relayer = await getRepository(Relayer as any).findOne({ name: 'Radar Relay' })
+    const relayers = await this.relayerRepository.getAllActiveWithHttpEndpoint()
 
+    for (let relayer of relayers) {
+      await this.loadOrdersAndSave(relayer)
+    }
+  }
+
+  async loadOrdersAndSave (relayer) {
     const orders = await this.relayerService.loadOrders(relayer)
 
-    log.info({ count: orders.length }, 'loaded')
+    if (orders.total > 0) {
+      console.log(`Relayer ${relayer.name} has ${orders.total} orders`)
 
-    const orderRepository = getCustomRepository(OrderRepository)
+      const ordersToSave = orders.records.map(order => ({
+        relayerId: relayer.id,
+        ...convertOrderToDexFormat({
+          ...order,
+          metaData: getDefaultOrderMetaData(order.order)
+        })
+      }))
 
-    for (let order of orders) {
-      try {
-        await orderRepository.save(order)
-        log.info({ order }, 'saved')
-      } catch (e) {
-        log.info(e)
-      }
+      await this.orderRepository.insertIgnore(ordersToSave)
     }
-
-    log.info('saved')
   }
 }
-
-export default LoadOrdersTask

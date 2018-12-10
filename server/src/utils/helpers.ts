@@ -1,7 +1,14 @@
 import { assetDataUtils } from '@0x/order-utils'
 import OrderEntity from '../entities/Order'
 import TradeHistory from '../entities/TradeHistory'
-import { ISRA2Order, IFillEventLog, ISignedOrderWithStrings, ICancelEventLog } from '../types'
+import RelayerEntity from '../entities/Relayer'
+import {
+  ISRA2Order,
+  IFillEventLog,
+  ISignedOrderWithStrings,
+  ICancelEventLog,
+  IRelayerWithId
+} from '../types'
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
 import { OrderStatus, OrderInfo, SignedOrder } from '@0x/contract-wrappers'
@@ -114,5 +121,29 @@ export const convertCancelEventToDexEventLogItem = (event: ICancelEventLog): Tra
     makerAddress: event.returnValues.makerAddress.toLowerCase(),
     makerAssetData: event.returnValues.makerAssetData,
     takerAssetData: event.returnValues.takerAssetData
+  }
+}
+
+export const convertRelayerToDexFormat = (relayer: IRelayerWithId): RelayerEntity => {
+  const network = relayer.networks[0]
+  console.log(relayer.name)
+  console.log(network)
+  const staticOrderFields = network.static_order_fields
+
+  return {
+    id: relayer.id,
+    active: true,
+    name: relayer.name,
+    homepageUrl: relayer.homepage_url,
+    logoImg: relayer.logo_img,
+    headerImg: relayer.header_img,
+    sraHttpEndpoint: network.sra_http_endpoint,
+    sraWsEndpoint: network.sra_ws_endpoint,
+    feeRecipientAddresses: staticOrderFields
+      ? staticOrderFields.fee_recipient_addresses
+      : undefined,
+    takerAddresses: staticOrderFields
+      ? staticOrderFields.taker_addresses
+      : undefined
   }
 }

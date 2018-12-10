@@ -1,6 +1,6 @@
 import { up } from '../../seeders/init-db'
 
-class SeedTask {
+export default class SeedTask {
   connection: any
 
   constructor ({ connection }) {
@@ -11,5 +11,3 @@ class SeedTask {
     await up(this.connection)
   }
 }
-
-export default SeedTask

@@ -1,7 +1,7 @@
 import { Entity, PrimaryColumn, Column, Unique } from 'typeorm'
 
 @Entity('tradeHistory')
-@Unique(['blockNumber', 'logIndex'])
+@Unique('tradeHistory_uq_blockNumber_logIndex', ['blockNumber', 'logIndex'])
 export default class TradeHistory {
   @PrimaryColumn()
   id: string
@@ -30,7 +30,7 @@ export default class TradeHistory {
   @Column()
   makerAddress: string
 
-  @Column({ default: null })
+  @Column({ nullable: true })
   takerAddress?: string
 
   @Column()
@@ -39,15 +39,15 @@ export default class TradeHistory {
   @Column()
   takerAssetData: string
 
-  @Column({ default: null })
+  @Column({ nullable: true })
   makerAssetFilledAmount?: string
 
-  @Column({ default: null })
+  @Column({ nullable: true })
   takerAssetFilledAmount?: string
 
-  @Column({ default: null })
+  @Column({ nullable: true })
   makerFeePaid?: string
 
-  @Column({ default: null })
+  @Column({ nullable: true })
   takerFeePaid?: string
 }

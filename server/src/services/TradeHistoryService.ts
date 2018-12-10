@@ -85,7 +85,11 @@ class TradeHistoryService {
     const eventLogItem = convertFillEventToDexTradeHistory(fillEvent)
     await this.saveTradeHistoryAndPush(eventLogItem)
 
-    await this.orderService.updateOrderInfoAndPush(eventLogItem.orderHash)
+    try {
+      await this.orderService.updateOrderInfoAndPush(eventLogItem.orderHash)
+    } catch (e) {
+      log.error(e.message)
+    }
   }
 
   async saveTradeHistoryAndPush (tradeHistoryItem: TradeHistoryEntity) {

@@ -1,31 +1,21 @@
-import Token from '../src/entities/Token'
-import TokenPair from '../src/entities/TokenPair'
-import RelayerRepository from '../src/repositories/RelayerRepository'
-import OrderRepository from '../src/repositories/OrderRepository'
+import AssetEntity from '../src/entities/Asset'
+import AssetPairEntity from '../src/entities/AssetPair'
 
-const tokens = require('./tokens.json')
-const tokenPairs = require('./tokenPairs.json')
-const relayers = require('./relayers.json')
-const orders = require('./orders.json')
+const assets = require('./assets.json')
+const assetPairs = require('./assetPairs.json')
 
 export const up = async connection => {
-  const tokensRepo = connection.getRepository(Token)
-  await tokensRepo.save(tokens)
+  const assetRepo = connection.getRepository(AssetEntity)
+  await assetRepo.save(assets)
 
-  const tokenPairsRepo = connection.getRepository(TokenPair)
+  const assetPairRepo = connection.getRepository(AssetPairEntity)
 
-  for (let { tokenAAddress, tokenBAddress } of tokenPairs) {
-    const tokenA = await tokensRepo.findOne({ address: tokenAAddress })
-    const tokenB = await tokensRepo.findOne({ address: tokenBAddress })
-
-    await tokenPairsRepo.save({
-      tokenAId: tokenA.id,
-      tokenBId: tokenB.id
+  for (let { assetDataA, assetDataB } of assetPairs) {
+    await assetPairRepo.save({
+      assetDataA,
+      assetDataB
     })
   }
-
-  await connection.getCustomRepository(RelayerRepository).save(relayers)
-  await connection.getCustomRepository(OrderRepository).save(orders)
 }
 
 export const down = async () => {}

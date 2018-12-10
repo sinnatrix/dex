@@ -13,7 +13,9 @@ export interface IDexOrder extends ISRA2Order {
 
 export interface IDexToken {
   id: number
+  assetData: string
   address: string
+  proxyId: string
   minAmount: BigNumber
   maxAmount: BigNumber
   precision: number
