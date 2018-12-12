@@ -5,7 +5,7 @@ import { wsUnsubscribe } from 'modules/subscriptions'
 import ReactTable from 'react-table'
 import { formatAssetAmount } from 'helpers/general'
 import EtherscanLink from 'components/EtherscanLink'
-import { getTokens } from 'modules/global/selectors'
+import { getTokens, findTokenByAssetData } from 'modules/global/selectors'
 
 const cellStyle = {
   fontSize: '0.7em',
@@ -49,9 +49,9 @@ class TradeHistory extends React.Component<any> {
             id: 'sold',
             minWidth: 80,
             accessor: one => {
-              const [ makerToken ] = tokens.filter(token => token.assetData === one.makerAssetData)
+              const makerToken = findTokenByAssetData(one.makerAssetData, tokens)
               return `
-                ${formatAssetAmount(one.makerAssetFilledAmount, { decimals: makerToken.decimals })}
+                ${formatAssetAmount(one.makerAssetFilledAmount, makerToken.decimals)}
                 ${makerToken.symbol}
               `
             },
@@ -62,9 +62,9 @@ class TradeHistory extends React.Component<any> {
             id: 'Bought',
             minWidth: 80,
             accessor: one => {
-              const [ takerToken ] = tokens.filter(token => token.assetData === one.takerAssetData)
+              const takerToken = findTokenByAssetData(one.takerAssetData, tokens)
               return `
-                ${formatAssetAmount(one.takerAssetFilledAmount, { decimals: takerToken.decimals })}
+                ${formatAssetAmount(one.takerAssetFilledAmount, takerToken.decimals)}
                 ${takerToken.symbol}
               `
             },
