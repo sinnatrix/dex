@@ -54,7 +54,7 @@ class OrdersList extends React.Component<any> {
             minWidth: 80,
             accessor: order => {
               return `
-                ${formatAssetAmount(order.order.makerAssetAmount, { decimals: order.extra.makerToken.decimals })}
+                ${formatAssetAmount(order.order.makerAssetAmount, order.extra.makerToken.decimals)}
                 ${order.extra.makerToken.symbol}
               `
             },
@@ -68,7 +68,7 @@ class OrdersList extends React.Component<any> {
             minWidth: 80,
             accessor: order => {
               return `
-                ${formatAssetAmount(order.order.takerAssetAmount, { decimals: order.extra.takerToken.decimals })}
+                ${formatAssetAmount(order.order.takerAssetAmount, order.extra.takerToken.decimals)}
                 ${order.extra.takerToken.symbol}
               `
             },
