@@ -79,4 +79,13 @@ export default class OrderRepository extends Repository<OrderEntity> {
       }
     })
   }
+
+  async insertIgnore (entities: OrderEntity[]) {
+    for (let entity of entities) {
+      const order = await this.findOne(entity.orderHash)
+      if (!order) {
+        await this.save(entity)
+      }
+    }
+  }
 }

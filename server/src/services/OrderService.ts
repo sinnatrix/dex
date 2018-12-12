@@ -25,7 +25,9 @@ export default class OrderService {
 
   async updateOrderInfo (orderHash: string) {
     const orderInfo = await this.getOrderInfo(orderHash)
-    await this.saveOrderInfo(orderInfo)
+    if (orderInfo) {
+      await this.saveOrderInfo(orderInfo)
+    }
   }
 
   async pushOrder (order: OrderEntity) {

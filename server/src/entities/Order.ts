@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm'
+import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm'
 import { OrderStatus } from '@0x/contract-wrappers'
+import RelayerEntity from './Relayer'
 
 @Entity('orders')
 export default class Order {
@@ -71,4 +72,9 @@ export default class Order {
   @Column()
   takerAssetAddress: string
   /** /extra */
+
+  /** relations */
+  @OneToOne(() => RelayerEntity)
+  @JoinColumn()
+  relayer?: RelayerEntity
 }

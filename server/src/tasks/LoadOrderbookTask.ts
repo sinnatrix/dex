@@ -1,6 +1,6 @@
 import { getRepository, getCustomRepository } from 'typeorm'
-import Relayer from '../entities/Relayer'
-import TokenPair from '../entities/TokenPair'
+import RelayerEntity from '../entities/Relayer'
+import AssetPairEntity from '../entities/AssetPair'
 import OrderRepository from '../repositories/OrderRepository'
 const ZeroEx = require('0x.js')
 
@@ -12,11 +12,13 @@ class LoadOrderbookTask {
   }
 
   async run () {
-    const relayer = await getRepository(Relayer as any).findOne({ name: 'Radar Relay' })
+    const relayer = await getRepository(RelayerEntity).findOne({ name: 'Radar Relay' })
 
-    const tokenPair: any = await getRepository(TokenPair as any).findOne({
-      id: '5b128d6fca5a8b2300be99fb'
-    })
+    if (!relayer) {
+      return
+    }
+
+    const tokenPair: any = await getRepository(AssetPairEntity).findOne()
 
     const orderbook = await this.relayerService.loadOrderbook(relayer, {
       baseAssetAddress: tokenPair.tokenAAddress,

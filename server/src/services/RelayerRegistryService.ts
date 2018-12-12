@@ -1,12 +1,12 @@
 import * as rp from 'request-promise-native'
 import { IRelayer } from '../types'
 
-interface IRelayersByKeys {
+interface IRelayerEntitiesByKeys {
   [key: string]: IRelayer
 }
 
 class RelayerRegistryService {
-  async loadRelayers (): Promise<IRelayersByKeys> {
+  async loadRelayers (): Promise<IRelayerEntitiesByKeys> {
     return rp({
       uri: 'https://api.github.com/repos/0xProject/0x-relayer-registry/contents/relayers.json',
       headers: {

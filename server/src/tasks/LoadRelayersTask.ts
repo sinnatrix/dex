@@ -1,16 +1,15 @@
-import { getRepository } from 'typeorm'
-import log from '../utils/log'
-import Relayer from '../entities/Relayer'
 import RelayerRegistryService from '../services/RelayerRegistryService'
 import * as R from 'ramda'
-import * as R_ from 'ramda-extension'
 import RelayerRepository from '../repositories/RelayerRepository'
+import { convertRelayerToDexFormat } from '../utils/helpers'
 
-class LoadRelayersTask {
+export default class LoadRelayersTask {
+  networkId: number
   relayerRegistryService: RelayerRegistryService
   relayerRepository: RelayerRepository
 
-  constructor ({ connection, relayerRegistryService }) {
+  constructor ({ networkId, connection, relayerRegistryService }) {
+    this.networkId = networkId
     this.relayerRegistryService = relayerRegistryService
     this.relayerRepository = connection.getCustomRepository(RelayerRepository)
   }
@@ -18,15 +17,22 @@ class LoadRelayersTask {
   async run () {
     const itemsWithUnderscores = await this.relayerRegistryService.loadRelayers()
 
-    const itemsWithCamelCase = R.map(R_.mapKeys(R_.toCamelCase), itemsWithUnderscores)
+    const itemsAsArray = R.values(
+      R.mapObjIndexed((v, k, o) => ({
+        id: k,
+        ...v
+      }))(itemsWithUnderscores)
+    )
 
-    const itemsToSave = R.values(R.mapObjIndexed((v, id, o) => ({
-      id,
-      ...v
-    }), itemsWithCamelCase))
+    const itemsForCurrentNetwork = itemsAsArray.map(relayer => ({
+      ...relayer,
+      networks: relayer.networks.filter(network => {
+        return network.networkId === this.networkId
+      })
+    })).filter(relayer => relayer.networks && relayer.networks.length > 0)
 
-    await this.relayerRepository.insertIfNotExists(itemsToSave)
+    const itemsToSave = itemsForCurrentNetwork.map(convertRelayerToDexFormat)
+
+    await this.relayerRepository.insertIgnore(itemsToSave)
   }
 }
-
-export default LoadRelayersTask

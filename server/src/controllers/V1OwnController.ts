@@ -1,6 +1,6 @@
 import * as express from 'express'
-import Relayer from '../entities/Relayer'
-import Token from '../entities/Token'
+import RelayerEntity from '../entities/Relayer'
+import AssetEntity from '../entities/Asset'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderRepository from '../repositories/OrderRepository'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
@@ -10,7 +10,7 @@ import { ISRA2Order } from '../types'
 
 class V1OwnController {
   application: any
-  tokenRepository: any
+  assetRepository: any
   relayerRepository: any
   orderRepository: any
   tradeHistoryRepository: any
@@ -20,8 +20,8 @@ class V1OwnController {
   constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
     this.application = application
 
-    this.tokenRepository = connection.getRepository(Token)
-    this.relayerRepository = connection.getRepository(Relayer)
+    this.assetRepository = connection.getRepository(AssetEntity)
+    this.relayerRepository = connection.getRepository(RelayerEntity)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
     this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
     this.orderBlockchainService = orderBlockchainService
@@ -50,14 +50,14 @@ class V1OwnController {
   }
 
   async getTokens (req, res) {
-    const tokens = await this.tokenRepository.find()
+    const tokens = await this.assetRepository.find()
     res.json(tokens)
   }
 
   async getTokenBySymbol (req, res) {
     const { symbol } = req.params
 
-    const token = await this.tokenRepository.findOne({ symbol })
+    const token = await this.assetRepository.findOne({ symbol })
     if (!token) {
       res.status(404).send('not found')
       return

@@ -1,13 +1,17 @@
 import * as rp from 'request-promise-native'
+import RelayerEntity from '../entities/Relayer'
+import { IOrderbook, IRelayerNetwork, ISRA2Orders, IHttpRelayer } from '../types'
 
-class RelayerService {
-  networkId: string
+const sift = require('sift').default
+
+export default class RelayerService {
+  networkId: number
 
   constructor ({ networkId }) {
     this.networkId = networkId
   }
 
-  async loadOrderbook (relayer, { baseAssetAddress, quoteAssetAddress }) {
+  async loadOrderbook (relayer: IHttpRelayer, { baseAssetAddress, quoteAssetAddress }): Promise<IOrderbook> {
     if (!baseAssetAddress) {
       throw new Error('baseAssetAddress is a required parameter')
     }
@@ -15,32 +19,14 @@ class RelayerService {
       throw new Error('quoteAssetAddress is a required parameter')
     }
 
-    const network = this.getNetwork(relayer)
+    const uri = `${relayer.sraHttpEndpoint}/v0/orderbook?baseAssetAddress=${baseAssetAddress}&quoteAssetAddress=${quoteAssetAddress}`
 
-    const uri = `${network.sra_http_endpoint}/v0/orderbook?baseAssetAddress=${baseAssetAddress}&quoteAssetAddress=${quoteAssetAddress}`
-    const result = await rp({ uri, json: true })
-
-    return result
+    return rp({ uri, json: true })
   }
 
-  async loadOrders (relayer) {
-    const network = this.getNetwork(relayer)
+  async loadOrders (relayer: IHttpRelayer): Promise<ISRA2Orders> {
+    const uri = `${relayer.sraHttpEndpoint}orders`
 
-    const uri = `${network.sra_http_endpoint}/v0/orders`
-    const result = await rp({ uri, json: true })
-
-    return result
-  }
-
-  getNetwork (relayer) {
-    const network = relayer.networks.find(one => one.networkId === this.networkId)
-
-    if (!network) {
-      throw new Error('network unavailable')
-    }
-
-    return network
+    return rp({ uri, json: true })
   }
 }
-
-export default RelayerService

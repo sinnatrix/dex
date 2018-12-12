@@ -1,5 +1,6 @@
 import { EventLog } from 'web3/types'
 import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
+import RelayerEntity from './entities/Relayer'
 
 export interface ISRA2Order {
   order: SignedOrder
@@ -70,36 +71,42 @@ export enum EventType {
 }
 
 export interface IRelayer {
-  id: string
   name: string
   homepage_url: string
+  app_url?: string
   logo_img?: string
-  header_img: string
+  header_img?: string
   networks: IRelayerNetwork[]
 }
 
 export interface IRelayerNetwork {
   networkId: number
-  sra_ws_endpoint: string
-  sra_http_endpoint: string
+  sra_ws_endpoint?: string
+  sra_http_endpoint?: string
   static_order_fields?: IRelayerNetworkStaticOrderFields
 }
 
 export interface IRelayerNetworkStaticOrderFields {
-  fee_recipient_addresses: string[]
+  fee_recipient_addresses?: string[]
+  taker_addresses?: string[]
+}
+
+export interface IRelayerWithId extends IRelayer {
+  id: string
+}
+
+export interface IHttpRelayer extends RelayerEntity {
+  sraHttpEndpoint: string
+}
+
+export interface ISRA2Orders {
+  total: number
+  page: number
+  perPage: number,
+  records: ISRA2Order[]
 }
 
 export interface IOrderbook {
-  bids: {
-    total: number
-    page: number
-    perPage: number
-    records: ISRA2Order[]
-  }
-  asks: {
-    total: number
-    page: number
-    perPage: number
-    records: ISRA2Order[]
-  }
+  bids: ISRA2Orders
+  asks: ISRA2Orders
 }

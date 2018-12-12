@@ -4,8 +4,8 @@ import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import log from '../utils/log'
 import OrderRepository from '../repositories/OrderRepository'
-import Token from '../entities/Token'
-import TokenPair from '../entities/TokenPair'
+import AssetEntity from '../entities/Asset'
+import AssetPairEntity from '../entities/AssetPair'
 import config from '../config'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import {
@@ -22,8 +22,8 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 class V2RelayerController {
   application: any
   wsRelayerServer: WsRelayerServer
-  tokenRepository: any
-  tokenPairRepository: any
+  assetRepository: any
+  assetPairRepository: any
   orderRepository: any
   orderBlockchainService: OrderBlockchainService
   networkId: string
@@ -33,8 +33,8 @@ class V2RelayerController {
     this.wsRelayerServer = wsRelayerServer
     this.networkId = networkId
 
-    this.tokenRepository = connection.getRepository(Token)
-    this.tokenPairRepository = connection.getRepository(TokenPair)
+    this.assetRepository = connection.getRepository(AssetEntity)
+    this.assetPairRepository = connection.getRepository(AssetPairEntity)
     this.orderRepository = connection.getCustomRepository(OrderRepository)
 
     this.orderBlockchainService = orderBlockchainService
@@ -54,7 +54,7 @@ class V2RelayerController {
   }
 
   async getTokenPairs (req, res) {
-    const tokenPairs = await this.tokenPairRepository.find()
+    const tokenPairs = await this.assetPairRepository.find()
 
     log.info({ tokenPairs })
 
@@ -70,8 +70,8 @@ class V2RelayerController {
     }
 
     for (const one of tokenPairs) {
-      const tokenA = await this.tokenRepository.findOne({ address: one.tokenAAddress })
-      const tokenB = await this.tokenRepository.findOne({ address: one.tokenBAddress })
+      const tokenA = await this.assetRepository.findOne({ address: one.tokenAAddress })
+      const tokenB = await this.assetRepository.findOne({ address: one.tokenBAddress })
 
       result.push({
         tokenA: toSRAObject(tokenA),

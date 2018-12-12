@@ -1,17 +1,21 @@
-import { Repository, EntityRepository } from 'typeorm'
+import { Repository, EntityRepository, Not, IsNull } from 'typeorm'
 import RelayerEntity from '../entities/Relayer'
-import { IRelayer } from '../types'
 import log from '../utils/log'
+import { IHttpRelayer } from '../types'
 
 @EntityRepository(RelayerEntity)
 export default class RelayerRepository extends Repository<RelayerEntity> {
-  async insertIfNotExists (items: IRelayer[]) {
-    for (let relayer of items) {
-      const existsRelayer = await this.findOne(relayer.id)
-      if (!existsRelayer) {
-        await this.save(relayer)
-        log.info(`New relayer ${relayer.name} just added`)
+  async insertIgnore (entities: RelayerEntity[]) {
+    for (let entity of entities) {
+      const relayer = await this.findOne(entity.id)
+      if (!relayer) {
+        await this.save(entity)
+        log.info(`New relayer ${entity.name} just added`)
       }
     }
+  }
+
+  getAllActiveWithHttpEndpoint (): Promise<IHttpRelayer[]> {
+    return this.find({ active: true, sraHttpEndpoint: Not(IsNull()) }) as Promise<IHttpRelayer[]>
   }
 }
