@@ -41,4 +41,14 @@ deploy-develop:
   script:
     - gpg -v --import <(echo "$GPG_PRIVATE_KEY")
     - git secret reveal -f
-    - docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --force-recreate -d
+    - docker-compose -f docker-compose.yml -f docker-compose.develop.yml up --force-recreate -d
+
+deploy-production:
+  stage: deploy
+  only:
+    refs:
+      - master
+  script:
+    - gpg -v --import <(echo "$GPG_PRIVATE_KEY")
+    - git secret reveal -f
+    - docker-compose -f docker-compose.yml -f docker-compose.production.yml up --force-recreate -d
