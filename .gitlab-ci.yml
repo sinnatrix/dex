@@ -26,12 +26,12 @@ build-nginx:
 test-app:
   stage: test
   script:
-    - docker run -t dex-app-builder yarn test
+    - docker run --rm -t dex-app-builder yarn test
 
 test-server:
   stage: test
   script:
-    - docker run -t dex-server-builder yarn test
+    - docker run --rm -t dex-server-builder yarn test
 
 deploy-develop:
   stage: deploy
