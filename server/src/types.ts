@@ -99,6 +99,10 @@ export interface IHttpRelayer extends RelayerEntity {
   sraHttpEndpoint: string
 }
 
+export interface IWsRelayer extends RelayerEntity {
+  sraWsEndpoint: string
+}
+
 export interface ISRA2Orders {
   total: number
   page: number

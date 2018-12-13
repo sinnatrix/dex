@@ -5,9 +5,9 @@ import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import * as http from 'http'
 import { createConnection } from 'typeorm'
+import * as WebSocket from 'ws'
 import log from './utils/log'
 import ormconfig from '../ormconfig'
-import makeWebsocketServerFactory from './factories/makeWebsocketServerFactory'
 import WsRelayerServer from './wsRelayerServer/WsRelayerServer'
 import V1OwnController from './controllers/V1OwnController'
 import V2RelayerController from './controllers/V2RelayerController'
@@ -16,6 +16,9 @@ import OrderBlochainService from './services/OrderBlockchainService'
 import TradeHistoryService from './services/TradeHistoryService'
 import OrderService from './services/OrderService'
 import WebsocketProviderWrapper from './services/WebsocketProviderWrapper'
+import SocketService from './services/SocketService'
+import RelayerSocketConnectionService from './services/RelayerSocketConnectionService'
+
 const { createContainer, asValue, asClass, asFunction } = require('awilix')
 const Web3 = require('web3')
 
@@ -28,6 +31,10 @@ const makeHttpProvider = () => {
 const makeWebsocketProvider = () => {
   return new Web3.providers.WebsocketProvider(process.env.WS_INFURA_HOST as string)
 }
+
+const websocketServerFactory = options => new WebSocket.Server(options)
+
+const websocketClientFactory = (url: string): SocketService => new SocketService(url)
 
 ;(async () => {
   let connection
@@ -63,8 +70,10 @@ const makeWebsocketProvider = () => {
     transactionBlockchainService: asClass(TransactionBlockchainService).singleton(),
     orderBlockchainService: asClass(OrderBlochainService).singleton(),
     tradeHistoryService: asClass(TradeHistoryService).singleton(),
-    websocketServerFactory: asFunction(makeWebsocketServerFactory).singleton(),
-    orderService: asClass(OrderService).singleton()
+    websocketServerFactory: asValue(websocketServerFactory),
+    websocketClientFactory: asValue(websocketClientFactory),
+    orderService: asClass(OrderService).singleton(),
+    relayerSocketConnectionService: asClass(RelayerSocketConnectionService).singleton()
   })
 
   container.resolve('websocketProviderWrapper').attach()
@@ -73,6 +82,7 @@ const makeWebsocketProvider = () => {
   container.resolve('v1OwnController').attach()
   container.resolve('v2RelayerController').attach()
   container.resolve('tradeHistoryService').attach()
+  container.resolve('relayerSocketConnectionService').attach()
 
   container.resolve('server').listen(process.env.PORT, () => {
     log.info('started server on port', process.env.PORT)

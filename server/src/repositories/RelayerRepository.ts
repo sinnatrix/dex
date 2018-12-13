@@ -1,7 +1,7 @@
 import { Repository, EntityRepository, Not, IsNull } from 'typeorm'
 import RelayerEntity from '../entities/Relayer'
 import log from '../utils/log'
-import { IHttpRelayer } from '../types'
+import { IHttpRelayer, IWsRelayer } from '../types'
 
 @EntityRepository(RelayerEntity)
 export default class RelayerRepository extends Repository<RelayerEntity> {
@@ -17,5 +17,9 @@ export default class RelayerRepository extends Repository<RelayerEntity> {
 
   getAllActiveWithHttpEndpoint (): Promise<IHttpRelayer[]> {
     return this.find({ active: true, sraHttpEndpoint: Not(IsNull()) }) as Promise<IHttpRelayer[]>
+  }
+
+  getAllActiveWithWsEndpoint (): Promise<IWsRelayer[]> {
+    return this.find({ active: true, sraWsEndpoint: Not(IsNull()) }) as Promise<IWsRelayer[]>
   }
 }
