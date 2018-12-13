@@ -1,0 +1,54 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build-app:
+  stage: build
+  script:
+    - cd app
+    - docker build --target=builder -t dex-app-builder .
+    - docker build -t dex-app .
+
+build-server:
+  stage: build
+  script:
+    - cd server
+    - docker build --target=builder -t dex-server-builder .
+    - docker build -t dex-server .
+
+build-nginx:
+  stage: build
+  script:
+    - cd nginx
+    - docker build -t dex-nginx .
+
+test-app:
+  stage: test
+  script:
+    - docker run -t dex-app-builder yarn test
+
+test-server:
+  stage: test
+  script:
+    - docker run -t dex-server-builder yarn test
+
+deploy-develop:
+  stage: deploy
+  only:
+    refs:
+      - develop
+  script:
+    - gpg -v --import <(echo "$GPG_PRIVATE_KEY")
+    - git secret reveal -f
+    - docker-compose -f docker-compose.yml -f docker-compose.develop.yml up --force-recreate -d
+
+deploy-production:
+  stage: deploy
+  only:
+    refs:
+      - master
+  script:
+    - gpg -v --import <(echo "$GPG_PRIVATE_KEY")
+    - git secret reveal -f
+    - docker-compose -f docker-compose.yml -f docker-compose.production.yml up --force-recreate -d

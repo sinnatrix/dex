@@ -1,3 +1,2 @@
 .env
-.env.kovan
-.env.mainnet
+.env.test

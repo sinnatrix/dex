@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  nginx:
+    build: ./nginx
+    image: dex-nginx
+    depends_on:
+      - app
+      - server
+  app:
+    build: ./app
+    image: dex-app
+  server:
+    build: ./server
+    image: dex-server
+    depends_on:
+      - postgres
+    environment:
+      PORT: 80
+      POSTGRES_HOST: postgres
+  postgres:
+    image: postgres:10.5-alpine

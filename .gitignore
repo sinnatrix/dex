@@ -1,3 +1,27 @@
-node_modules
-*.log
+# OS
+.DS_Store
+
+# IDE
 .vscode
+.idea
+
+# About code
+node_modules
+
+# LOGS
+*.log
+
+# Docker
+_data
+
+# Misc
+!.gitkeep
+
+# environment
+.env
+
+.gitsecret/keys/random_seed
+
+docker-compose.production.yml
+docker-compose.develop.yml
+docker-compose.local.yml
