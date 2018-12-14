@@ -126,8 +126,6 @@ export const convertCancelEventToDexEventLogItem = (event: ICancelEventLog): Tra
 
 export const convertRelayerToDexFormat = (relayer: IRelayerWithId): RelayerEntity => {
   const network = relayer.networks[0]
-  console.log(relayer.name)
-  console.log(network)
   const staticOrderFields = network.static_order_fields
 
   return {

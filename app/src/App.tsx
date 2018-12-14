@@ -20,7 +20,7 @@ class App extends React.Component<any> {
   constructor (props) {
     super(props)
 
-    this.socketService = new SocketService(`ws://${window.location.host}/api/relayer/v2`)
+    this.socketService = new SocketService(`ws://${window.location.host}/api/0x/v2`)
     this.socketService.addMessageListener(message => {
       this.store.dispatch(processSocketMessage(message))
     })

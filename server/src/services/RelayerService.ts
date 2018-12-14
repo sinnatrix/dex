@@ -1,8 +1,5 @@
 import * as rp from 'request-promise-native'
-import RelayerEntity from '../entities/Relayer'
-import { IOrderbook, IRelayerNetwork, ISRA2Orders, IHttpRelayer } from '../types'
-
-const sift = require('sift').default
+import { IOrderbook, ISRA2Orders, IHttpRelayer } from '../types'
 
 export default class RelayerService {
   networkId: number

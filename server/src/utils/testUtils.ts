@@ -1,6 +1,8 @@
 import { assetDataUtils } from '@0x/order-utils'
 import { runMigrationsOnceAsync } from '@0x/migrations'
-import { convertSignedOrderWithStringsToSignedOrder } from './helpers'
+import { convertSignedOrderWithStringsToSignedOrder, getDefaultOrderMetaData } from './helpers'
+import { SignedOrder } from '@0x/contract-wrappers'
+import { ISRA2Order, ISignedOrderWithStrings } from '../types'
 const Chance = require('chance')
 const ganache = require('ganache-cli')
 
@@ -10,11 +12,11 @@ const generateHexString = length => '0x' + chance.string({ length, pool: 'abcdef
 
 export const generateAddress = () => generateHexString(40)
 
-export const generateSignedOrder = (...params) => {
+export const generateSignedOrderWithStrings = (...params): ISignedOrderWithStrings => {
   const makerAssetData = assetDataUtils.encodeERC20AssetData(generateAddress())
   const takerAssetData = assetDataUtils.encodeERC20AssetData(generateAddress())
 
-  const signedOrderWithStrings = {
+  return {
     makerAssetData,
     takerAssetData,
     makerAddress: generateAddress(),
@@ -31,8 +33,19 @@ export const generateSignedOrder = (...params) => {
     signature: generateHexString(132),
     ...params
   }
+}
 
+export const generateSignedOrder = (...params): SignedOrder => {
+  const signedOrderWithStrings = generateSignedOrderWithStrings(...params)
   return convertSignedOrderWithStringsToSignedOrder(signedOrderWithStrings)
+}
+
+export const generateSRA2Order = (...params): ISRA2Order => {
+  const signedOrder = generateSignedOrder(...params)
+  return {
+    order: signedOrder,
+    metaData: getDefaultOrderMetaData(signedOrder)
+  }
 }
 
 export const createProvider = (opts) => {

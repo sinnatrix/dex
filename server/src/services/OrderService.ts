@@ -4,6 +4,7 @@ import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { OrderInfo } from '@0x/contract-wrappers'
 import OrderEntity from '../entities/Order'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
+import WsRelayerServerFacade from '../wsRelayerServer/WsRelayerServerFacade'
 
 export default class OrderService {
   orderRepository: OrderRepository
@@ -20,7 +21,8 @@ export default class OrderService {
     await this.updateOrderInfo(orderHash)
 
     const order = await this.getOrderByHashOrThrow(orderHash)
-    await this.pushOrder(order)
+    const sra2Order = convertDexOrderToSRA2Format(order)
+    WsRelayerServerFacade.pushOrders(this.wsRelayerServer, [sra2Order])
   }
 
   async updateOrderInfo (orderHash: string) {
@@ -28,14 +30,6 @@ export default class OrderService {
     if (orderInfo) {
       await this.saveOrderInfo(orderInfo)
     }
-  }
-
-  async pushOrder (order: OrderEntity) {
-    this.wsRelayerServer.pushUpdate(
-      'orders',
-      [convertDexOrderToSRA2Format(order)],
-      [order]
-    )
   }
 
   async getOrderInfo (orderHash: string): Promise<OrderInfo> {

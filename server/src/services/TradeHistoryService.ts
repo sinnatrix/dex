@@ -11,6 +11,7 @@ import { IFillEventLog, EventType } from '../types'
 import TradeHistoryEntity from '../entities/TradeHistory'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderService from './OrderService'
+import WsRelayerServerFacade from '../wsRelayerServer/WsRelayerServerFacade'
 
 class TradeHistoryService {
   WS_MAX_CONNECTION_ATTEMPTS = 10
@@ -94,15 +95,8 @@ class TradeHistoryService {
 
   async saveTradeHistoryAndPush (tradeHistoryItem: TradeHistoryEntity) {
     await this.tradeHistoryRepository.saveFullTradeHistory([tradeHistoryItem])
-    this.pushTradeHistory(tradeHistoryItem)
-  }
+    WsRelayerServerFacade.pushTradeHistory(this.wsRelayerServer, [tradeHistoryItem])
 
-  pushTradeHistory (tradeHistoryItem: TradeHistoryEntity) {
-    this.wsRelayerServer.pushUpdate(
-      'tradeHistory',
-      [tradeHistoryItem],
-      [tradeHistoryItem]
-    )
   }
 
   async subscribeToCancelOrderEvents (attemptNumber = 1) {
