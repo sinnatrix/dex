@@ -74,7 +74,7 @@ export default class Order {
   /** /extra */
 
   /** relations */
-  @ManyToOne(() => RelayerEntity, relayer => relayer.orders, { onDelete: 'CASCADE' })
+  @ManyToOne(() => RelayerEntity, relayer => relayer.orders, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' })
   @JoinColumn()
   relayer?: RelayerEntity
 
