@@ -7,7 +7,8 @@ import {
   IFillEventLog,
   ISignedOrderWithStrings,
   ICancelEventLog,
-  IRelayerWithId
+  IRelayerWithId,
+  ISRA2Orders
 } from '../types'
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
@@ -66,13 +67,18 @@ export const convertOrderToDexFormat = (order: ISRA2Order): OrderEntity => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
   const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
 
+  const orderMetaData = {
+    ...getDefaultOrderMetaData(order.order),
+    ...order.metaData
+  }
+
   return {
     // SignedOrder
     ...convertSignedOrderToSignedOrderWithStrings(order.order),
     // OrderInfo
-    orderTakerAssetFilledAmount: toString10(order.metaData.orderTakerAssetFilledAmount),
-    orderHash: order.metaData.orderHash,
-    orderStatus: order.metaData.orderStatus,
+    orderTakerAssetFilledAmount: toString10(orderMetaData.orderTakerAssetFilledAmount),
+    orderHash: orderMetaData.orderHash,
+    orderStatus: orderMetaData.orderStatus,
     // extra
     makerAssetAddress: decodedMakerAssetData.tokenAddress,
     takerAssetAddress: decodedTakerAssetData.tokenAddress,
@@ -145,3 +151,31 @@ export const convertRelayerToDexFormat = (relayer: IRelayerWithId): RelayerEntit
       : undefined
   }
 }
+
+export const trimChars = (
+  target: string,
+  charsToTrim: string = ' ',
+  { fromLeft = true, fromRight = true } = {}
+): string => {
+  const escapedChars = charsToTrim.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+  const charsAsArray = escapedChars.split('')
+
+  let pattern = ''
+  if (fromLeft) {
+    pattern += `^[${charsAsArray.join('')}]+`
+  }
+
+  if (fromRight) {
+    pattern += (fromLeft ? '|' : '') + `[${charsAsArray.join('')}]+$`
+  }
+
+  const trimer = new RegExp(pattern, 'g')
+  return target.replace(trimer, '')
+}
+
+export const getEmptyRelayerOrders = (): ISRA2Orders => ({
+  total: 0,
+  page: 1,
+  perPage: 100,
+  records: []
+})

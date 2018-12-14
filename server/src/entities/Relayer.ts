@@ -1,4 +1,5 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm'
+import { Entity, PrimaryColumn, Column, OneToMany, JoinColumn } from 'typeorm'
+import OrderEntity from './Order'
 
 @Entity('relayers')
 export default class Relayer {
@@ -34,4 +35,9 @@ export default class Relayer {
 
   @Column('varchar', { array: true, nullable: true })
   takerAddresses?: string[]
+
+  /** relations */
+  @OneToMany(() => OrderEntity, order => order.relayer)
+  @JoinColumn()
+  orders?: OrderEntity
 }
