@@ -179,3 +179,9 @@ export const getEmptyRelayerOrders = (): ISRA2Orders => ({
   perPage: 100,
   records: []
 })
+
+export const getNetworkNameById = (id: number): string => ({
+  1: 'mainnet',
+  42: 'kovan',
+  50: 'test'
+})[id]

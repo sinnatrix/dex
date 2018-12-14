@@ -10,8 +10,8 @@ import { IDexOrder, ISRA2Order } from 'types'
 export const loadOrderbook = () => async (dispatch, getState, { apiService }) => {
   const { marketplaceToken, currentToken } = getState().global
 
-  const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
-  const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
+  const baseAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
+  const quoteAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
 
   const data = await apiService.getOrderbook({ baseAssetData, quoteAssetData })
 
