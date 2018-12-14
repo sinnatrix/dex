@@ -1,5 +1,6 @@
 import { delay } from '../utils/helpers'
 import * as WebSocket from 'ws'
+import log from '../utils/log'
 
 class SocketService {
   socket
@@ -20,6 +21,7 @@ class SocketService {
     this.socket.addEventListener('message', this.handleMessage)
     this.socket.addEventListener('close', this.handleClose)
     this.socket.addEventListener('open', this.handleOpen)
+    this.socket.addEventListener('error', this.handleError)
   }
 
   cleanup () {
@@ -27,6 +29,7 @@ class SocketService {
       this.socket.removeEventListener('message', this.handleMessage)
       this.socket.removeEventListener('close', this.handleClose)
       this.socket.removeEventListener('open', this.handleOpen)
+      this.socket.removeEventListener('error', this.handleError)
 
       this.socket.close()
     }
@@ -51,12 +54,17 @@ class SocketService {
     this.queue = []
   }
 
+  handleError = (e) => {
+    log.error(`Cannot establish websocket connection with ${this.url}: ${e.message}`)
+    this.cleanup()
+  }
+
   addMessageListener (listener) {
     this.messageListeners.push(listener)
   }
 
   send (message) {
-    if (this.socket && this.socket.readyState === 1) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(message)
     } else {
       this.queue.push(message)

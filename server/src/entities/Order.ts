@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm'
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { OrderStatus } from '@0x/contract-wrappers'
 import RelayerEntity from './Relayer'
 
@@ -74,7 +74,10 @@ export default class Order {
   /** /extra */
 
   /** relations */
-  @OneToOne(() => RelayerEntity)
+  @ManyToOne(() => RelayerEntity, relayer => relayer.orders, { onDelete: 'CASCADE' })
   @JoinColumn()
   relayer?: RelayerEntity
+
+  @Column('uuid', { nullable: true })
+  relayerId?: string
 }

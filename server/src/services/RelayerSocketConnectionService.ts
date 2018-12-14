@@ -1,10 +1,11 @@
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import RelayerRepository from '../repositories/RelayerRepository'
-import { IWsRelayer } from '../types'
+import { ISRA2Order, IWsRelayer } from '../types'
 import { convertOrderToDexFormat } from '../utils/helpers'
 import SocketService from './SocketService'
 import wsRelayerServerFacade from '../wsRelayerServer/WsRelayerServerFacade'
 import OrderRepository from '../repositories/OrderRepository'
+import log from '../utils/log'
 
 const uuidv4 = require('uuid/v4')
 
@@ -32,7 +33,7 @@ export default class RelayerSocketConnectionService {
   }
 
   async subscribeToOrders (relayer: IWsRelayer) {
-    console.log(`Subscribe to ${relayer.name}`)
+    log.info(`Subscribing to ${relayer.name}`)
 
     const socketService = this.websocketClientFactory(relayer.sraWsEndpoint)
     socketService.init()
@@ -45,24 +46,22 @@ export default class RelayerSocketConnectionService {
     }
 
     socketService.send(JSON.stringify(message))
-
-    socketService.addMessageListener(this.handleRelayerMessage.bind(this))
-
+    socketService.addMessageListener(message => this.handleRelayerMessage(relayer, message))
     this.socketServices.push(socketService)
   }
 
-  async handleRelayerMessage (message) {
-    const { type, channel, payload } = JSON.parse(message.data)
+  async handleRelayerMessage (relayer: IWsRelayer, message) {
+    const { type, channel, payload: orders } = JSON.parse(message.data)
 
     if (type === 'update' && channel === 'orders') {
-      await this.saveOrdersAndPush(payload)
-    }
-  }
+      const ordersToSave = orders.map(order => ({
+        relayerId: relayer.id,
+        ...convertOrderToDexFormat(order)
+      }))
 
-  async saveOrdersAndPush (payload) {
-    const recordsToSave = payload.map(convertOrderToDexFormat)
-    await this.orderRepository.insertIgnore(recordsToSave)
-    wsRelayerServerFacade.pushOrders(this.wsRelayerServer, payload)
+      await this.orderRepository.insertIgnore(ordersToSave)
+      wsRelayerServerFacade.pushOrders(this.wsRelayerServer, orders)
+    }
   }
 
   cleanup () {

@@ -49,7 +49,7 @@ class SocketService {
   }
 
   send (message) {
-    if (this.socket && this.socket.readyState === 1) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(message)
     } else {
       this.queue.push(message)
