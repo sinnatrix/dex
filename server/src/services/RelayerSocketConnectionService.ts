@@ -17,10 +17,16 @@ export default class RelayerSocketConnectionService {
   wsRelayerServer: WsRelayerServer
   websocketClientFactory: any
 
-  constructor ({ connection, networkId, wsRelayerServer, websocketClientFactory }) {
+  constructor ({
+     networkId,
+     relayerRepository,
+     orderRepository,
+     wsRelayerServer,
+     websocketClientFactory
+  }) {
     this.networkId = networkId
-    this.relayerRepository = connection.getCustomRepository(RelayerRepository)
-    this.orderRepository = connection.getCustomRepository(OrderRepository)
+    this.relayerRepository = relayerRepository
+    this.orderRepository = orderRepository
     this.wsRelayerServer = wsRelayerServer
     this.websocketClientFactory = websocketClientFactory
   }

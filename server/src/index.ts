@@ -5,36 +5,13 @@ import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import * as http from 'http'
 import { createConnection } from 'typeorm'
-import * as WebSocket from 'ws'
 import log from './utils/log'
 import ormconfig from '../ormconfig'
-import WsRelayerServer from './wsRelayerServer/WsRelayerServer'
-import V1OwnController from './controllers/V1OwnController'
-import V2RelayerController from './controllers/V2RelayerController'
-import TransactionBlockchainService from './services/TransactionBlockchainService'
-import OrderBlochainService from './services/OrderBlockchainService'
-import TradeHistoryService from './services/TradeHistoryService'
-import OrderService from './services/OrderService'
-import WebsocketProviderWrapper from './services/WebsocketProviderWrapper'
-import SocketService from './services/SocketService'
-import RelayerSocketConnectionService from './services/RelayerSocketConnectionService'
+import createAppContainer from './container'
 
-const { createContainer, asValue, asClass, asFunction } = require('awilix')
-const Web3 = require('web3')
+const { asValue } = require('awilix')
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-const makeHttpProvider = () => {
-  return new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL as string)
-}
-
-const makeWebsocketProvider = () => {
-  return new Web3.providers.WebsocketProvider(process.env.WS_INFURA_HOST as string)
-}
-
-const websocketServerFactory = options => new WebSocket.Server(options)
-
-const websocketClientFactory = (url: string): SocketService => new SocketService(url)
 
 ;(async () => {
   let connection
@@ -54,30 +31,14 @@ const websocketClientFactory = (url: string): SocketService => new SocketService
 
   application.use(bodyParser.json())
 
-  const container = createContainer()
+  const container = createAppContainer({ connection })
+
   container.register({
     application: asValue(application),
-    server: asValue(server),
-    connection: asValue(connection),
-    networkId: asValue(parseInt(process.env.NETWORK_ID as string, 10)),
-    wsRelayerServer: asClass(WsRelayerServer).singleton(),
-    v1OwnController: asClass(V1OwnController).singleton(),
-    v2RelayerController: asClass(V2RelayerController).singleton(),
-    contractAddresses: asValue(undefined),
-    httpProvider: asValue(makeHttpProvider()),
-    makeWebsocketProvider: asValue(makeWebsocketProvider),
-    websocketProviderWrapper: asClass(WebsocketProviderWrapper).singleton(),
-    transactionBlockchainService: asClass(TransactionBlockchainService).singleton(),
-    orderBlockchainService: asClass(OrderBlochainService).singleton(),
-    tradeHistoryService: asClass(TradeHistoryService).singleton(),
-    websocketServerFactory: asValue(websocketServerFactory),
-    websocketClientFactory: asValue(websocketClientFactory),
-    orderService: asClass(OrderService).singleton(),
-    relayerSocketConnectionService: asClass(RelayerSocketConnectionService).singleton()
+    server: asValue(server)
   })
 
   container.resolve('websocketProviderWrapper').attach()
-
   container.resolve('wsRelayerServer').attach()
   container.resolve('v1OwnController').attach()
   container.resolve('v2RelayerController').attach()

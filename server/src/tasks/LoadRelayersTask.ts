@@ -1,6 +1,6 @@
 import RelayerRegistryService from '../services/RelayerRegistryService'
-import * as R from 'ramda'
 import RelayerRepository from '../repositories/RelayerRepository'
+import * as R from 'ramda'
 import { convertRelayerToDexFormat } from '../utils/helpers'
 
 export default class LoadRelayersTask {
@@ -8,10 +8,10 @@ export default class LoadRelayersTask {
   relayerRegistryService: RelayerRegistryService
   relayerRepository: RelayerRepository
 
-  constructor ({ networkId, connection, relayerRegistryService }) {
+  constructor ({ networkId, relayerRepository, relayerRegistryService }) {
     this.networkId = networkId
     this.relayerRegistryService = relayerRegistryService
-    this.relayerRepository = connection.getCustomRepository(RelayerRepository)
+    this.relayerRepository = relayerRepository
   }
 
   async run () {
