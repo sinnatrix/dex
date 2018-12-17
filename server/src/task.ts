@@ -1,12 +1,10 @@
 import 'dotenv/config'
 import { createConnection } from 'typeorm'
-import ormconfig from '../ormconfig'
-import RelayerService from './services/RelayerService'
-import TransactionBlockchainService from './services/TransactionBlockchainService'
-import OrderBlockchainService from './services/OrderBlockchainService'
 import RelayerRegistryService from './services/RelayerRegistryService'
+import ormconfig from '../ormconfig'
+import createAppContainer from './container'
 const argv = require('yargs').argv
-const { createContainer, asValue, asClass } = require('awilix')
+const { asClass } = require('awilix')
 
 ;(async () => {
   const connection = await createConnection(ormconfig as any)
@@ -15,14 +13,10 @@ const { createContainer, asValue, asClass } = require('awilix')
   const fullTaskName = taskName[0].toUpperCase() + taskName.slice(1) + 'Task'
   const Task = require(`./tasks/${fullTaskName}`).default
 
-  const container = createContainer()
+  const container = createAppContainer({ connection })
+
   container.register({
-    networkId: asValue(parseInt(process.env.NETWORK_ID as string, 10)),
-    connection: asValue(connection),
-    relayerService: asClass(RelayerService).singleton(),
     relayerRegistryService: asClass(RelayerRegistryService).singleton(),
-    transactionBlockchainService: asClass(TransactionBlockchainService).singleton(),
-    orderBlockchainService: asClass(OrderBlockchainService).singleton(),
     [taskName]: asClass(Task).singleton()
   })
 

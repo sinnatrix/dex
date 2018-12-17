@@ -8,7 +8,6 @@ import * as WebSocket from 'ws'
 import SocketService from './SocketService'
 import { IWsRelayer } from '../types'
 import WsRelayerServerFacade from '../wsRelayerServer/WsRelayerServerFacade'
-import OrderRepository from '../repositories/OrderRepository'
 import config from '../config'
 const test = require('tape')
 const sinon = require('sinon')
@@ -48,25 +47,15 @@ test('RelayerSocketConnectionService', t => {
       insertIgnore: sinon.fake()
     }
 
-    const connection = {
-      getCustomRepository (repositoryConstructor) {
-        if (repositoryConstructor === RelayerRepository) {
-          return relayerRepository
-        }
-        if (repositoryConstructor === OrderRepository) {
-          return orderRepository
-        }
-      }
-    }
-
     const wsRelayerServer = {
       pushUpdate: sinon.fake()
     }
 
     const relayerSocketConnectionService = new RelayerSocketConnectionService({
-      wsRelayerServer,
-      connection,
       networkId: 42,
+      relayerRepository,
+      orderRepository,
+      wsRelayerServer,
       websocketClientFactory
     })
 

@@ -3,9 +3,6 @@ import * as express from 'express'
 import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import log from '../utils/log'
-import OrderRepository from '../repositories/OrderRepository'
-import AssetEntity from '../entities/Asset'
-import AssetPairEntity from '../entities/AssetPair'
 import config from '../config'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import {
@@ -28,14 +25,22 @@ class V2RelayerController {
   orderBlockchainService: OrderBlockchainService
   networkId: string
 
-  constructor ({ application, connection, wsRelayerServer, orderBlockchainService, networkId }) {
+  constructor ({
+    application,
+    wsRelayerServer,
+    networkId,
+    orderRepository,
+    assetRepository,
+    assetPairRepository,
+    orderBlockchainService
+  }) {
     this.application = application
     this.wsRelayerServer = wsRelayerServer
     this.networkId = networkId
 
-    this.assetRepository = connection.getRepository(AssetEntity)
-    this.assetPairRepository = connection.getRepository(AssetPairEntity)
-    this.orderRepository = connection.getCustomRepository(OrderRepository)
+    this.assetRepository = assetRepository
+    this.assetPairRepository = assetPairRepository
+    this.orderRepository = orderRepository
 
     this.orderBlockchainService = orderBlockchainService
   }

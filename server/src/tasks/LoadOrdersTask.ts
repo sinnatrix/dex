@@ -9,9 +9,9 @@ export default class LoadOrdersTask {
   orderRepository: OrderRepository
   relayerService: RelayerService
 
-  constructor ({ connection, relayerService }) {
-    this.orderRepository = connection.getCustomRepository(OrderRepository)
-    this.relayerRepository = connection.getCustomRepository(RelayerRepository)
+  constructor ({ relayerRepository, orderRepository, relayerService }) {
+    this.orderRepository = orderRepository
+    this.relayerRepository = relayerRepository
     this.relayerService = relayerService
   }
 

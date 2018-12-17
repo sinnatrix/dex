@@ -22,12 +22,18 @@ class TradeHistoryService {
   orderService: OrderService
   orderRepository: OrderRepository
 
-  constructor ({ connection, orderBlockchainService, wsRelayerServer, orderService }) {
+  constructor ({
+    orderBlockchainService,
+    tradeHistoryRepository,
+    orderRepository,
+    wsRelayerServer,
+    orderService
+  }) {
     this.orderBlockchainService = orderBlockchainService
-    this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
+    this.tradeHistoryRepository = tradeHistoryRepository
+    this.orderRepository = orderRepository
     this.wsRelayerServer = wsRelayerServer
     this.orderService = orderService
-    this.orderRepository = connection.getCustomRepository(OrderRepository)
   }
 
   async attach () {
@@ -37,8 +43,6 @@ class TradeHistoryService {
 
     await this.subscribeToTradeHistoryEvents()
     await this.subscribeToCancelOrderEvents()
-
-    // await this.orderService.updateOrdersInfo()
   }
 
   async loadFullTradeHistory () {
