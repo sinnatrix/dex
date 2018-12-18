@@ -76,9 +76,14 @@ export const loadTokenBalance = token => async (dispatch, getState, { blockchain
 }
 
 export const wrapEth = amount => async (dispatch, getState, { blockchainService }) => {
-  const wethToken = getTokenBySymbol('WETH', getState().global)
+  const wethToken = getTokenBySymbol('WETH', getState())
   if (!wethToken) {
     console.error('WETH token is not found')
+    return
+  }
+
+  if (!amount) {
+    console.error('Incorrect ETH amount to wrap')
     return
   }
 
@@ -94,9 +99,14 @@ export const wrapEth = amount => async (dispatch, getState, { blockchainService 
 }
 
 export const unwrapWeth = amount => async (dispatch, getState, { blockchainService }) => {
-  const wethToken = getTokenBySymbol('WETH', getState().global)
+  const wethToken = getTokenBySymbol('WETH', getState())
   if (!wethToken) {
     console.error('WETH token is not found')
+    return
+  }
+
+  if (!amount) {
+    console.error('Incorrect WETH amount to unwrap')
     return
   }
 
