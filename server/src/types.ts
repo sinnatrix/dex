@@ -132,14 +132,21 @@ export interface IRadarRelayAsset {
   dydx?: {}
 }
 
-export interface ISRA2AssetPair {
-  assetDataA: ISRA2AssetPairAsset
-  assetDataB: ISRA2AssetPairAsset
-}
-
 export interface ISRA2AssetPairAsset {
   assetData: string
   precision: number
   minAmount: string
   maxAmount: string
+}
+
+export interface ISRA2AssetPair {
+  assetDataA: ISRA2AssetPairAsset
+  assetDataB: ISRA2AssetPairAsset
+}
+
+export interface ISRA2AssetPairs {
+  total: number
+  page: number
+  perPage: number,
+  records: ISRA2AssetPair[]
 }

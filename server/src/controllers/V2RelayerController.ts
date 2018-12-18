@@ -13,24 +13,24 @@ import {
 } from '../utils/helpers'
 import { validateRequiredField, validateNetworkId } from '../validation'
 import OrderBlockchainService from '../services/OrderBlockchainService'
+import AssetPairRepository from '../repositories/AssetPairRepository'
+import OrderRepository from '../repositories/OrderRepository'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 class V2RelayerController {
   application: any
   wsRelayerServer: WsRelayerServer
-  assetRepository: any
-  assetPairRepository: any
-  orderRepository: any
+  assetPairRepository: AssetPairRepository
+  orderRepository: OrderRepository
   orderBlockchainService: OrderBlockchainService
-  networkId: string
+  networkId: number
 
   constructor ({
     application,
     wsRelayerServer,
     networkId,
     orderRepository,
-    assetRepository,
     assetPairRepository,
     orderBlockchainService
   }) {
@@ -38,7 +38,6 @@ class V2RelayerController {
     this.wsRelayerServer = wsRelayerServer
     this.networkId = networkId
 
-    this.assetRepository = assetRepository
     this.assetPairRepository = assetPairRepository
     this.orderRepository = orderRepository
 
@@ -48,7 +47,7 @@ class V2RelayerController {
   attach () {
     const router = express.Router()
 
-    router.get('/token_pairs', this.getTokenPairs.bind(this))
+    router.get('/asset_pairs', this.getAssetPairs.bind(this))
     router.get('/orderbook', this.getOrderbook.bind(this))
     router.get('/orders', this.getOrders.bind(this))
     router.get('/orders/:orderHash', this.getOrderByHash.bind(this))
@@ -58,31 +57,26 @@ class V2RelayerController {
     this.application.use(config.RELAYER_API_V2_PATH, router)
   }
 
-  async getTokenPairs (req, res) {
-    const tokenPairs = await this.assetPairRepository.find()
+  async getAssetPairs (req, res) {
+    const toInt = value => parseInt(value, 10)
 
-    log.info({ tokenPairs })
+    const params = R.evolve(
+      {
+        page: toInt,
+        perPage: toInt
+      },
+      R.pick(
+        [
+          'assetDataA',
+          'assetDataB',
+          'page',
+          'perPage'
+        ],
+        req.query
+      )
+    )
 
-    const result: any[] = []
-
-    const toSRAObject = token => {
-      return R.pick([
-        'address',
-        'minAmount',
-        'maxAmount',
-        'precision'
-      ], token)
-    }
-
-    for (const one of tokenPairs) {
-      const tokenA = await this.assetRepository.findOne({ address: one.tokenAAddress })
-      const tokenB = await this.assetRepository.findOne({ address: one.tokenBAddress })
-
-      result.push({
-        tokenA: toSRAObject(tokenA),
-        tokenB: toSRAObject(tokenB)
-      })
-    }
+    const result = await this.assetPairRepository.getAssetPairsWithAssetsAndCount(params)
 
     res.send(result)
   }
