@@ -6,7 +6,7 @@ import { expandTradeHistory } from './helpers'
 
 export const loadAccountTradeHistory = () => async (dispatch, getState, { apiService }) => {
   const { account } = getState().global
-  const tradeHistory = await apiService.getAccountTradeHistory(account)
+  const tradeHistory = await apiService.loadAccountTradeHistory(account)
 
   const expandedTradeHistory = tradeHistory.map(expandTradeHistory)
 
@@ -35,7 +35,7 @@ export const loadAssetPairTradeHistory = (page?, perPage?) => async (dispatch, g
   const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
   const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
 
-  const tradeHistory = await apiService.getTradeHistory({
+  const tradeHistory = await apiService.loadTradeHistory({
     baseAssetData,
     quoteAssetData,
     page,

@@ -24,8 +24,8 @@ export default class OrderRepository extends Repository<OrderEntity> {
 
     const [ bids, bidsCount ] = await this.findAndCount({
       where: {
-        takerAssetData: baseAssetData,
-        makerAssetData: quoteAssetData,
+        makerAssetData: baseAssetData,
+        takerAssetData: quoteAssetData,
         expirationTimeSeconds: Not(LessThan(currentTs)),
         orderStatus: OrderStatus.FILLABLE
       },
@@ -35,8 +35,8 @@ export default class OrderRepository extends Repository<OrderEntity> {
 
     const [ asks, asksCount ] = await this.findAndCount({
       where: {
-        takerAssetData: quoteAssetData,
-        makerAssetData: baseAssetData,
+        takerAssetData: baseAssetData,
+        makerAssetData: quoteAssetData,
         expirationTimeSeconds: Not(LessThan(currentTs)),
         orderStatus: OrderStatus.FILLABLE
       },

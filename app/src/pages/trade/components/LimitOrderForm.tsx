@@ -31,7 +31,7 @@ class LimitOrderForm extends React.Component<any> {
   state = {
     mode: 'buy',
     amount: 1,
-    price: 0.002
+    price: 0.001
   }
 
   handleModeChange = mode => {

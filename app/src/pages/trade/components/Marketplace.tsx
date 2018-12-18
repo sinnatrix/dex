@@ -17,10 +17,10 @@ const decorate = jss({
 const Marketplace = ({ classes }) =>
   <Panel className={classes.root}>
     <div className={classes.wrapper}>
-      <MarketplaceChooser />
+      <TokenChooser />
     </div>
     <div className={classes.wrapper}>
-      <TokenChooser />
+      <MarketplaceChooser />
     </div>
   </Panel>
 

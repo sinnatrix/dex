@@ -17,7 +17,7 @@ const decorate = jss({
 class TokenChooser extends React.Component<any> {
   handleChange = e => {
     const { marketplace = 'WETH' } = this.props.match.params
-    this.props.history.push(`/${marketplace}/${e.target.value}`)
+    this.props.history.push(`/${e.target.value}/${marketplace}`)
   }
 
   render () {

@@ -125,8 +125,8 @@ class V2RelayerController {
     })
 
     const validationErrors = [
-      validateRequiredField('quoteAssetData', params.quoteAssetData),
       validateRequiredField('baseAssetData', params.baseAssetData),
+      validateRequiredField('quoteAssetData', params.quoteAssetData),
       validateNetworkId(params.networkId, this.networkId)
     ].filter(one => !!one)
 
