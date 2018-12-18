@@ -51,6 +51,7 @@ class OrdersList extends React.Component<any> {
           {
             Header: 'Sold',
             id: 'selling',
+            sortable: false,
             minWidth: 80,
             accessor: order => {
               return `
@@ -65,6 +66,7 @@ class OrdersList extends React.Component<any> {
           {
             Header: 'Bought',
             id: 'buying',
+            sortable: false,
             minWidth: 80,
             accessor: order => {
               return `
@@ -79,6 +81,7 @@ class OrdersList extends React.Component<any> {
           {
             Header: 'Expires',
             id: 'expires',
+            sortable: false,
             minWidth: 80,
             accessor: order => this.renderExpiresAt(order),
             style: {
@@ -88,6 +91,7 @@ class OrdersList extends React.Component<any> {
           {
             Header: '',
             id: 'cancel',
+            sortable: false,
             Cell: ({ original: order }) => <CancelOrderButton order={order} />,
             width: 30,
             className: classes.controlColumn

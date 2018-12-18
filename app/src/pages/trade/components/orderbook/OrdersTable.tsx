@@ -56,11 +56,13 @@ class OrdersTable extends React.Component<any> {
           {
             Header: 'price',
             id: 'price',
+            sortable: false,
             accessor: order => order.spread ? null : order.extra.price.toFixed(6)
           },
           {
             Header: 'selling',
             id: 'selling',
+            sortable: false,
             accessor: order => order.spread
               ? null
               : `${order.extra.remainingMakerAssetAmount.toFixed(6)} ${order.extra.makerToken.symbol}`
@@ -68,6 +70,7 @@ class OrdersTable extends React.Component<any> {
           {
             Header: 'buying',
             id: 'buying',
+            sortable: false,
             accessor: order => order.spread
               ? null
               : `${order.extra.remainingTakerAssetAmount.toFixed(6)} ${order.extra.takerToken.symbol}`
@@ -75,16 +78,19 @@ class OrdersTable extends React.Component<any> {
           {
             Header: 'expires',
             id: 'expires',
+            sortable: false,
             accessor: order => order.spread ? null : this.renderExpiresAt(order)
           },
           {
             Header: 'maker',
             id: 'maker',
+            sortable: false,
             accessor: order => order.spread ? null : `${order.order.makerAddress}`
           },
           {
             Header: '',
             id: 'clipboard',
+            sortable: false,
             Cell: ({ original: order }) => order.spread ? null : <ClipboardButton order={order} />,
             width: 50,
             className: classes.controlColumn
@@ -92,6 +98,7 @@ class OrdersTable extends React.Component<any> {
           {
             Header: '',
             id: 'fill',
+            sortable: false,
             Cell: ({ original: order }) => order.spread ? null : <FillOrderButton order={order} />,
             width: 64,
             className: classes.controlColumn
