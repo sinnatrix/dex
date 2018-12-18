@@ -47,6 +47,7 @@ class TradeHistory extends React.Component<any> {
           {
             Header: 'Sold',
             id: 'sold',
+            sortable: false,
             minWidth: 80,
             accessor: one => {
               const makerToken = findTokenByAssetData(one.makerAssetData, tokens)
@@ -60,6 +61,7 @@ class TradeHistory extends React.Component<any> {
           {
             Header: 'Bought',
             id: 'Bought',
+            sortable: false,
             minWidth: 80,
             accessor: one => {
               const takerToken = findTokenByAssetData(one.takerAssetData, tokens)
@@ -73,6 +75,7 @@ class TradeHistory extends React.Component<any> {
           {
             Header: 'Etherscan',
             id: 'Etherscan',
+            sortable: false,
             minWidth: 80,
             accessor: one => (
               <EtherscanLink
