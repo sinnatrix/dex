@@ -1,9 +1,5 @@
 import * as express from 'express'
-import RelayerEntity from '../entities/Relayer'
-import AssetEntity from '../entities/Asset'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
-import OrderRepository from '../repositories/OrderRepository'
-import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import config from '../config'
 import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { ISRA2Order } from '../types'
@@ -17,13 +13,21 @@ class V1OwnController {
   orderBlockchainService: any
   wsRelayerServer: WsRelayerServer
 
-  constructor ({ connection, application, orderBlockchainService, wsRelayerServer }) {
+  constructor ({
+    application,
+    assetRepository,
+    relayerRepository,
+    orderRepository,
+    tradeHistoryRepository,
+    orderBlockchainService,
+    wsRelayerServer
+  }) {
     this.application = application
 
-    this.assetRepository = connection.getRepository(AssetEntity)
-    this.relayerRepository = connection.getRepository(RelayerEntity)
-    this.orderRepository = connection.getCustomRepository(OrderRepository)
-    this.tradeHistoryRepository = connection.getCustomRepository(TradeHistoryRepository)
+    this.assetRepository = assetRepository
+    this.relayerRepository = relayerRepository
+    this.orderRepository = orderRepository
+    this.tradeHistoryRepository = tradeHistoryRepository
     this.orderBlockchainService = orderBlockchainService
     this.wsRelayerServer = wsRelayerServer
   }

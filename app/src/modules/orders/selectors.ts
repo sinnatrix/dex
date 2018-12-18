@@ -6,12 +6,15 @@ import mergeWith from 'ramda/es/mergeWith'
 import descend from 'ramda/es/descend'
 import path from 'ramda/es/path'
 import sort from 'ramda/es/sort'
+import { IDexOrder } from 'types'
 
-const getPrice = order => path(['extra', 'price'], order).toString(10)
+const getPrice = (order: IDexOrder): string => path(['extra', 'price'], order).toString(10)
+const getExpiration = (order: IDexOrder): string => path(['order', 'expirationTimeSeconds'], order).toString(10)
 const sortByPriceDesc = sort(descend(getPrice))
+const sortByExpirationDesc = sort(descend(getExpiration))
 
 export const getAccountOrders = state =>
-  state.orders.accountOrders.map(hash => getOrderAsBidByHash(hash, state))
+  sortByExpirationDesc(state.orders.accountOrders.map(hash => getOrderAsBidByHash(hash, state)))
 
 export const getOrderbookBids = state =>
   sortByPriceDesc(state.orders.bids.map(hash => getOrderAsBidByHash(hash, state)))

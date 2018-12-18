@@ -11,8 +11,8 @@ export default class OrderService {
   orderBlockchainService: OrderBlockchainService
   wsRelayerServer: WsRelayerServer
 
-  constructor ({ connection, orderBlockchainService, wsRelayerServer }) {
-    this.orderRepository = connection.getCustomRepository(OrderRepository)
+  constructor ({ orderRepository, orderBlockchainService, wsRelayerServer }) {
+    this.orderRepository = orderRepository
     this.orderBlockchainService = orderBlockchainService
     this.wsRelayerServer = wsRelayerServer
   }

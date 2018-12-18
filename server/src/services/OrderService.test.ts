@@ -19,14 +19,10 @@ test('updateOrderInfoByHash', async t => {
 
   const saveFake = sinon.fake()
 
-  const connection = {
-    getCustomRepository () {
-      return {
-        save: saveFake,
-        findOne () {
-          return dexOrder
-        }
-      }
+  const orderRepository = {
+    save: saveFake,
+    findOne () {
+      return dexOrder
     }
   }
 
@@ -42,7 +38,7 @@ test('updateOrderInfoByHash', async t => {
     }
   }
 
-  const orderService = new OrderService({ connection, orderBlockchainService } as any)
+  const orderService = new OrderService({ orderRepository, orderBlockchainService } as any)
   await orderService.updateOrderInfo(orderHash)
 
   t.equal(saveFake.lastCall.args[0].orderTakerAssetFilledAmount, '0')

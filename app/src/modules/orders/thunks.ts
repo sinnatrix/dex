@@ -19,6 +19,7 @@ export const loadOrderbook = () => async (dispatch, getState, { apiService }) =>
   dispatch(actions.setOrderbookAsks(data.asks.records))
 
   const [ subscription ] = getSubscriptionsByListType(getState(), 'orders')
+
   if (subscription) {
     dispatch(wsUnsubscribe(subscription.requestId))
   }
