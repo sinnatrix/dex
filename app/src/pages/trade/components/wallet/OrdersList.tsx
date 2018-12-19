@@ -49,7 +49,7 @@ class OrdersList extends React.Component<any> {
         })}
         columns={[
           {
-            Header: 'Sold',
+            Header: 'Selling',
             id: 'selling',
             sortable: false,
             minWidth: 80,
@@ -64,7 +64,7 @@ class OrdersList extends React.Component<any> {
             }
           },
           {
-            Header: 'Bought',
+            Header: 'Buying',
             id: 'buying',
             sortable: false,
             minWidth: 80,

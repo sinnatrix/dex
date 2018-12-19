@@ -12,7 +12,7 @@ const decorate = jss({
 class MarketplaceChooser extends React.Component<any> {
   handleChange = e => {
     const { token = 'ZRX' } = this.props.match.params
-    this.props.history.push(`/${e.target.value}/${token}`)
+    this.props.history.push(`/${token}/${e.target.value}`)
   }
 
   render () {

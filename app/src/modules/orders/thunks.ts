@@ -10,10 +10,10 @@ import { IDexOrder, ISRA2Order } from 'types'
 export const loadOrderbook = () => async (dispatch, getState, { apiService }) => {
   const { marketplaceToken, currentToken } = getState().global
 
-  const baseAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
-  const quoteAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
+  const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
+  const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
 
-  const data = await apiService.getOrderbook({ baseAssetData, quoteAssetData })
+  const data = await apiService.loadOrderbook({ baseAssetData, quoteAssetData })
 
   dispatch(actions.setOrderbookBids(data.bids.records))
   dispatch(actions.setOrderbookAsks(data.asks.records))
@@ -38,8 +38,8 @@ export const loadOrderbook = () => async (dispatch, getState, { apiService }) =>
 
 export const addOrders = (orders: ISRA2Order[]) => async (dispatch, getState) => {
   const { marketplaceToken, currentToken } = getState().global
-  const baseAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
-  const quoteAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
+  const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
+  const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
 
   const isBid = ({ order }) => order.takerAssetData === quoteAssetData &&
     order.makerAssetData === baseAssetData
@@ -61,7 +61,7 @@ export const addOrders = (orders: ISRA2Order[]) => async (dispatch, getState) =>
 
 export const loadActiveAccountOrders = () => async (dispatch, getState, { apiService }) => {
   const account = getAccount(getState())
-  const orders = await apiService.getAccountOrders(account)
+  const orders = await apiService.loadAccountOrders(account)
 
   dispatch(actions.setAccountOrders(orders))
 

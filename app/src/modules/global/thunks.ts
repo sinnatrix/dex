@@ -54,17 +54,17 @@ export const setZeroTokenAllowance = token => async (dispatch, getState, { block
 }
 
 export const loadMarketplaceToken = symbol => async (dispatch, getState, { apiService }) => {
-  const token = await apiService.getTokenBySymbol(symbol)
+  const token = await apiService.loadTokenBySymbol(symbol)
   dispatch(actions.setMarketplaceToken(token))
 }
 
 export const loadCurrentToken = symbol => async (dispatch, getState, { apiService }) => {
-  const token = await apiService.getTokenBySymbol(symbol)
+  const token = await apiService.loadTokenBySymbol(symbol)
   dispatch(actions.setCurrentToken(token))
 }
 
 export const loadTokens = () => async (dispatch, getState, { apiService }) => {
-  const tokens = await apiService.getTokens()
+  const tokens = await apiService.loadTokens()
   dispatch(actions.setTokens(tokens))
 }
 

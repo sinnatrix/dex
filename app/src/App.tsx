@@ -55,8 +55,8 @@ class App extends React.Component<any> {
           <Provider store={this.store}>
             <Router>
               <Switch>
-                <Route exact path='/' render={() => <Redirect to='/WETH/ZRX' />} />
-                <Route path='/:marketplace?/:token?' component={TradePage} />
+                <Route exact path='/' render={() => <Redirect to='/ZRX/WETH' />} />
+                <Route path='/:token?/:marketplace?' component={TradePage} />
               </Switch>
             </Router>
           </Provider>
