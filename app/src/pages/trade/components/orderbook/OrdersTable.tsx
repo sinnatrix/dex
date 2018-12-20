@@ -1,5 +1,6 @@
 import React from 'react'
 import jss from 'react-jss'
+import { connect } from 'react-redux'
 import format from 'date-fns/format'
 import ClipboardButton from './ClipboardButton'
 import FillOrderButton from './FillOrderButton'
@@ -7,8 +8,17 @@ import createTrComponent from './createTrComponent'
 import ReactTable, { ReactTableDefaults } from 'react-table'
 import 'react-table/react-table.css'
 import red from '@material-ui/core/colors/red'
+import { getMarketplaceToken } from 'modules/global/selectors'
+import compose from 'ramda/es/compose'
 
 ReactTableDefaults.TrComponent = createTrComponent(ReactTableDefaults.TrComponent)
+
+const connector = connect(
+  state => ({
+    marketplaceToken: getMarketplaceToken(state)
+  }),
+  null
+)
 
 const decorate = jss({
   root: {},
@@ -37,7 +47,7 @@ class OrdersTable extends React.Component<any> {
   }
 
   render () {
-    const { classes, orders } = this.props
+    const { classes, orders, marketplaceToken } = this.props
 
     return (
       <ReactTable
@@ -54,10 +64,12 @@ class OrdersTable extends React.Component<any> {
         }}
         columns={[
           {
-            Header: 'price',
+            Header: `Price`,
             id: 'price',
             sortable: false,
-            accessor: order => order.spread ? null : order.extra.price.toFixed(6)
+            accessor: order => order.spread
+              ? null
+              : `${order.extra.price.toFixed(6)} ${marketplaceToken.symbol}`
           },
           {
             Header: 'selling',
@@ -113,5 +125,7 @@ class OrdersTable extends React.Component<any> {
     return format(date, 'MM/DD HH:mm')
   }
 }
-
-export default decorate(OrdersTable)
+export default compose(
+  connector,
+  decorate
+)(OrdersTable)

@@ -1,12 +1,12 @@
 import axios from 'axios'
 
 class ApiService {
-  async getTokenBySymbol (symbol) {
+  async loadTokenBySymbol (symbol) {
     const { data } = await axios(`/api/v1/tokens/${symbol}`)
     return data
   }
 
-  async getTokens () {
+  async loadTokens () {
     const { data } = await axios.get('/api/v1/tokens')
     return data
   }
@@ -15,22 +15,22 @@ class ApiService {
     await axios.post('/api/0x/v2/order', signedOrder)
   }
 
-  async getOrderbook (params) {
+  async loadOrderbook (params) {
     const { data } = await axios('/api/0x/v2/orderbook', { params })
     return data
   }
 
-  async getAccountOrders (account) {
+  async loadAccountOrders (account) {
     const { data } = await axios.get(`/api/v1/accounts/${account}/orders`)
     return data
   }
 
-  async getAccountTradeHistory (account) {
+  async loadAccountTradeHistory (account) {
     const { data } = await axios.get(`/api/v1/accounts/${account}/history`)
     return data
   }
 
-  async getTradeHistory (params) {
+  async loadTradeHistory (params) {
     const { data } = await axios.get(
       `/api/v1/tradeHistory`,
       {

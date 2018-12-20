@@ -26,8 +26,8 @@ export const getTokens = state => state.global.tokens.map(token => ({
 export const getTokenBySymbol = (symbol: string, state): IDexToken =>
   state.global.tokens.find(one => one.symbol === symbol) || DEFAULT_TOKEN
 
-export const getMarketplaceToken = state => state.global.marketplaceToken
 export const getCurrentToken = state => state.global.currentToken
+export const getMarketplaceToken = state => state.global.marketplaceToken
 
 export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
   tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN

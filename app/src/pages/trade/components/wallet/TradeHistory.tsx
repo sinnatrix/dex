@@ -5,7 +5,11 @@ import { wsUnsubscribe } from 'modules/subscriptions'
 import ReactTable from 'react-table'
 import { formatAssetAmount } from 'helpers/general'
 import EtherscanLink from 'components/EtherscanLink'
-import { getTokens, findTokenByAssetData } from 'modules/global/selectors'
+import {
+  getTokens,
+  findTokenByAssetData,
+  getAccount
+} from 'modules/global/selectors'
 
 const cellStyle = {
   fontSize: '0.7em',
@@ -23,6 +27,7 @@ const decorate = jss({
 
 const connector = connect(
   state => ({
+    account: getAccount(state),
     tokens: getTokens(state)
   }),
   { wsUnsubscribe }
@@ -30,7 +35,7 @@ const connector = connect(
 
 class TradeHistory extends React.Component<any> {
   render () {
-    const { tradeHistory, tokens, classes } = this.props
+    const { tradeHistory, tokens, classes, account } = this.props
 
     if (tradeHistory.length === 0) {
       return null
@@ -50,11 +55,7 @@ class TradeHistory extends React.Component<any> {
             sortable: false,
             minWidth: 80,
             accessor: one => {
-              const makerToken = findTokenByAssetData(one.makerAssetData, tokens)
-              return `
-                ${formatAssetAmount(one.makerAssetFilledAmount, makerToken.decimals)}
-                ${makerToken.symbol}
-              `
+              return this.getSoldAssetAmount(one, account, tokens)
             },
             style: cellStyle
           },
@@ -64,11 +65,7 @@ class TradeHistory extends React.Component<any> {
             sortable: false,
             minWidth: 80,
             accessor: one => {
-              const takerToken = findTokenByAssetData(one.takerAssetData, tokens)
-              return `
-                ${formatAssetAmount(one.takerAssetFilledAmount, takerToken.decimals)}
-                ${takerToken.symbol}
-              `
+              return this.getBoughtAssetAmount(one, account, tokens)
             },
             style: cellStyle
           },
@@ -92,6 +89,38 @@ class TradeHistory extends React.Component<any> {
         ]}
       />
     )
+  }
+
+  getSoldAssetAmount (tradeHistoryItem, account: string, tokens): string {
+    if (tradeHistoryItem.makerAddress === account) {
+      return this.getMakerAssetAmount(tradeHistoryItem, tokens)
+    } else {
+      return this.getTakerAssetAmount(tradeHistoryItem, tokens)
+    }
+  }
+
+  getBoughtAssetAmount (tradeHistoryItem, account: string, tokens): string {
+    if (tradeHistoryItem.makerAddress === account) {
+      return this.getTakerAssetAmount(tradeHistoryItem, tokens)
+    } else {
+      return this.getMakerAssetAmount(tradeHistoryItem, tokens)
+    }
+  }
+
+  getMakerAssetAmount (tradeHistoryItem, tokens) {
+    const token = findTokenByAssetData(tradeHistoryItem.makerAssetData, tokens)
+    return `
+      ${formatAssetAmount(tradeHistoryItem.makerAssetFilledAmount, token.decimals)}
+      ${token.symbol}
+    `
+  }
+
+  getTakerAssetAmount (tradeHistoryItem, tokens) {
+    const token = findTokenByAssetData(tradeHistoryItem.takerAssetData, tokens)
+    return `
+      ${formatAssetAmount(tradeHistoryItem.takerAssetFilledAmount, token.decimals)}
+      ${token.symbol}
+    `
   }
 }
 
