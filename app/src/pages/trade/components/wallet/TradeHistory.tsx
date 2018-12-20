@@ -8,9 +8,7 @@ import EtherscanLink from 'components/EtherscanLink'
 import {
   getTokens,
   findTokenByAssetData,
-  getAccount,
-  getCurrentToken,
-  getMarketplaceToken
+  getAccount
 } from 'modules/global/selectors'
 
 const cellStyle = {
@@ -30,8 +28,6 @@ const decorate = jss({
 const connector = connect(
   state => ({
     account: getAccount(state),
-    currentToken: getCurrentToken(state),
-    marketplaceToken: getMarketplaceToken(state),
     tokens: getTokens(state)
   }),
   { wsUnsubscribe }
@@ -39,7 +35,7 @@ const connector = connect(
 
 class TradeHistory extends React.Component<any> {
   render () {
-    const { tradeHistory, tokens, classes, account, currentToken, marketplaceToken } = this.props
+    const { tradeHistory, tokens, classes, account } = this.props
 
     if (tradeHistory.length === 0) {
       return null

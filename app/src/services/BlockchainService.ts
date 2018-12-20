@@ -112,13 +112,14 @@ class BlockchainService {
     })
   }
 
-  async awaitTransaction (txHash) {
+  async awaitTransaction (txHash): Promise<void> {
     let txReceipt = await this.web3Wrapper.awaitTransactionSuccessAsync(txHash)
 
     let i = 1
     while (!txReceipt.blockNumber) {
       await delay(100 * i)
       const result = await this.web3Wrapper.getTransactionReceiptAsync(txHash)
+
       if (result) {
         txReceipt = result
       }
@@ -126,7 +127,12 @@ class BlockchainService {
       i++
     }
 
-    return txReceipt
+    let latestBlock = await this.web3.eth.getBlock('latest')
+
+    while (!latestBlock || latestBlock.number < txReceipt.blockNumber) {
+      await delay(1000)
+      latestBlock = await this.web3.eth.getBlock('latest')
+    }
   }
 
   async sendTransaction (tx) {
