@@ -30,6 +30,6 @@ export default class Asset {
   @Column()
   name: string
 
-  @Column({ type: 'jsonb', nullable: true })
-  abi: Object
+  @Column('jsonb', { nullable: true, default: null })
+  abi?: Object
 }
