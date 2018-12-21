@@ -2,7 +2,7 @@ import OrderBlockchainService from './OrderBlockchainService'
 import {
   convertCancelEventToDexEventLogItem,
   convertFillEventToDexTradeHistory,
-  delay
+  delay, getFillPrice
 } from '../utils/helpers'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import OrderRepository from '../repositories/OrderRepository'
@@ -13,6 +13,8 @@ import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderService from './OrderService'
 import WsRelayerServerFacade from '../wsRelayerServer/WsRelayerServerFacade'
 import { Block } from 'web3/eth/types'
+import { BigNumber } from '@0x/utils'
+import AssetPairEntity from '../entities/AssetPair'
 
 const Web3 = require('web3')
 
@@ -164,6 +166,24 @@ class TradeHistoryService {
     }
 
     return block
+  }
+
+  async getAssetPairLatestPrice (assetPair: AssetPairEntity): Promise<BigNumber | null> {
+    const fill = await this.tradeHistoryRepository.getLatestAssetPairFillEntity(assetPair)
+    if (!fill) {
+      return null
+    }
+
+    return getFillPrice(fill, assetPair)
+  }
+
+  async getAssetPairLatestPriceExcl24Hours (assetPair: AssetPairEntity): Promise<BigNumber | null> {
+    const fill = await this.tradeHistoryRepository.getLatestAssetPairFillEntityExclLast24Hours(assetPair)
+    if (!fill) {
+      return null
+    }
+
+    return getFillPrice(fill, assetPair)
   }
 }
 

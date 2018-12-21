@@ -73,3 +73,7 @@ export const deployZeroExContracts = async (web3, from) => {
   const contractAddresses = await runMigrationsOnceAsync(web3.currentProvider, txDefaults)
   return contractAddresses
 }
+
+export const generateMarketDummy = () => {
+
+}

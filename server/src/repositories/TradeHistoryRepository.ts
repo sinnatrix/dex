@@ -1,6 +1,8 @@
 import { EntityRepository, Repository, Brackets } from 'typeorm'
 import TradeHistoryEntity from '../entities/TradeHistory'
-import { EventType } from '../types'
+import { EventType, IFillEntity } from '../types'
+import AssetPairEntity from '../entities/AssetPair'
+import { getNowUnixtime } from '../utils/helpers'
 
 @EntityRepository(TradeHistoryEntity)
 class TradeHistoryRepository extends Repository<any> {
@@ -54,6 +56,52 @@ class TradeHistoryRepository extends Repository<any> {
       .orderBy('"blockNumber"', 'DESC')
       .addOrderBy('"id"', 'DESC')
       .getMany()
+  }
+
+  prepareAssetPairFillQuery (assetPair: AssetPairEntity) {
+    return this.createQueryBuilder()
+      .where('"event" = :event',)
+      .andWhere(new Brackets(qb => {
+        qb.where('("makerAssetData" = :baseAssetData AND "takerAssetData" = :quoteAssetData)')
+          .orWhere('("makerAssetData" = :quoteAssetData AND "takerAssetData" = :baseAssetData)')
+      }))
+      .setParameters({
+        event: EventType.FILL,
+        baseAssetData: assetPair.assetDataA,
+        quoteAssetData: assetPair.assetDataB
+      })
+  }
+
+  getAssetPairRecordsAndCountForLast24Hours (assetPair: AssetPairEntity): Promise<[IFillEntity[], number]> {
+    const query = this.prepareAssetPairFillQuery(assetPair)
+
+    query.andWhere('"timestamp" >= :timestamp', { timestamp: getNowUnixtime() - 86400 })
+      .orderBy({
+        timestamp: 'DESC'
+      })
+
+    return query.getManyAndCount()
+  }
+
+  getLatestAssetPairFillEntity (assetPair: AssetPairEntity): Promise<IFillEntity> {
+    const query = this.prepareAssetPairFillQuery(assetPair)
+
+    query.orderBy({
+      timestamp: 'DESC'
+    })
+
+    return query.getOne()
+  }
+
+  getLatestAssetPairFillEntityExclLast24Hours (assetPair: AssetPairEntity): Promise<IFillEntity> {
+    const query = this.prepareAssetPairFillQuery(assetPair)
+
+    query.andWhere('"timestamp" < :timestamp', { timestamp: getNowUnixtime() - 86400 })
+      .orderBy({
+        timestamp: 'DESC'
+      })
+
+    return query.getOne()
   }
 }
 

@@ -3,6 +3,7 @@ import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import config from '../config'
 import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { ISRA2Order } from '../types'
+import MarketService from '../services/MarketService'
 
 class V1OwnController {
   application: any
@@ -12,6 +13,7 @@ class V1OwnController {
   tradeHistoryRepository: any
   orderBlockchainService: any
   wsRelayerServer: WsRelayerServer
+  marketService: MarketService
 
   constructor ({
     application,
@@ -20,7 +22,8 @@ class V1OwnController {
     orderRepository,
     tradeHistoryRepository,
     orderBlockchainService,
-    wsRelayerServer
+    wsRelayerServer,
+    marketService
   }) {
     this.application = application
 
@@ -30,6 +33,7 @@ class V1OwnController {
     this.tradeHistoryRepository = tradeHistoryRepository
     this.orderBlockchainService = orderBlockchainService
     this.wsRelayerServer = wsRelayerServer
+    this.marketService = marketService
   }
 
   attach () {
@@ -44,6 +48,7 @@ class V1OwnController {
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
+    router.get('/markets', this.getMarkets.bind(this))
 
     this.application.use(config.OWN_API_PATH, router)
   }
@@ -139,6 +144,11 @@ class V1OwnController {
     const tradeHistory = await this.orderBlockchainService.loadOrderHistory(orderHash)
 
     res.json(tradeHistory)
+  }
+
+  async getMarkets (req, res) {
+    const markets = await this.marketService.getMarkets()
+    res.send(markets)
   }
 }
 
