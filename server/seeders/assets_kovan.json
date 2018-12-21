@@ -1,336 +1,48 @@
 [
   {
-    "assetData": "0xf47261b0000000000000000000000000323b5d4c32345ced77393b3530b1eed0f346429d",
-    "address": "0x323b5d4c32345ced77393b3530b1eed0f346429d",
-    "proxyId": "0xf47261b0000000000000000000000000",
-    "minAmount": "0",
-    "maxAmount": "10000000000000000000",
-    "precision": 5,
-    "symbol": "MLN",
-    "name": "Melon token",
-    "decimals": 18
+    "address": "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
+    "symbol": "DAI",
+    "decimals": 18,
+    "name": "Dai Stablecoin v1.0",
+    "active": 1,
+    "quote": 1,
+    "createdDate": "2018-03-01 23:43:07"
   },
   {
-    "assetData": "0xf47261b0000000000000000000000000ef7fff64389b814a946f3e92105513705ca6b990",
-    "address": "0xef7fff64389b814a946f3e92105513705ca6b990",
-    "proxyId": "0xf47261b0000000000000000000000000",
-    "minAmount": "0",
-    "maxAmount": "50000000000000000000",
-    "precision": 5,
-    "symbol": "GNT",
-    "name": "Golem Network Token",
-    "decimals": 18
+    "address": "0x7b6b10caa9e8e9552ba72638ea5b47c25afea1f3",
+    "symbol": "MRK",
+    "decimals": 18,
+    "name": "MakerDAO",
+    "zeroex_official": 0,
+    "active": 1,
+    "quote": 0
   },
   {
-    "assetData": "0xf47261b0000000000000000000000000d0a1e359811322d97991e03f863a0c30c2cf029c",
+    "address": "0xeee3870657e4716670f185df08652dd848fe8f7e",
+    "symbol": "DGD",
+    "decimals": 18,
+    "name": "Digix DAO Token",
+    "zeroex_official": 0,
+    "active": 1,
+    "quote": 0,
+    "createdDate": "2018-05-29 17:40:48"
+  },
+  {
     "address": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
-    "proxyId": "0xf47261b0000000000000000000000000",
-    "minAmount": "1",
-    "maxAmount": "999999999999999999999",
-    "precision": 8,
     "symbol": "WETH",
     "decimals": 18,
     "name": "Wrapped Ether",
-    "abi": [
-      {
-        "constant": true,
-        "inputs": [],
-        "name": "name",
-        "outputs": [
-          {
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "guy",
-            "type": "address"
-          },
-          {
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "approve",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [],
-        "name": "totalSupply",
-        "outputs": [
-          {
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "src",
-            "type": "address"
-          },
-          {
-            "name": "dst",
-            "type": "address"
-          },
-          {
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "transferFrom",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "withdraw",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [],
-        "name": "decimals",
-        "outputs": [
-          {
-            "name": "",
-            "type": "uint8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "name": "balanceOf",
-        "outputs": [
-          {
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [],
-        "name": "symbol",
-        "outputs": [
-          {
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "dst",
-            "type": "address"
-          },
-          {
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "transfer",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "constant": false,
-        "inputs": [],
-        "name": "deposit",
-        "outputs": [],
-        "payable": true,
-        "stateMutability": "payable",
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "",
-            "type": "address"
-          },
-          {
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "name": "allowance",
-        "outputs": [
-          {
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "payable": true,
-        "stateMutability": "payable",
-        "type": "fallback"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "src",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "name": "guy",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "Approval",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "src",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "name": "dst",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "Transfer",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "dst",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "Deposit",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "src",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "wad",
-            "type": "uint256"
-          }
-        ],
-        "name": "Withdrawal",
-        "type": "event"
-      }
-    ]
+    "zeroex_official": 0,
+    "active": 1,
+    "quote": 1
   },
   {
-    "assetData": "0xf47261b00000000000000000000000002002d3812f58e35f0ea1ffbf80a75a38c32175fa",
     "address": "0x2002d3812f58e35f0ea1ffbf80a75a38c32175fa",
-    "proxyId": "0xf47261b0000000000000000000000000",
-    "minAmount": "1",
-    "maxAmount": "999999999999999999999",
-    "precision": 8,
     "symbol": "ZRX",
+    "decimals": 18,
     "name": "0x protocol token",
-    "decimals": 18
-  },
-  {
-    "assetData": "0xf47261b0000000000000000000000000c4375b7de8af5a38a93548eb8453a498222c4ff2",
-    "address": "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-    "proxyId": "0xf47261b0000000000000000000000000",
-    "minAmount": "1",
-    "maxAmount": "999999999999999999999",
-    "precision": 8.0,
-    "symbol": "DAI",
-    "name": "Dai Stablecoin v1.0",
-    "decimals": 18
+    "zeroex_official": 1,
+    "active": 1,
+    "quote": 0
   }
 ]

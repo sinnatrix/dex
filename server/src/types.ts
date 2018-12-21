@@ -114,3 +114,27 @@ export interface IOrderbook {
   bids: ISRA2Orders
   asks: ISRA2Orders
 }
+
+export interface IRadarRelayAsset {
+  address: string
+  symbol: string
+  decimals: number
+  name: string
+  zeroex_official: number
+  active: number
+  quote: number
+  createDate: string
+  dydx?: {}
+}
+
+export interface ISRA2AssetPair {
+  assetDataA: ISRA2AssetPairAsset
+  assetDataB: ISRA2AssetPairAsset
+}
+
+export interface ISRA2AssetPairAsset {
+  assetData: string
+  precision: number
+  minAmount: string
+  maxAmount: string
+}
