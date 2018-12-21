@@ -30,6 +30,7 @@ export interface IDexEventLog extends EventLog {
   blockNumber: number
   logIndex: number
   returnValues: any
+  timestamp: number
 }
 
 export interface IFillEventLog extends IDexEventLog {

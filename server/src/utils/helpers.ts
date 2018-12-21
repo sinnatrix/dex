@@ -110,7 +110,8 @@ export const convertFillEventToDexTradeHistory = (event: IFillEventLog): TradeHi
     makerAssetFilledAmount: event.returnValues.makerAssetFilledAmount,
     takerAssetFilledAmount: event.returnValues.takerAssetFilledAmount,
     makerFeePaid: event.returnValues.makerFeePaid,
-    takerFeePaid: event.returnValues.takerFeePaid
+    takerFeePaid: event.returnValues.takerFeePaid,
+    timestamp: event.timestamp
   }
 }
 
@@ -126,7 +127,8 @@ export const convertCancelEventToDexEventLogItem = (event: ICancelEventLog): Tra
     feeRecipientAddress: event.returnValues.feeRecipientAddress,
     makerAddress: event.returnValues.makerAddress.toLowerCase(),
     makerAssetData: event.returnValues.makerAssetData,
-    takerAssetData: event.returnValues.takerAssetData
+    takerAssetData: event.returnValues.takerAssetData,
+    timestamp: event.timestamp
   }
 }
 

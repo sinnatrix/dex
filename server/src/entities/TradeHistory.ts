@@ -50,4 +50,7 @@ export default class TradeHistory {
 
   @Column({ nullable: true })
   takerFeePaid?: string
+
+  @Column()
+  timestamp: number
 }
