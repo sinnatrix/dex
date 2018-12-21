@@ -4,11 +4,10 @@ import TradeHistory from '../entities/TradeHistory'
 import RelayerEntity from '../entities/Relayer'
 import {
   ISRA2Order,
-  IFillEventLog,
   ISignedOrderWithStrings,
   ICancelEventLog,
   IRelayerWithId,
-  ISRA2Orders
+  ISRA2Orders, IDexEventLogExtended
 } from '../types'
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
@@ -93,7 +92,7 @@ export const getDefaultOrderMetaData = (order: SignedOrder): OrderInfo => ({
   orderTakerAssetFilledAmount: new BigNumber(0)
 })
 
-export const convertFillEventToDexTradeHistory = (event: IFillEventLog): TradeHistory => {
+export const convertFillEventToDexTradeHistory = (event: IDexEventLogExtended): TradeHistory => {
   return {
     id: event.id,
     event: event.event,

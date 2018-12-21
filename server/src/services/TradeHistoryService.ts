@@ -7,7 +7,7 @@ import {
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import OrderRepository from '../repositories/OrderRepository'
 import log from '../utils/log'
-import { IFillEventLog, EventType } from '../types'
+import { IFillEventLog, EventType, IDexEventLog, IDexEventLogExtended } from '../types'
 import TradeHistoryEntity from '../entities/TradeHistory'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderService from './OrderService'
@@ -66,8 +66,11 @@ class TradeHistoryService {
 
     log.info(`Loaded ${fillEvents.length} events from #${fromBlock} blocks`)
 
-    const tradeHistoryItems = fillEvents.map(convertFillEventToDexTradeHistory)
-    await this.tradeHistoryRepository.saveFullTradeHistory(tradeHistoryItems)
+    for (let fillEvent of fillEvents) {
+      const fillEventWithTs = await this.addTimestampToEventLog(fillEvent)
+      const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEventWithTs)
+      await this.tradeHistoryRepository.saveFullTradeHistory([tradeHistoryItem])
+    }
 
     log.info('Events history loaded')
   }
@@ -93,12 +96,8 @@ class TradeHistoryService {
   async handleFillEvent (fillEvent: IFillEventLog) {
     log.info('fillEvent', fillEvent)
 
-    const block = await this.getBlockByNumber(fillEvent.blockNumber)
-
-    const eventLogItem = convertFillEventToDexTradeHistory({
-      ...fillEvent,
-      timestamp: block.timestamp
-    })
+    const fillEventWithTs = await this.addTimestampToEventLog(fillEvent)
+    const eventLogItem = convertFillEventToDexTradeHistory(fillEventWithTs)
     await this.saveTradeHistoryAndPush(eventLogItem)
 
     try {
@@ -135,17 +134,22 @@ class TradeHistoryService {
   async handleCancelEvent (cancelEvent) {
     log.info('cancelEvent', cancelEvent)
 
-    const block = await this.getBlockByNumber(cancelEvent.blockNumber)
+    const cancelEventWithTs = await this.addTimestampToEventLog(cancelEvent)
 
-    const eventLogItem = convertCancelEventToDexEventLogItem({
-      ...cancelEvent,
-      timestamp: block.timestamp
-    })
+    const eventLogItem = convertCancelEventToDexEventLogItem(cancelEventWithTs)
 
     await this.orderService.updateOrderInfoAndPush(eventLogItem.orderHash)
 
     return this.tradeHistoryRepository
       .saveFullTradeHistory([eventLogItem])
+  }
+
+  async addTimestampToEventLog (item: IDexEventLog): Promise<IDexEventLogExtended> {
+    const block = await this.getBlockByNumber(item.blockNumber)
+    return {
+      ...item,
+      timestamp: block.timestamp
+    }
   }
 
   async getBlockByNumber (blockNumber: number): Promise<Block> {
