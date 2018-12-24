@@ -4,9 +4,15 @@ import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 
-const decorate = jss({
-  root: {}
-})
+const decorate = jss(theme => ({
+  root: {},
+  bidColor: {
+    color: [theme.custom.bidColor.main, '!important']
+  },
+  askColor: {
+    color: [theme.custom.askColor.main, '!important']
+  }
+}))
 
 class OrderModeRadio extends React.Component<any> {
   handleChange = e => {
@@ -14,7 +20,8 @@ class OrderModeRadio extends React.Component<any> {
   }
 
   render () {
-    const { mode } = this.props
+    const { mode, classes } = this.props
+
 
     return (
       <RadioGroup
@@ -24,8 +31,16 @@ class OrderModeRadio extends React.Component<any> {
         value={mode}
         onChange={this.handleChange}
       >
-        <FormControlLabel value='buy' control={<Radio />} label='Buy' />
-        <FormControlLabel value='sell' control={<Radio />} label='Sell' />
+        <FormControlLabel
+          value='buy'
+          control={<Radio className={classes.askColor} />}
+          label='Buy'
+        />
+        <FormControlLabel
+          value='sell'
+          control={<Radio className={classes.bidColor} />}
+          label='Sell'
+        />
       </RadioGroup>
     )
   }

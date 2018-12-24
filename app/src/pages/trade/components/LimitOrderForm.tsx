@@ -7,6 +7,7 @@ import { makeLimitOrder } from 'modules/orders'
 import { BigNumber } from '@0x/utils'
 import OrderModeRadio from './OrderModeRadio'
 import ProgressButton from 'components/ProgressButton'
+import cx from 'classnames'
 
 const connector = connect(
   state => ({
@@ -16,7 +17,7 @@ const connector = connect(
   { makeLimitOrder }
 )
 
-const decorate = jss({
+const decorate = jss(theme => ({
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -24,8 +25,14 @@ const decorate = jss({
   },
   button: {
     marginTop: 30
-  }
-})
+  },
+  sell: {
+    backgroundColor: [theme.custom.bidColor.main, '!important']
+  },
+  buy: {
+    backgroundColor: [theme.custom.askColor.main, '!important']
+  },
+}))
 
 class LimitOrderForm extends React.Component<any> {
   state = {
@@ -90,11 +97,11 @@ class LimitOrderForm extends React.Component<any> {
         />
 
         <ProgressButton
-          className={classes.button}
+          className={cx(classes.button, classes[this.state.mode])}
           variant='contained'
           color='secondary'
           onClick={this.handlePlaceOrder}
-        >Place order</ProgressButton>
+        >Place {this.state.mode} order</ProgressButton>
       </div>
     )
   }
