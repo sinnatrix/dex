@@ -1,6 +1,7 @@
 import { EventLog } from 'web3/types'
 import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
 import RelayerEntity from './entities/Relayer'
+import { IDexEventLog } from '../../app/src/types'
 
 export interface ISRA2Order {
   order: SignedOrder
@@ -32,7 +33,11 @@ export interface IDexEventLog extends EventLog {
   returnValues: any
 }
 
-export interface IFillEventLog extends IDexEventLog {
+export interface IDexEventLogExtended extends IDexEventLog {
+  timestamp: number
+}
+
+export interface IFillEventLog extends IDexEventLogExtended {
   returnValues: {
     orderHash: string
     senderAddress: string
@@ -54,7 +59,7 @@ export interface IEventFilters {
   filter?: Object
 }
 
-export interface ICancelEventLog extends IDexEventLog {
+export interface ICancelEventLog extends IDexEventLogExtended {
   returnValues: {
     makerAddress: string
     feeRecipientAddress: string

@@ -7,11 +7,14 @@ import {
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import OrderRepository from '../repositories/OrderRepository'
 import log from '../utils/log'
-import { IFillEventLog, EventType } from '../types'
+import { IFillEventLog, EventType, IDexEventLog, IDexEventLogExtended } from '../types'
 import TradeHistoryEntity from '../entities/TradeHistory'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import OrderService from './OrderService'
 import WsRelayerServerFacade from '../wsRelayerServer/WsRelayerServerFacade'
+import { Block } from 'web3/eth/types'
+
+const Web3 = require('web3')
 
 class TradeHistoryService {
   WS_MAX_CONNECTION_ATTEMPTS = 10
@@ -21,19 +24,22 @@ class TradeHistoryService {
   wsRelayerServer: WsRelayerServer
   orderService: OrderService
   orderRepository: OrderRepository
+  httpProvider: any
 
   constructor ({
     orderBlockchainService,
     tradeHistoryRepository,
     orderRepository,
     wsRelayerServer,
-    orderService
+    orderService,
+    httpProvider
   }) {
     this.orderBlockchainService = orderBlockchainService
     this.tradeHistoryRepository = tradeHistoryRepository
     this.orderRepository = orderRepository
     this.wsRelayerServer = wsRelayerServer
     this.orderService = orderService
+    this.httpProvider = httpProvider
   }
 
   async attach () {
@@ -60,8 +66,11 @@ class TradeHistoryService {
 
     log.info(`Loaded ${fillEvents.length} events from #${fromBlock} blocks`)
 
-    const tradeHistoryItems = fillEvents.map(convertFillEventToDexTradeHistory)
-    await this.tradeHistoryRepository.saveFullTradeHistory(tradeHistoryItems)
+    for (let fillEvent of fillEvents) {
+      const fillEventWithTs = await this.addTimestampToEventLog(fillEvent)
+      const tradeHistoryItem = convertFillEventToDexTradeHistory(fillEventWithTs)
+      await this.tradeHistoryRepository.saveFullTradeHistory([tradeHistoryItem])
+    }
 
     log.info('Events history loaded')
   }
@@ -84,10 +93,11 @@ class TradeHistoryService {
     )
   }
 
-  async handleFillEvent (fillEvent) {
+  async handleFillEvent (fillEvent: IFillEventLog) {
     log.info('fillEvent', fillEvent)
 
-    const eventLogItem = convertFillEventToDexTradeHistory(fillEvent)
+    const fillEventWithTs = await this.addTimestampToEventLog(fillEvent)
+    const eventLogItem = convertFillEventToDexTradeHistory(fillEventWithTs)
     await this.saveTradeHistoryAndPush(eventLogItem)
 
     try {
@@ -124,12 +134,36 @@ class TradeHistoryService {
   async handleCancelEvent (cancelEvent) {
     log.info('cancelEvent', cancelEvent)
 
-    const eventLogItem = convertCancelEventToDexEventLogItem(cancelEvent)
+    const cancelEventWithTs = await this.addTimestampToEventLog(cancelEvent)
+
+    const eventLogItem = convertCancelEventToDexEventLogItem(cancelEventWithTs)
 
     await this.orderService.updateOrderInfoAndPush(eventLogItem.orderHash)
 
     return this.tradeHistoryRepository
       .saveFullTradeHistory([eventLogItem])
+  }
+
+  async addTimestampToEventLog (item: IDexEventLog): Promise<IDexEventLogExtended> {
+    const block = await this.getBlockByNumber(item.blockNumber)
+    return {
+      ...item,
+      timestamp: block.timestamp
+    }
+  }
+
+  async getBlockByNumber (blockNumber: number): Promise<Block> {
+    const web3 = new Web3(this.httpProvider)
+    let block = await web3.eth.getBlock(blockNumber)
+
+    let i = 0
+    while (!block) {
+      i++
+      await delay(i * 100)
+      block = await web3.eth.getBlock(blockNumber)
+    }
+
+    return block
   }
 }
 
