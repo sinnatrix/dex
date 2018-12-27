@@ -16,7 +16,8 @@ export default class LoadTokenIconsTask {
       console.log(`Loading icon for ${symbol}...`)
       const uri = `https://storage.googleapis.com/radar-static-assets/token-icons/${symbol}.png`
       const image = await rp({
-        uri
+        uri,
+        encoding: null
       })
 
       const filepath = path.resolve(folder, `${symbol}.png`)
