@@ -60,7 +60,7 @@ class TradeHistoryRepository extends Repository<any> {
 
   prepareAssetPairFillQuery (assetPair: AssetPairEntity) {
     return this.createQueryBuilder()
-      .where('"event" = :event',)
+      .where('"event" = :event')
       .andWhere(new Brackets(qb => {
         qb.where('("makerAssetData" = :baseAssetData AND "takerAssetData" = :quoteAssetData)')
           .orWhere('("makerAssetData" = :quoteAssetData AND "takerAssetData" = :baseAssetData)')

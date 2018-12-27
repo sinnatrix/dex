@@ -1,25 +1,21 @@
 import * as types from './types'
 
 const initialState = {
-  marketplaceToken: {},
-  currentToken: {},
+  market: null,
   enabled: false,
   account: '',
   network: '',
   ethBalance: 0,
   tokenBalances: {},
   tokenAllowances: {},
-  tokens: []
+  tokens: [],
+  markets: []
 }
 
 export default (state = initialState, { type, payload }) => {
   switch (type) {
     case types.SET_ENABLED:
       return { ...state, enabled: payload }
-    case types.SET_MARKETPLACE_TOKEN:
-      return { ...state, marketplaceToken: payload }
-    case types.SET_CURRENT_TOKEN:
-      return { ...state, currentToken: payload }
     case types.SET_ACCOUNT:
       return { ...state, account: payload }
     case types.SET_NETWORK:
@@ -44,6 +40,8 @@ export default (state = initialState, { type, payload }) => {
       }
     case types.SET_TOKENS:
       return { ...state, tokens: payload }
+    case types.SET_MARKETS:
+      return { ...state, markets: payload }
     default:
       return state
   }

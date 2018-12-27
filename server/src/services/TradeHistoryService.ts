@@ -168,10 +168,10 @@ class TradeHistoryService {
     return block
   }
 
-  async getAssetPairLatestPrice (assetPair: AssetPairEntity): Promise<BigNumber | null> {
+  async getAssetPairLatestPrice (assetPair: AssetPairEntity): Promise<BigNumber> {
     const fill = await this.tradeHistoryRepository.getLatestAssetPairFillEntity(assetPair)
     if (!fill) {
-      return null
+      return new BigNumber(0)
     }
 
     return getFillPrice(fill, assetPair)

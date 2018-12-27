@@ -58,7 +58,7 @@ const createAppContainer = ({ connection }) => {
     tradeHistoryRepository: asValue(connection.getCustomRepository(TradeHistoryRepository)),
     assetRepository: asValue(connection.getCustomRepository(AssetRepository)),
     assetPairRepository: asValue(connection.getCustomRepository(AssetPairRepository)),
-    marketService: asClass(MarketService).singleton(),
+    marketService: asClass(MarketService).singleton()
   })
 
   return container

@@ -165,17 +165,19 @@ test('makeLimitOrderAsync', async t => {
 
   const accounts = await web3.eth.getAccounts()
 
-  const wethAddress = await deployWethContract(blockchainService, accounts[0])
-  const wethAddress2 = await deployWethContract(blockchainService, accounts[0])
+  const wethAddress = (await deployWethContract(blockchainService, accounts[0])).toLowerCase()
+  const wethAddress2 = (await deployWethContract(blockchainService, accounts[0])).toLowerCase()
 
   const makerToken = {
     ...wethToken,
-    address: wethAddress
+    address: wethAddress,
+    assetData: `${wethToken.proxyId}${wethAddress.slice(2)}`
   }
 
   const takerToken = {
     ...wethToken,
-    address: wethAddress2
+    address: wethAddress2,
+    assetData: `${wethToken.proxyId}${wethAddress2.slice(2)}`
   }
 
   try {

@@ -153,8 +153,9 @@ export interface ISRA2AssetPairs {
 }
 
 export interface IMarket {
+  id: string
   name: string
-  uri: string
+  path: string
   baseAsset: AssetEntity
   quoteAsset: AssetEntity
   stats: IMarketStats

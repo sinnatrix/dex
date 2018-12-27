@@ -42,8 +42,9 @@ class MarketService {
     const priceEth = price ? await this.convertPriceToEth(price, quoteAsset) : null
 
     const market = {
-      name: `${baseAsset.symbol}-${quoteAsset.symbol}`,
-      uri: `${baseAsset.symbol}/${quoteAsset.symbol}`,
+      id: `${baseAsset.symbol}-${quoteAsset.symbol}`,
+      name: `${baseAsset.symbol}/${quoteAsset.symbol}`,
+      path: `/${baseAsset.symbol}/${quoteAsset.symbol}`,
       baseAsset,
       quoteAsset,
       stats: {
@@ -95,7 +96,10 @@ class MarketService {
       return price
     }
 
-    const assetPair = await this.assetPairRepository.findOne({ assetDataA: quoteAsset.assetData })
+    const assetPair = await this.assetPairRepository.findOne(
+      { assetDataA: quoteAsset.assetData },
+      { relations: [ 'assetA', 'assetB' ] }
+    )
     if (!assetPair) {
       throw new Error('AssetPair not found!')
     }

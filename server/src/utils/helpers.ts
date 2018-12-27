@@ -190,7 +190,7 @@ export const getNetworkNameById = (id: number): string => ({
   50: 'test'
 })[id]
 
-export const getNowUnixtime = () => Math.round((new Date).getTime() / 1000)
+export const getNowUnixtime = () => Math.round((new Date()).getTime() / 1000)
 
 export const getFillPrice = (fillEntity: IFillEntity, assetPair: AssetPairEntity): BigNumber => {
   const quoteAsset = assetPair.assetA
@@ -198,11 +198,11 @@ export const getFillPrice = (fillEntity: IFillEntity, assetPair: AssetPairEntity
   let price
 
   if (quoteAsset.assetData === fillEntity.makerAssetData) {
-    price = new BigNumber(fillEntity.takerAssetFilledAmount)
-      .dividedBy(new BigNumber(fillEntity.makerAssetFilledAmount))
-  } else {
     price = new BigNumber(fillEntity.makerAssetFilledAmount)
       .dividedBy(new BigNumber(fillEntity.takerAssetFilledAmount))
+  } else {
+    price = new BigNumber(fillEntity.takerAssetFilledAmount)
+      .dividedBy(new BigNumber(fillEntity.makerAssetFilledAmount))
   }
 
   return price

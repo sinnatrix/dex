@@ -40,6 +40,11 @@ class ApiService {
 
     return data
   }
+
+  async loadMarkets () {
+    const { data } = await axios.get('/api/v1/markets')
+    return data
+  }
 }
 
 export default ApiService

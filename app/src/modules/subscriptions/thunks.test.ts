@@ -1,11 +1,10 @@
 import createStore from 'createStore'
 import test from 'tape'
-import { assetDataUtils } from '@0x/order-utils'
 import { addSubscription } from './actions'
-import { setCurrentToken, setMarketplaceToken, setTokens } from 'modules/global/actions'
+import { setMarkets, setTokens } from 'modules/global/actions'
 import { processSocketMessage } from './thunks'
 import { getOrderByHash } from 'modules/orders/selectors'
-import { generateERC20Token, generateSRA2Order } from 'helpers/testUtils'
+import { generateSRA2Order, generateMarket } from 'helpers/testUtils'
 const uuidv4 = require('uuid/v4')
 
 test('processSocketMessage', async t => {
@@ -15,18 +14,13 @@ test('processSocketMessage', async t => {
     const channel = 'orders'
     const requestId = uuidv4()
 
-    const currentToken = generateERC20Token()
-    const marketplaceToken = generateERC20Token()
+    const market = generateMarket()
 
-    const marketplaceTokenAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
-    const currentTokenAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
-
-    store.dispatch(setCurrentToken(currentToken))
-    store.dispatch(setMarketplaceToken(marketplaceToken))
+    store.dispatch(setMarkets([market]))
 
     store.dispatch(setTokens([
-      currentToken,
-      marketplaceToken
+      market.baseAsset,
+      market.quoteAsset
     ]))
 
     const subscription = {
@@ -38,8 +32,8 @@ test('processSocketMessage', async t => {
     store.dispatch(addSubscription(subscription))
 
     const sra2Order = generateSRA2Order({
-      makerAssetData: marketplaceTokenAssetData,
-      takerAssetData: currentTokenAssetData
+      makerAssetData: market.quoteAsset.assetData,
+      takerAssetData: market.baseAsset.assetData
     })
 
     const message = {
@@ -51,7 +45,13 @@ test('processSocketMessage', async t => {
       })
     }
 
-    await store.dispatch(processSocketMessage(message))
+    await store.dispatch(processSocketMessage(
+      message,
+      {
+        baseAssetSymbol: market.baseAsset.symbol,
+        quoteAssetSymbol: market.quoteAsset.symbol
+      }
+    ))
 
     const orderByHash = getOrderByHash(sra2Order.metaData.orderHash, store.getState())
 

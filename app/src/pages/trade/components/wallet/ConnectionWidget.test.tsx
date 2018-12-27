@@ -10,6 +10,7 @@ import BlockchainService from 'services/BlockchainService'
 import { initWeb3ByBalance } from 'helpers/testUtils'
 import { createStore, applyMiddleware } from 'redux'
 import { delay } from 'helpers/general'
+import history from 'ownHistory'
 
 Enzyme.configure({ adapter: new Adapter() })
 
@@ -17,16 +18,19 @@ const initStore = () => {
   const web3 = initWeb3ByBalance(0)
   const blockchainService = new BlockchainService({ web3, contractAddresses: null })
 
-  const store = createStore(rootReducer, applyMiddleware(
-    thunk.withExtraArgument({
-      blockchainService,
-      apiService: {
-        getTokens () {
-          return []
+  const store = createStore(
+    rootReducer({ history }),
+    applyMiddleware(
+      thunk.withExtraArgument({
+        blockchainService,
+        apiService: {
+          loadTokens () {
+            return []
+          }
         }
-      }
-    })
-  ))
+      })
+    )
+  )
 
   return store
 }
