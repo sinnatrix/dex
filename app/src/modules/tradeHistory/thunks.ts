@@ -1,7 +1,6 @@
 import * as actions from './actions'
-import { assetDataUtils } from '@0x/order-utils'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
-import { getSubscriptionsByListType } from 'modules/subscriptions/selectors'
+import { getSubscriptionsByListType, getMarketplaceToken, getCurrentToken } from 'selectors'
 import { expandTradeHistory } from './helpers'
 
 export const loadAccountTradeHistory = () => async (dispatch, getState, { apiService }) => {
@@ -29,15 +28,13 @@ export const loadAccountTradeHistory = () => async (dispatch, getState, { apiSer
   ))
 }
 
-export const loadAssetPairTradeHistory = (page?, perPage?) => async (dispatch, getState, { apiService }) => {
-  const { marketplaceToken, currentToken } = getState().global
-
-  const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
-  const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
+export const loadAssetPairTradeHistory = (matchParams, page?, perPage?) => async (dispatch, getState, { apiService }) => {
+  const marketplaceToken = getMarketplaceToken(matchParams, getState())
+  const currentToken = getCurrentToken(matchParams, getState())
 
   const tradeHistory = await apiService.loadTradeHistory({
-    baseAssetData,
-    quoteAssetData,
+    baseAssetData: currentToken.assetData,
+    quoteAssetData: marketplaceToken.assetData,
     page,
     perPage
   })
@@ -56,8 +53,8 @@ export const loadAssetPairTradeHistory = (page?, perPage?) => async (dispatch, g
     'tradeHistory',
     {
       $or: [
-        { makerAssetData: baseAssetData, takerAssetData: quoteAssetData },
-        { makerAssetData: quoteAssetData, takerAssetData: baseAssetData }
+        { makerAssetData: currentToken.assetData, takerAssetData: marketplaceToken.assetData },
+        { makerAssetData: marketplaceToken.assetData, takerAssetData: currentToken.assetData }
       ]
     }
   ))

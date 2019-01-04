@@ -1,6 +1,5 @@
 import { ContractWrappers, generatePseudoRandomSalt, signatureUtils } from '0x.js'
 import { MetamaskSubprovider } from '@0x/subproviders'
-import { assetDataUtils } from '@0x/order-utils'
 import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import { delay } from 'helpers/general'
@@ -198,9 +197,8 @@ class BlockchainService {
       takerAddress: NULL_ADDRESS,
       senderAddress: NULL_ADDRESS,
       feeRecipientAddress: NULL_ADDRESS,
-      // TODO Discovery encoding method, read about tokenId for encodeERC721AssetData
-      makerAssetData: assetDataUtils.encodeERC20AssetData(makerToken.address.toLowerCase()),
-      takerAssetData: assetDataUtils.encodeERC20AssetData(takerToken.address.toLowerCase()),
+      makerAssetData: makerToken.assetData,
+      takerAssetData: takerToken.assetData,
       exchangeAddress: EXCHANGE_ADDRESS,
       salt: generatePseudoRandomSalt(),
       makerFee: new BigNumber(0),

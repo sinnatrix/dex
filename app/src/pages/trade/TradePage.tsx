@@ -7,7 +7,6 @@ import LimitOrderPanel from './components/LimitOrderPanel'
 import Orderbook from './components/orderbook/Orderbook'
 import routerListener from 'hocs/routerListener'
 import compose from 'ramda/es/compose'
-import { loadMarketplaceToken, loadCurrentToken } from 'modules/global'
 import { loadOrderbook } from 'modules/orders'
 import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
 import Tabs from '@material-ui/core/Tabs'
@@ -16,6 +15,7 @@ import Panel from 'components/Panel'
 import connect from 'react-redux/es/connect/connect'
 import TradeHistory from './components/wallet/TradeHistory'
 import { getAssetPairTradeHistory } from 'modules/tradeHistory/selectors'
+import MessageListenerContainer from 'MessageListenerContainer'
 
 const TradeHistoryContainer = connect(
   state => ({
@@ -86,6 +86,7 @@ class TradePage extends React.Component<any> {
 
     return (
       <Layout contentClassName={classes.root}>
+        <MessageListenerContainer />
         <div className={classes.wallet}>
           <Wallet />
         </div>
@@ -109,13 +110,8 @@ class TradePage extends React.Component<any> {
 export default compose(
   routerListener({
     async onEnter (params, dispatch) {
-      await Promise.all([
-        dispatch(loadMarketplaceToken(params.marketplace)),
-        dispatch(loadCurrentToken(params.token))
-      ]).then(() => {
-        dispatch(loadOrderbook())
-        dispatch(loadAssetPairTradeHistory())
-      })
+      await dispatch(loadOrderbook(params))
+      await dispatch(loadAssetPairTradeHistory(params))
     }
   } as any),
   decorate

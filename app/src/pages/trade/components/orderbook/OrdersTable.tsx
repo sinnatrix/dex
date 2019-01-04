@@ -1,6 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import format from 'date-fns/format'
 import ClipboardButton from './ClipboardButton'
 import FillOrderButton from './FillOrderButton'
@@ -14,8 +15,8 @@ import compose from 'ramda/es/compose'
 ReactTableDefaults.TrComponent = createTrComponent(ReactTableDefaults.TrComponent)
 
 const connector = connect(
-  state => ({
-    marketplaceToken: getMarketplaceToken(state)
+  (state, ownProps) => ({
+    marketplaceToken: getMarketplaceToken(ownProps.match.params, state)
   }),
   null
 )
@@ -126,6 +127,7 @@ class OrdersTable extends React.Component<any> {
   }
 }
 export default compose(
+  withRouter,
   connector,
   decorate
 )(OrdersTable)

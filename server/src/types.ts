@@ -1,7 +1,8 @@
 import { EventLog } from 'web3/types'
 import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
 import RelayerEntity from './entities/Relayer'
-import { IDexEventLog } from '../../app/src/types'
+import AssetEntity from './entities/Asset'
+import TradeHistoryEntity from './entities/TradeHistory'
 
 export interface ISRA2Order {
   order: SignedOrder
@@ -111,7 +112,7 @@ export interface IWsRelayer extends RelayerEntity {
 export interface ISRA2Orders {
   total: number
   page: number
-  perPage: number,
+  perPage: number
   records: ISRA2Order[]
 }
 
@@ -147,6 +148,34 @@ export interface ISRA2AssetPair {
 export interface ISRA2AssetPairs {
   total: number
   page: number
-  perPage: number,
+  perPage: number
   records: ISRA2AssetPair[]
+}
+
+export interface IMarket {
+  id: string
+  name: string
+  path: string
+  baseAsset: AssetEntity
+  quoteAsset: AssetEntity
+  stats: IMarketStats
+  price: string | null
+  priceEth: string | null
+  score: number
+}
+
+export interface IMarketStats {
+  transactionCount: number
+  volume24Hours: string
+  percentChange24Hours: string
+  ethVolume24Hours: string
+}
+
+export interface IFillEntity extends TradeHistoryEntity {
+  makerAssetData: string
+  takerAssetData: string
+  makerFeePaid: string
+  takerFeePaid: string
+  makerAssetFilledAmount: string
+  takerAssetFilledAmount: string
 }

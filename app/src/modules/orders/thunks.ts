@@ -1,19 +1,23 @@
 import complement from 'ramda/es/complement'
-import { assetDataUtils } from '@0x/order-utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import * as actions from './actions'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
-import { getSubscriptionsByListType } from 'modules/subscriptions/selectors'
-import { getAccount } from 'modules/global/selectors'
+import {
+  getAccount,
+  getCurrentToken,
+  getMarketplaceToken,
+  getSubscriptionsByListType
+} from 'selectors'
 import { IDexOrder, ISRA2Order } from 'types'
 
-export const loadOrderbook = () => async (dispatch, getState, { apiService }) => {
-  const { marketplaceToken, currentToken } = getState().global
+export const loadOrderbook = matchParams => async (dispatch, getState, { apiService }) => {
+  const quoteAsset = getMarketplaceToken(matchParams, getState())
+  const baseAsset = getCurrentToken(matchParams, getState())
 
-  const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
-  const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
-
-  const data = await apiService.loadOrderbook({ baseAssetData, quoteAssetData })
+  const data = await apiService.loadOrderbook({
+    baseAssetData: baseAsset.assetData,
+    quoteAssetData: quoteAsset.assetData
+  })
 
   dispatch(actions.setOrderbookBids(data.bids.records))
   dispatch(actions.setOrderbookAsks(data.asks.records))
@@ -29,20 +33,19 @@ export const loadOrderbook = () => async (dispatch, getState, { apiService }) =>
     'orders',
     {
       $or: [
-        { makerAssetData: baseAssetData, takerAssetData: quoteAssetData },
-        { makerAssetData: quoteAssetData, takerAssetData: baseAssetData }
+        { makerAssetData: baseAsset.assetData, takerAssetData: quoteAsset.assetData },
+        { makerAssetData: quoteAsset.assetData, takerAssetData: baseAsset.assetData }
       ]
     }
   ))
 }
 
-export const addOrders = (orders: ISRA2Order[]) => async (dispatch, getState) => {
-  const { marketplaceToken, currentToken } = getState().global
-  const baseAssetData = assetDataUtils.encodeERC20AssetData(currentToken.address)
-  const quoteAssetData = assetDataUtils.encodeERC20AssetData(marketplaceToken.address)
+export const addOrders = (orders: ISRA2Order[], matchParams) => async (dispatch, getState) => {
+  const quoteAsset = getMarketplaceToken(matchParams, getState())
+  const baseAsset = getCurrentToken(matchParams, getState())
 
-  const isBid = ({ order }) => order.takerAssetData === quoteAssetData &&
-    order.makerAssetData === baseAssetData
+  const isBid = ({ order }) => order.takerAssetData === quoteAsset.assetData &&
+    order.makerAssetData === baseAsset.assetData
 
   const bidsToUpdate = orders.filter(isBid)
   const asksToUpdate = orders.filter(complement(isBid))
@@ -108,31 +111,34 @@ export const cancelOrder = (order: IDexOrder) => async (dispatch, getState, { bl
   await blockchainService.awaitTransaction(txHash)
 }
 
-export const makeLimitOrder = ({ type, amount, price }) => async (dispatch, getState, { blockchainService, apiService }) => {
-  const { marketplaceToken, currentToken, account } = getState().global
+export const makeLimitOrder = ({ type, amount, price }, matchParams) =>
+  async (dispatch, getState, { blockchainService, apiService }) => {
+    const account = getAccount(getState())
+    const quoteAsset = getMarketplaceToken(matchParams, getState())
+    const baseAsset = getCurrentToken(matchParams, getState())
 
-  let data
+    let data
 
-  if (type === 'buy') {
-    data = {
-      takerToken: currentToken,
-      takerAmount: amount,
-      makerToken: marketplaceToken,
-      makerAmount: price.times(amount)
+    if (type === 'buy') {
+      data = {
+        takerToken: baseAsset,
+        takerAmount: amount,
+        makerToken: quoteAsset,
+        makerAmount: price.times(amount)
+      }
+    } else {
+      data = {
+        takerToken: quoteAsset,
+        takerAmount: price.times(amount),
+        makerToken: baseAsset,
+        makerAmount: amount
+      }
     }
-  } else {
-    data = {
-      takerToken: marketplaceToken,
-      takerAmount: price.times(amount),
-      makerToken: currentToken,
-      makerAmount: amount
-    }
+
+    const signedOrder = await blockchainService.makeLimitOrderAsync(account, data)
+
+    await apiService.createOrder(signedOrder)
   }
-
-  const signedOrder = await blockchainService.makeLimitOrderAsync(account, data)
-
-  await apiService.createOrder(signedOrder)
-}
 
 export const makeMarketOrder = ({ type, amount }) => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState().global

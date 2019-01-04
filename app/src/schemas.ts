@@ -18,18 +18,18 @@ export const txMinedSchema = Joi.object().keys({
 })
 
 export const signedOrderSchema = Joi.object().keys({
-  signature: Joi.string(),
-  orderHash: Joi.string().required(),
+  senderAddress: Joi.string(),
+  makerAddress: Joi.string(),
+  takerAddress: Joi.string(),
+  makerFee: Joi.string(),
+  takerFee: Joi.string(),
+  makerAssetAmount: Joi.string(),
+  takerAssetAmount: Joi.string(),
+  makerAssetData: Joi.string(),
+  takerAssetData: Joi.string(),
+  salt: Joi.string().required(),
   exchangeAddress: Joi.string().required(),
-  maker: Joi.string().required(),
-  taker: Joi.string().required(),
-  makerAssetAddress: Joi.string().required(),
-  takerAssetAddress: Joi.string().required(),
   feeRecipientAddress: Joi.string().required(),
-  makerAssetAmount: Joi.string().required(),
-  takerAssetAmount: Joi.string().required(),
-  makerFee: Joi.string().required(),
-  takerFee: Joi.string().required(),
   expirationTimeSeconds: Joi.string().required(),
-  salt: Joi.string().required()
+  signature: Joi.string()
 })

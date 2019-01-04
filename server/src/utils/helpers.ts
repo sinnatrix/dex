@@ -2,12 +2,15 @@ import { assetDataUtils } from '@0x/order-utils'
 import OrderEntity from '../entities/Order'
 import TradeHistory from '../entities/TradeHistory'
 import RelayerEntity from '../entities/Relayer'
+import AssetPairEntity from '../entities/AssetPair'
 import {
   ISRA2Order,
   ISignedOrderWithStrings,
   ICancelEventLog,
   IRelayerWithId,
-  ISRA2Orders, IDexEventLogExtended
+  ISRA2Orders,
+  IDexEventLogExtended,
+  IFillEntity
 } from '../types'
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
@@ -186,3 +189,21 @@ export const getNetworkNameById = (id: number): string => ({
   42: 'kovan',
   50: 'test'
 })[id]
+
+export const getNowUnixtime = () => Math.round((new Date()).getTime() / 1000)
+
+export const getFillPrice = (fillEntity: IFillEntity, assetPair: AssetPairEntity): BigNumber => {
+  const quoteAsset = assetPair.assetA
+
+  let price
+
+  if (quoteAsset.assetData === fillEntity.makerAssetData) {
+    price = new BigNumber(fillEntity.makerAssetFilledAmount)
+      .dividedBy(new BigNumber(fillEntity.takerAssetFilledAmount))
+  } else {
+    price = new BigNumber(fillEntity.takerAssetFilledAmount)
+      .dividedBy(new BigNumber(fillEntity.makerAssetFilledAmount))
+  }
+
+  return price
+}

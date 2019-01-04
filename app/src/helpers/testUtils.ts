@@ -4,6 +4,8 @@ import { runMigrationsOnceAsync } from '@0x/migrations'
 import { assetDataUtils } from '@0x/order-utils'
 import { orderHashUtils } from '0x.js'
 import BlockchainService from 'services/BlockchainService'
+import { AssetEntity, IMarket } from 'types'
+import { BigNumber } from '@0x/utils'
 const Chance = require('chance')
 const wethToken = require('fixtures/wethToken.json')
 
@@ -71,19 +73,26 @@ export const deployWethContract = async (blockchainService, from) => {
 const generateHexString = length => '0x' + chance.string({ length, pool: 'abcdef0123456789' })
 
 export const generateAddress = () => generateHexString(40)
+export const generateProxyId = () => generateHexString(40)
 const generateTokenSymbol = () => chance.string({ length: 5, pool: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' })
 const generateTokenName = () => chance.sentence({ words: 2 }).substr(1)
 
-export const generateERC20Token = () => ({
-  abi: null,
-  address: generateAddress(),
-  decimals: 18,
-  maxAmount: '999999999999999999999',
-  minAmount: '1',
-  name: generateTokenName(),
-  precision: 8,
-  symbol: generateTokenSymbol()
-})
+export const generateERC20Token = (): AssetEntity => {
+  const address = generateAddress()
+  const proxyId = generateProxyId()
+  return {
+    abi: {},
+    assetData: `${proxyId}${address.slice(2)}`,
+    address,
+    proxyId,
+    decimals: 18,
+    maxAmount: new BigNumber('999999999999999999999'),
+    minAmount: new BigNumber('1'),
+    name: generateTokenName(),
+    precision: 8,
+    symbol: generateTokenSymbol()
+  }
+}
 
 export const generateSignedOrder = (...params) => {
   const makerAssetData = assetDataUtils.encodeERC20AssetData(generateAddress())
@@ -123,3 +132,31 @@ export const generateSRA2Order = (...params) => {
 
   return sra2Order
 }
+
+export const generateMarket = (): IMarket => {
+  const baseAsset = generateERC20Token()
+  const quoteAsset = generateERC20Token()
+
+  const score = getRandomInt(1, 100)
+
+  return {
+    id: `${baseAsset.symbol}-${quoteAsset.symbol}`,
+    name: `${baseAsset.symbol}/${quoteAsset.symbol}`,
+    path: `/${baseAsset.symbol}-${quoteAsset.symbol}`,
+    baseAsset,
+    quoteAsset,
+    stats: {
+      transactionCount: score,
+      volume24Hours: new BigNumber(getRandomInt(1, 1000)),
+      percentChange24Hours: getRandomArbitrary(0,30),
+      ethVolume24Hours: new BigNumber(getRandomInt(1, 1000))
+    },
+    price: new BigNumber(100),
+    priceEth: new BigNumber(1),
+    score
+  }
+}
+
+export const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min
+
+export const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min

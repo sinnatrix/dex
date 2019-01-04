@@ -1,5 +1,6 @@
 import { getTokenBySymbol } from './selectors'
 import * as actions from './actions'
+import { convertMarketDecimalsToNumbers } from './helpers'
 
 export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState().global
@@ -51,16 +52,6 @@ export const setZeroTokenAllowance = token => async (dispatch, getState, { block
   await blockchainService.setZeroTokenAllowanceAsync(account, token.address)
 
   await dispatch(loadTokenAllowance(token))
-}
-
-export const loadMarketplaceToken = symbol => async (dispatch, getState, { apiService }) => {
-  const token = await apiService.loadTokenBySymbol(symbol)
-  dispatch(actions.setMarketplaceToken(token))
-}
-
-export const loadCurrentToken = symbol => async (dispatch, getState, { apiService }) => {
-  const token = await apiService.loadTokenBySymbol(symbol)
-  dispatch(actions.setCurrentToken(token))
 }
 
 export const loadTokens = () => async (dispatch, getState, { apiService }) => {
@@ -118,4 +109,10 @@ export const unwrapWeth = amount => async (dispatch, getState, { blockchainServi
 
   dispatch(loadTokenBalance(wethToken))
   dispatch(loadEthBalance())
+}
+
+export const loadMarkets = () => async (dispatch, getState, { apiService }) => {
+  const marketsWithStrings = await apiService.loadMarkets()
+  const markets = marketsWithStrings.map(convertMarketDecimalsToNumbers)
+  dispatch(actions.setMarkets(markets))
 }

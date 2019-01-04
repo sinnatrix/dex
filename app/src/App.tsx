@@ -1,16 +1,15 @@
 import React from 'react'
+import Web3 from 'web3'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
-import TradePage from 'pages/trade/TradePage'
+import { Route, Switch, Redirect } from 'react-router-dom'
 import { MuiThemeProvider } from '@material-ui/core/styles'
 import { Provider } from 'react-redux'
 import theme from './theme'
 import createStore from './createStore'
-import { processSocketMessage } from 'modules/subscriptions'
 import BlockchainService from './services/BlockchainService'
 import SocketService from './services/SocketService'
 import ApiService from './services/ApiService'
-import Web3 from 'web3'
+import InnerApp from './InnerApp'
 
 class App extends React.Component<any> {
   blockchainService
@@ -21,9 +20,6 @@ class App extends React.Component<any> {
     super(props)
 
     this.socketService = new SocketService(`ws://${window.location.host}/api/0x/v2`)
-    this.socketService.addMessageListener(message => {
-      this.store.dispatch(processSocketMessage(message))
-    })
 
     this.blockchainService = this.createBlockchainService()
 
@@ -53,12 +49,7 @@ class App extends React.Component<any> {
         <CssBaseline />
         <MuiThemeProvider theme={theme}>
           <Provider store={this.store}>
-            <Router>
-              <Switch>
-                <Route exact path='/' render={() => <Redirect to='/ZRX/WETH' />} />
-                <Route path='/:token?/:marketplace?' component={TradePage} />
-              </Switch>
-            </Router>
+            <InnerApp />
           </Provider>
         </MuiThemeProvider>
       </React.Fragment>

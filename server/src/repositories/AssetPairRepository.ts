@@ -1,4 +1,4 @@
-import { Repository, EntityRepository, Brackets } from 'typeorm'
+import { Repository, EntityRepository } from 'typeorm'
 import AssetPairEntity from '../entities/AssetPair'
 import { ISRA2AssetPairs } from '../types'
 import * as R from 'ramda'
@@ -41,5 +41,13 @@ export default class AssetPairRepository extends Repository<AssetPairEntity> {
       perPage: take,
       records
     }
+  }
+
+  getAllWithAssets () {
+    let query = this.createQueryBuilder('assetPairs')
+      .innerJoinAndSelect('assetPairs.assetA', 'assetsA')
+      .innerJoinAndSelect('assetPairs.assetB', 'assetsB')
+
+    return query.getMany()
   }
 }

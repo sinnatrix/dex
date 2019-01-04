@@ -1,6 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import { loadActiveAccountOrders } from 'modules/orders'
 import ReactTable from 'react-table'
 import format from 'date-fns/format'
@@ -10,9 +11,9 @@ import CancelOrderButton from './CancelOrderButton'
 import compose from 'ramda/es/compose'
 
 const connector = connect(
-  state => ({
-    accountOrders: getAccountOrders(state)
-  }),
+  (state, ownProps) => {
+    return { accountOrders: getAccountOrders(ownProps.match.params, state) }
+  },
   { loadActiveAccountOrders }
 )
 
@@ -108,6 +109,7 @@ class OrdersList extends React.Component<any> {
 }
 
 export default compose(
+  withRouter,
   connector,
   decorate
 )(OrdersList)
