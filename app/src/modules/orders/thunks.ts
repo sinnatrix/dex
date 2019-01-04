@@ -1,5 +1,4 @@
 import complement from 'ramda/es/complement'
-import { assetDataUtils } from '@0x/order-utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import * as actions from './actions'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'

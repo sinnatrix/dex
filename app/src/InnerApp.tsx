@@ -23,7 +23,6 @@ class InnerApp extends React.Component<any> {
     return (
       <ConnectedRouter history={history}>
         <React.Fragment>
-
           <Switch>
             {this.renderRedirect()}
             <Route path='/:baseAssetSymbol/:quoteAssetSymbol' component={TradePageWrapper} />

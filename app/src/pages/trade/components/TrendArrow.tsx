@@ -5,7 +5,6 @@ import RemoveIcon from '@material-ui/icons/Remove'
 import cx from 'classnames'
 
 const decorate = jss(theme => ({
-  root: {},
   trendUp: {
     backgroundColor: theme.custom.askColor.main,
     color: theme.custom.askColor.contrastText,
@@ -30,9 +29,9 @@ class TrendArrow extends React.Component<any> {
     const className = value > 0 ? classes.trendUp : classes.trendDown
 
     return (
-      !value
-        ? <RemoveIcon className={ cx(parentClassName, classes.trendUnknown) }/>
-        : <ArrowIcon className={ cx(parentClassName, className) }/>
+      value
+        ? <ArrowIcon className={cx(parentClassName, className)} />
+        : <RemoveIcon className={cx(parentClassName, classes.trendUnknown)} />
     )
   }
 }

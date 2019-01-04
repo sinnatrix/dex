@@ -136,11 +136,19 @@ const decorate = jss({
   }
 })
 
-class Marketplace extends React.Component<any> {
+interface IOwnState {
+  anchorEl: null | Element
+  open: boolean
+  arrowRef: null | Element
+  clickAway: boolean
+}
+
+class Marketplace extends React.Component<any, IOwnState> {
   state = {
     anchorEl: null,
     open: false,
-    arrowRef: null
+    arrowRef: null,
+    clickAway: false
   }
 
   handleArrowRef = node => {
@@ -152,16 +160,31 @@ class Marketplace extends React.Component<any> {
   toggleMarkets = event => {
     const { currentTarget } = event
 
-    this.setState({
-      anchorEl: currentTarget,
-      open: !this.state.open
-    })
+    this.setState(
+      prevState => {
+        if (prevState.clickAway) {
+          return null
+        }
+
+        return {
+          anchorEl: currentTarget,
+          open: true
+        }
+      }
+    )
   }
 
-  handleClickAway () {
+  handleClickAway = () => {
     this.setState({
-      open: false
+      open: false,
+      clickAway: true
     })
+
+    window.setTimeout(() => {
+      this.setState({
+        clickAway: false
+      })
+    }, 100)
   }
 
   render () {
@@ -216,7 +239,7 @@ class Marketplace extends React.Component<any> {
         >
           <span className={classes.arrow} ref={this.handleArrowRef} />
           <Paper className={classes.paper}>
-            <ClickAwayListener onClickAway={this.handleClickAway.bind(this)}>
+            <ClickAwayListener onClickAway={this.handleClickAway}>
               <MarketsList />
             </ClickAwayListener>
           </Paper>

@@ -1,5 +1,4 @@
 import * as actions from './actions'
-import { assetDataUtils } from '@0x/order-utils'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
 import { getSubscriptionsByListType, getMarketplaceToken, getCurrentToken } from 'selectors'
 import { expandTradeHistory } from './helpers'
