@@ -1,6 +1,6 @@
 import { convertOrderDecimalsToBigNumber } from './helpers'
 import { assetDataUtils } from '@0x/order-utils'
-import { getMarketplaceToken, getCurrentToken } from 'modules/global/selectors'
+import { getQuoteAsset, getBaseAsset } from 'selectors'
 import { BigNumber } from '@0x/utils'
 import mergeWith from 'ramda/es/mergeWith'
 import descend from 'ramda/es/descend'
@@ -25,8 +25,8 @@ export const getOrderbookAsks = (matchParams, state) =>
 const getOrderAsBidByHash = (hash, matchParams, state) =>
   orderAsBid(
     getOrderByHash(hash, state),
-    getMarketplaceToken(matchParams, state),
-    getCurrentToken(matchParams, state)
+    getQuoteAsset(matchParams, state),
+    getBaseAsset(matchParams, state)
   )
 
 export const getOrderByHash = (hash, state) => state.orders.orders[hash]

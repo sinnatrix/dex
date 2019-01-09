@@ -39,5 +39,5 @@ export const getMarket = (matchParams, state) => {
   )
 }
 
-export const getCurrentToken = (matchParams, state) => getMarket(matchParams, state).baseAsset
-export const getMarketplaceToken = (matchParams, state) => getMarket(matchParams, state).quoteAsset
+export const getBaseAsset = (matchParams, state) => getMarket(matchParams, state).baseAsset
+export const getQuoteAsset = (matchParams, state) => getMarket(matchParams, state).quoteAsset

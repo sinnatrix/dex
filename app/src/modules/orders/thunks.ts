@@ -4,15 +4,15 @@ import * as actions from './actions'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
 import {
   getAccount,
-  getCurrentToken,
-  getMarketplaceToken,
+  getBaseAsset,
+  getQuoteAsset,
   getSubscriptionsByListType
 } from 'selectors'
 import { IDexOrder, ISRA2Order } from 'types'
 
 export const loadOrderbook = matchParams => async (dispatch, getState, { apiService }) => {
-  const quoteAsset = getMarketplaceToken(matchParams, getState())
-  const baseAsset = getCurrentToken(matchParams, getState())
+  const quoteAsset = getQuoteAsset(matchParams, getState())
+  const baseAsset = getBaseAsset(matchParams, getState())
 
   const data = await apiService.loadOrderbook({
     baseAssetData: baseAsset.assetData,
@@ -41,8 +41,8 @@ export const loadOrderbook = matchParams => async (dispatch, getState, { apiServ
 }
 
 export const addOrders = (orders: ISRA2Order[], matchParams) => async (dispatch, getState) => {
-  const quoteAsset = getMarketplaceToken(matchParams, getState())
-  const baseAsset = getCurrentToken(matchParams, getState())
+  const quoteAsset = getQuoteAsset(matchParams, getState())
+  const baseAsset = getBaseAsset(matchParams, getState())
 
   const isBid = ({ order }) => order.takerAssetData === quoteAsset.assetData &&
     order.makerAssetData === baseAsset.assetData
@@ -114,8 +114,8 @@ export const cancelOrder = (order: IDexOrder) => async (dispatch, getState, { bl
 export const makeLimitOrder = ({ type, amount, price }, matchParams) =>
   async (dispatch, getState, { blockchainService, apiService }) => {
     const account = getAccount(getState())
-    const quoteAsset = getMarketplaceToken(matchParams, getState())
-    const baseAsset = getCurrentToken(matchParams, getState())
+    const quoteAsset = getQuoteAsset(matchParams, getState())
+    const baseAsset = getBaseAsset(matchParams, getState())
 
     let data
 

@@ -11,7 +11,7 @@ const theme = createMuiTheme({
   custom: {
     bidColor: {
       main: '#990000',
-      light: '#C20000',
+      light: '#f18484',
       dark: '#700000',
       contrastText: '#fff'
     },

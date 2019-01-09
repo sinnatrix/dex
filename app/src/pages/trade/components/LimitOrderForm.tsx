@@ -9,12 +9,12 @@ import { BigNumber } from '@0x/utils'
 import OrderModeRadio from './OrderModeRadio'
 import ProgressButton from 'components/ProgressButton'
 import cx from 'classnames'
-import { getMarketplaceToken, getCurrentToken } from 'modules/global/selectors'
+import { getQuoteAsset, getBaseAsset } from 'selectors'
 
 const connector = connect(
   (state, ownProps) => ({
-    marketplaceToken: getMarketplaceToken(ownProps.match.params, state),
-    currentToken: getCurrentToken(ownProps.match.params, state)
+    marketplaceToken: getQuoteAsset(ownProps.match.params, state),
+    currentToken: getBaseAsset(ownProps.match.params, state)
   }),
   { makeLimitOrder }
 )
