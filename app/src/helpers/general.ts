@@ -1,5 +1,6 @@
 import { BigNumber } from '@0x/utils'
-import { IMarket } from 'types'
+import { IDexOrder, IMarket } from 'types'
+import format from 'date-fns/format'
 
 export const DAI_SYMBOL = '⬙'
 export const ETHER_SYMBOL = 'Ξ'
@@ -76,7 +77,7 @@ export const formatMarketPrice = (price: BigNumber): string => {
 
   return trimChars(
     price.toFixed(7),
-    '0',
+    '0.',
     { fromRight: true, fromLeft: false }
   )
 }
@@ -87,4 +88,9 @@ export const formatMarketVolume = (volume: BigNumber, decimals: number): string 
   }
 
   return volume.dividedBy(Math.pow(10, decimals)).toFixed(2)
+}
+
+export const renderExpiresAt = (order: IDexOrder): string => {
+  const date = new Date(order.order.expirationTimeSeconds.toNumber() * 1000)
+  return format(date, 'MM/DD HH:mm')
 }

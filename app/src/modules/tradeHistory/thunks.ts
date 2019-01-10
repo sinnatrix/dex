@@ -1,6 +1,6 @@
 import * as actions from './actions'
 import { wsSubscribe, wsUnsubscribe } from 'modules/subscriptions'
-import { getSubscriptionsByListType, getMarketplaceToken, getCurrentToken } from 'selectors'
+import { getSubscriptionsByListType, getQuoteAsset, getBaseAsset } from 'selectors'
 import { expandTradeHistory } from './helpers'
 
 export const loadAccountTradeHistory = () => async (dispatch, getState, { apiService }) => {
@@ -29,8 +29,8 @@ export const loadAccountTradeHistory = () => async (dispatch, getState, { apiSer
 }
 
 export const loadAssetPairTradeHistory = (matchParams, page?, perPage?) => async (dispatch, getState, { apiService }) => {
-  const marketplaceToken = getMarketplaceToken(matchParams, getState())
-  const currentToken = getCurrentToken(matchParams, getState())
+  const marketplaceToken = getQuoteAsset(matchParams, getState())
+  const currentToken = getBaseAsset(matchParams, getState())
 
   const tradeHistory = await apiService.loadTradeHistory({
     baseAssetData: currentToken.assetData,

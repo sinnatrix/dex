@@ -4,8 +4,7 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { loadActiveAccountOrders } from 'modules/orders'
 import ReactTable from 'react-table'
-import format from 'date-fns/format'
-import { formatAssetAmount } from 'helpers/general'
+import { formatAssetAmount, renderExpiresAt } from 'helpers/general'
 import { getAccountOrders } from 'modules/orders/selectors'
 import CancelOrderButton from './CancelOrderButton'
 import compose from 'ramda/es/compose'
@@ -84,7 +83,7 @@ class OrdersList extends React.Component<any> {
             id: 'expires',
             sortable: false,
             minWidth: 80,
-            accessor: order => this.renderExpiresAt(order),
+            accessor: order => renderExpiresAt(order),
             style: {
               fontSize: '.7em'
             }
@@ -100,11 +99,6 @@ class OrdersList extends React.Component<any> {
         ]}
       />
     )
-  }
-
-  renderExpiresAt = order => {
-    const date = new Date(parseInt(order.order.expirationTimeSeconds, 0) * 1000)
-    return format(date, 'MM/DD HH:mm')
   }
 }
 
