@@ -3,10 +3,11 @@ import jss from 'react-jss'
 import cx from 'classnames'
 import { connect } from 'react-redux'
 import Button from '@material-ui/core/Button'
+import { getNetworkName } from 'selectors'
 
 const connector = connect(
   state => ({
-    network: state.global.network
+    network: getNetworkName(state)
   })
 )
 

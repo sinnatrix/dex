@@ -13,7 +13,7 @@ import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
 import connect from 'react-redux/es/connect/connect'
-import TradeHistory from './components/wallet/TradeHistory'
+import TradeHistory from './components/tradeHistory/TradeHistory'
 import { getAssetPairTradeHistory } from 'modules/tradeHistory/selectors'
 import MessageListenerContainer from 'MessageListenerContainer'
 

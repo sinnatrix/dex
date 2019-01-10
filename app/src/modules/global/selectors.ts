@@ -41,3 +41,5 @@ export const getMarket = (matchParams, state) => {
 
 export const getBaseAsset = (matchParams, state) => getMarket(matchParams, state).baseAsset
 export const getQuoteAsset = (matchParams, state) => getMarket(matchParams, state).quoteAsset
+
+export const getNetworkName = state => state.global.network
