@@ -1,8 +1,8 @@
 import React from 'react'
 import jss from 'react-jss'
-import Switch from '@material-ui/core/Switch'
 import { connect } from 'react-redux'
 import { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance } from 'modules/global'
+import SmartToggleButton from 'components/SmartToggleButton'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -30,16 +30,16 @@ class TokenAllowance extends React.Component<any> {
     const { checked } = e.target
 
     if (checked) {
-      this.props.setUnlimitedTokenAllowance(token)
+      return this.props.setUnlimitedTokenAllowance(token)
     } else {
-      this.props.setZeroTokenAllowance(token)
+      return this.props.setZeroTokenAllowance(token)
     }
   }
 
   render () {
     const { allowance, classes } = this.props
     return (
-      <Switch
+      <SmartToggleButton
         className={classes.root}
         value='allowance'
         checked={allowance || false}
