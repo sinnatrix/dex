@@ -152,3 +152,23 @@ export interface IMarketStats {
   percentChange24Hours: number
   ethVolume24Hours: BigNumber
 }
+
+export interface TradeHistoryEntity {
+  id: string
+  event: string
+  orderHash: string
+  transactionHash: string
+  blockNumber: number
+  logIndex: number
+  senderAddress: string
+  feeRecipientAddress: string
+  makerAddress: string
+  takerAddress?: string
+  makerAssetData: string
+  takerAssetData: string
+  makerAssetFilledAmount?: string
+  takerAssetFilledAmount?: string
+  makerFeePaid?: string
+  takerFeePaid?: string
+  timestamp: number
+}

@@ -16,7 +16,7 @@ export const formatAssetAmount = (
   digits: number = 6
 ): string => (new BigNumber(assetAmount).dividedBy(Math.pow(10, decimals)).toFixed(digits))
 
-export const toBN = (value: string | number | null): BigNumber => new BigNumber(value || 0)
+export const toBN = (value: string | number | null | undefined): BigNumber => new BigNumber(value || 0)
 
 export const trimChars = (
   target: string,

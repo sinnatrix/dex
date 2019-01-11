@@ -3,7 +3,7 @@ import jss from 'react-jss'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import FillOrderButton from './FillOrderButton'
-import createTrComponent from './createTrComponent'
+import OrderTrComponent from './OrderTrComponent'
 import ReactTable, { ReactTableDefaults } from 'react-table'
 import 'react-table/react-table.css'
 import red from '@material-ui/core/colors/red'
@@ -16,32 +16,28 @@ import Progress from './Progress'
 import FormattedAmount from './FormattedAmount'
 
 const connector = connect(
-  (state, ownProps) => {
-    return {
-      baseAsset: getBaseAsset(ownProps.match.params, state),
-      quoteAsset: getQuoteAsset(ownProps.match.params, state),
-      market: getMarket(ownProps.match.params, state)
-    }
-  }
+  (state, ownProps) => ({
+    baseAsset: getBaseAsset(ownProps.match.params, state),
+    quoteAsset: getQuoteAsset(ownProps.match.params, state),
+    market: getMarket(ownProps.match.params, state)
+  })
 )
 
 const decorate = jss(theme => ({
   root: {
     fontSize: 12,
-    border: 'none !important'
-  },
-  rowGroup: {
-    border: 'none !important'
+    border: 'none !important',
+    '& *': {
+      border: 'none !important'
+    }
   },
   row: {
-    border: 'none !important',
     '&:hover': {
       backgroundColor: '#ccc'
     }
   },
   cell: {
     padding: '0 !important',
-    border: 'none !important',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
@@ -97,32 +93,23 @@ class OrdersTable extends React.Component<any> {
 
     return (
       <ReactTable
-        TrComponent={createTrComponent()}
+        TrComponent={OrderTrComponent}
         className={classes.root}
         data={orders}
         showPagination={false}
         defaultPageSize={orders.length}
         pageSize={orders.length}
-        getTrProps={(state, rowInfo) => {
-          return {
-            key: rowInfo.original.spread ? 'spread' : rowInfo.original.metaData.orderHash,
-            spread: rowInfo.original.spread,
-            highlightClassName: !rowInfo.original.spread && rowInfo.original.extra.highlight ? classes.highlight : '',
-            className: classes.row,
-            data: rowInfo.original
-          }
-        }}
-        getTrGroupProps={() => {
-          return {
-            className: classes.rowGroup
-          }
-        }
-        }
-        getTdProps={() => {
-          return {
-            className: classes.cell
-          }
-        }}
+        resizable={false}
+        getTrProps={(state, rowInfo) => ({
+          key: rowInfo.original.spread ? 'spread' : rowInfo.original.metaData.orderHash,
+          spread: rowInfo.original.spread,
+          highlightClassName: !rowInfo.original.spread && rowInfo.original.extra.highlight ? classes.highlight : '',
+          className: classes.row,
+          data: rowInfo.original
+        })}
+        getTdProps={() => ({
+          className: classes.cell
+        })}
         columns={[
           {
             Header: `Price ${quoteAsset.symbol}`,
