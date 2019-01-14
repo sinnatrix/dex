@@ -103,6 +103,21 @@ class TradeHistoryRepository extends Repository<any> {
 
     return query.getOne()
   }
+
+  async getAssetPairTradeHistiryBetweenTimestamps ({ baseAssetData, quoteAssetData, fromTimestamp, toTimestamp }) {
+    const query = this.createQueryBuilder()
+      .where('"event" = :event', { event: EventType.FILL })
+      .andWhere(new Brackets(qb => {
+        qb.where('("makerAssetData" = :baseAssetData AND "takerAssetData" = :quoteAssetData)')
+          .orWhere('("makerAssetData" = :quoteAssetData AND "takerAssetData" = :baseAssetData)')
+      }))
+      .andWhere('"timestamp" >= :fromTimestamp', { fromTimestamp })
+      .andWhere('"timestamp" < :toTimestamp', { toTimestamp })
+      .setParameters({ baseAssetData, quoteAssetData })
+      .orderBy('"blockNumber"', 'DESC')
+
+    return query.getMany()
+  }
 }
 
 export default TradeHistoryRepository

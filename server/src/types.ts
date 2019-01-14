@@ -179,3 +179,20 @@ export interface IFillEntity extends TradeHistoryEntity {
   makerAssetFilledAmount: string
   takerAssetFilledAmount: string
 }
+
+export interface IFillEntityWithPrice extends IFillEntity {
+  price: string
+}
+
+export interface ICandleWithStrings {
+  baseAssetVolume: string
+  quoteAssetVolume: string
+  open: string
+  close: string
+  high: string
+  low: string
+  startBlock: number
+  startBlockTimestamp: number
+  endBlock: number
+  endBlockTimestamp: number
+}

@@ -51,6 +51,6 @@ export default class TradeHistory {
   @Column({ nullable: true })
   takerFeePaid?: string
 
-  @Column()
+  @Column('bigint')
   timestamp: number
 }

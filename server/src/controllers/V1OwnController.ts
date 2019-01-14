@@ -49,6 +49,7 @@ class V1OwnController {
     router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
     router.get('/markets', this.getMarkets.bind(this))
+    router.get('/market/:marketId/candles', this.getCandles.bind(this))
 
     this.application.use(config.OWN_API_PATH, router)
   }
@@ -149,6 +150,16 @@ class V1OwnController {
   async getMarkets (req, res) {
     const markets = await this.marketService.getMarkets()
     res.send(markets)
+  }
+
+  async getCandles (req, res) {
+    const { marketId: assetPairSymbols } = req.params
+    const { from, to } = req.query
+
+    const market = await this.marketService.getMarketByAssetPairSymbols(assetPairSymbols)
+
+    const candles = await this.marketService.getMarketCandles(market, from, to)
+    return res.send(candles)
   }
 }
 

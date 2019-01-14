@@ -1,6 +1,6 @@
 import AssetPairRepository from '../repositories/AssetPairRepository'
 import TradeHistoryService from './TradeHistoryService'
-import { IFillEntity, IMarket } from '../types'
+import { ICandleWithStrings, IFillEntity, IFillEntityWithPrice, IMarket } from '../types'
 import AssetPairEntity from '../entities/AssetPair'
 import AssetEntity from '../entities/Asset'
 import { BigNumber } from '@0x/utils'
@@ -22,7 +22,7 @@ class MarketService {
 
     let markets: IMarket[] = []
     for (let assetPair of assetPairsWithAssets) {
-      let market = await this.getMarketFromAssetPair(assetPair)
+      let market = await this.getMarketByAssetPair(assetPair)
       markets.push(market)
     }
 
@@ -31,7 +31,7 @@ class MarketService {
     return R.slice(0, this.MARKETS_LIMIT, R.sort(sorter, markets))
   }
 
-  async getMarketFromAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
+  async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
     const { assetA: quoteAsset, assetB: baseAsset } = assetPair
 
     const [records24Hours, count24Hours] = await this.tradeHistoryService
@@ -137,6 +137,109 @@ class MarketService {
 
   getMarketScore (market: IMarket): number {
     return market.stats.transactionCount
+  }
+
+  async getMarketByAssetPairSymbols (assetPairSymbols: string): Promise<IMarket> {
+    const [ baseAssetSymbol, quoteAssetSymbol ] = assetPairSymbols.split('-')
+
+    const assetPair = (await this.assetPairRepository.getAllWithAssets())
+      .find(one => one.assetA.symbol === quoteAssetSymbol && one.assetB.symbol === baseAssetSymbol)
+
+    if (!assetPair) {
+      throw new Error('Market not found')
+    }
+
+    return this.getMarketByAssetPair(assetPair)
+  }
+
+  async getMarketCandles (market: IMarket, fromTimestamp, toTimestamp): Promise<ICandleWithStrings[]> {
+    const tradeHistory = await this.tradeHistoryService
+      .tradeHistoryRepository
+        .getAssetPairTradeHistiryBetweenTimestamps({
+          baseAssetData: market.baseAsset.assetData,
+          quoteAssetData: market.quoteAsset.assetData,
+          fromTimestamp,
+          toTimestamp
+        })
+
+    if (!tradeHistory) {
+      return []
+    }
+
+    const candles = this.getCandlesFromTradeHistory(tradeHistory, market)
+
+    return R.values(candles)
+  }
+
+  getCandlesFromTradeHistory (tradeHistoryEntities: IFillEntity[], market: IMarket) {
+    const entitiesWithPrice = tradeHistoryEntities.map(one => ({
+      ...one,
+      price: this.getPrice(one, market)
+    }))
+
+    const groupByDay = R.groupBy((record: IFillEntity) => {
+      const date = new Date(record.timestamp * 1000)
+      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+    })
+
+    const getGroupPrices = R.pluck('price')
+
+    const entitiesByDay = groupByDay(entitiesWithPrice)
+
+    return R.map(
+      (entities: IFillEntityWithPrice[]): ICandleWithStrings => {
+        const start = entities[entities.length - 1]
+        const end = entities[0]
+        return {
+          baseAssetVolume: this.getAssetAmount(entities, market.baseAsset)
+            .dividedBy(Math.pow(10, market.baseAsset.decimals))
+            .toFixed(4),
+          quoteAssetVolume: this.getAssetAmount(entities, market.quoteAsset)
+            .dividedBy(Math.pow(10, market.quoteAsset.decimals))
+            .toFixed(4),
+          open: start.price,
+          close: end.price,
+          high: R.max(...getGroupPrices(entities)),
+          low: R.min(...getGroupPrices(entities)),
+          startBlock: start.blockNumber,
+          startBlockTimestamp: start.timestamp,
+          endBlock: end.blockNumber,
+          endBlockTimestamp: end.timestamp
+        }
+      },
+      entitiesByDay
+    )
+  }
+
+  getPrice (tradeHistoryItem, market: IMarket): BigNumber {
+    const takerAssetFilledAmount = new BigNumber(tradeHistoryItem.takerAssetFilledAmount)
+    const makerAssetFilledAmount = new BigNumber(tradeHistoryItem.makerAssetFilledAmount)
+
+    return this.isBid(tradeHistoryItem, market)
+      ? takerAssetFilledAmount.dividedBy(makerAssetFilledAmount)
+      : makerAssetFilledAmount.dividedBy(takerAssetFilledAmount)
+  }
+
+  isBid (tradeHistoryItem, market: IMarket): boolean {
+    return tradeHistoryItem.takerAssetData === market.quoteAsset.assetData &&
+      tradeHistoryItem.makerAssetData === market.baseAsset.assetData
+  }
+
+  getAssetAmount (entities: IFillEntity[], asset: AssetEntity): BigNumber {
+    let volume = new BigNumber(0)
+    let value
+
+    for (let entity of entities) {
+      if (entity.makerAssetData === asset.assetData) {
+        value = new BigNumber(entity.makerAssetFilledAmount)
+        volume = volume.plus(value)
+      } else if (entity.takerAssetData === asset.assetData) {
+        value = new BigNumber(entity.takerAssetFilledAmount)
+        volume = volume.plus(value)
+      }
+    }
+
+    return volume
   }
 }
 
