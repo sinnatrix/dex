@@ -18,6 +18,9 @@ const decorate = jss({
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  appBar: {
+    boxShadow: '11px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0), 0px 1px 10px 0px rgba(0, 0, 0, 0.12)'
+  },
   titleLink: {
     color: 'rgba(0, 0, 0, 0.87)',
     textDecoration: 'none'
@@ -54,7 +57,7 @@ const decorate = jss({
 const Layout = ({ classes, children, contentClassName }) => {
   return (
     <div className={classes.root}>
-      <AppBar position='static' color='default'>
+      <AppBar position='static' color='default' className={classes.appBar}>
         <Toolbar className={classes.header}>
           <Typography variant='h6' color='inherit'>
             <Link to='/' className={classes.titleLink}>DEX</Link>

@@ -1,10 +1,11 @@
 import AssetPairRepository from '../repositories/AssetPairRepository'
 import TradeHistoryService from './TradeHistoryService'
-import { ICandleWithStrings, IFillEntity, IFillEntityWithPrice, IMarket } from '../types'
+import { ICandleWithStrings, IFillEntity, IMarket } from '../types'
 import AssetPairEntity from '../entities/AssetPair'
 import AssetEntity from '../entities/Asset'
 import { BigNumber } from '@0x/utils'
 import * as R from 'ramda'
+import { floorTo, getEmptyCandleWithString } from '../utils/helpers'
 
 class MarketService {
   MARKETS_LIMIT = 20
@@ -152,94 +153,43 @@ class MarketService {
     return this.getMarketByAssetPair(assetPair)
   }
 
-  async getMarketCandles (market: IMarket, fromTimestamp, toTimestamp): Promise<ICandleWithStrings[]> {
-    const tradeHistory = await this.tradeHistoryService
-      .tradeHistoryRepository
-        .getAssetPairTradeHistiryBetweenTimestamps({
-          baseAssetData: market.baseAsset.assetData,
-          quoteAssetData: market.quoteAsset.assetData,
-          fromTimestamp,
-          toTimestamp
-        })
-
-    if (!tradeHistory) {
-      return []
-    }
-
-    const candles = this.getCandlesFromTradeHistory(tradeHistory, market)
-
-    return R.values(candles)
-  }
-
-  getCandlesFromTradeHistory (tradeHistoryEntities: IFillEntity[], market: IMarket) {
-    const entitiesWithPrice = tradeHistoryEntities.map(one => ({
-      ...one,
-      price: this.getPrice(one, market)
-    }))
-
-    const groupByDay = R.groupBy((record: IFillEntity) => {
-      const date = new Date(record.timestamp * 1000)
-      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+  async getMarketCandles (
+    market: IMarket,
+    fromTimestamp: number,
+    toTimestamp: number,
+    groupIntervalSeconds: number
+  ): Promise<ICandleWithStrings[]> {
+    const candles = await this.tradeHistoryService.tradeHistoryRepository.getMarketCandles({
+      baseAssetSymbol: market.baseAsset.symbol,
+      quoteAssetSymbol: market.quoteAsset.symbol,
+      fromTimestamp,
+      toTimestamp,
+      groupIntervalSeconds
     })
-
-    const getGroupPrices = R.pluck('price')
-
-    const entitiesByDay = groupByDay(entitiesWithPrice)
-
-    return R.map(
-      (entities: IFillEntityWithPrice[]): ICandleWithStrings => {
-        const start = entities[entities.length - 1]
-        const end = entities[0]
-        return {
-          baseAssetVolume: this.getAssetAmount(entities, market.baseAsset)
-            .dividedBy(Math.pow(10, market.baseAsset.decimals))
-            .toFixed(4),
-          quoteAssetVolume: this.getAssetAmount(entities, market.quoteAsset)
-            .dividedBy(Math.pow(10, market.quoteAsset.decimals))
-            .toFixed(4),
-          open: start.price,
-          close: end.price,
-          high: R.max(...getGroupPrices(entities)),
-          low: R.min(...getGroupPrices(entities)),
-          startBlock: start.blockNumber,
-          startBlockTimestamp: start.timestamp,
-          endBlock: end.blockNumber,
-          endBlockTimestamp: end.timestamp
-        }
-      },
-      entitiesByDay
+    const normalizedData = this.normalizeCandlesByTimeline(
+      candles,
+      this.getTimeLine(
+        fromTimestamp,
+        toTimestamp,
+        groupIntervalSeconds
+      )
     )
+
+    return normalizedData
   }
 
-  getPrice (tradeHistoryItem, market: IMarket): BigNumber {
-    const takerAssetFilledAmount = new BigNumber(tradeHistoryItem.takerAssetFilledAmount)
-    const makerAssetFilledAmount = new BigNumber(tradeHistoryItem.makerAssetFilledAmount)
-
-    return this.isBid(tradeHistoryItem, market)
-      ? takerAssetFilledAmount.dividedBy(makerAssetFilledAmount)
-      : makerAssetFilledAmount.dividedBy(takerAssetFilledAmount)
+  getTimeLine (fromTimestamp: number, toTimestamp: number, groupIntervalSeconds: number): number[] {
+    const floor = floorTo(groupIntervalSeconds)
+    const start = floor(fromTimestamp)
+    const end = floor(toTimestamp) + groupIntervalSeconds
+    const ticks = Math.floor((end - start) / groupIntervalSeconds)
+    return Array(ticks).fill(0).map((v, k) => start + groupIntervalSeconds * k)
   }
 
-  isBid (tradeHistoryItem, market: IMarket): boolean {
-    return tradeHistoryItem.takerAssetData === market.quoteAsset.assetData &&
-      tradeHistoryItem.makerAssetData === market.baseAsset.assetData
-  }
-
-  getAssetAmount (entities: IFillEntity[], asset: AssetEntity): BigNumber {
-    let volume = new BigNumber(0)
-    let value
-
-    for (let entity of entities) {
-      if (entity.makerAssetData === asset.assetData) {
-        value = new BigNumber(entity.makerAssetFilledAmount)
-        volume = volume.plus(value)
-      } else if (entity.takerAssetData === asset.assetData) {
-        value = new BigNumber(entity.takerAssetFilledAmount)
-        volume = volume.plus(value)
-      }
-    }
-
-    return volume
+  normalizeCandlesByTimeline (candles: ICandleWithStrings[], timeLine: number[]): ICandleWithStrings[] {
+    return timeLine.map(timestamp =>
+      candles.find(one => one.timestamp === timestamp) || getEmptyCandleWithString(timestamp)
+    )
   }
 }
 

@@ -39,16 +39,16 @@ export default class TradeHistory {
   @Column()
   takerAssetData: string
 
-  @Column({ nullable: true })
+  @Column('decimal', { precision: 72, nullable: true })
   makerAssetFilledAmount?: string
 
-  @Column({ nullable: true })
+  @Column('decimal', { precision: 72, nullable: true })
   takerAssetFilledAmount?: string
 
-  @Column({ nullable: true })
+  @Column('decimal', { precision: 72, nullable: true })
   makerFeePaid?: string
 
-  @Column({ nullable: true })
+  @Column('decimal', { precision: 72, nullable: true })
   takerFeePaid?: string
 
   @Column('bigint')

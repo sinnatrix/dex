@@ -9,7 +9,39 @@ const initialState = {
   tokenBalances: {},
   tokenAllowances: {},
   tokens: [],
-  markets: []
+  markets: [],
+  marketCandles: [],
+  priceChart: {
+    intervals: [
+      {
+        id: '1d',
+        active: true,
+        name: '1 day',
+        intervalSeconds: 24 * 60 * 60,
+        groupIntervalSeconds: 3600,
+        ticks: 6,
+        tickFormat: '%H:%M'
+      },
+      {
+        id: '1w',
+        active: false,
+        name: '1 week',
+        intervalSeconds: 7 * 24 * 60 * 60,
+        groupIntervalSeconds: 3 * 60 * 60,
+        ticks: 6,
+        tickFormat: '%a %d'
+      },
+      {
+        id: '1m',
+        active: false,
+        name: '1 month',
+        intervalSeconds: 30 * 24 * 60 * 60,
+        groupIntervalSeconds: 24 * 60 * 60,
+        ticks: 6,
+        tickFormat: '%b %d'
+      }
+    ]
+  }
 }
 
 export default (state = initialState, { type, payload }) => {
@@ -42,6 +74,18 @@ export default (state = initialState, { type, payload }) => {
       return { ...state, tokens: payload }
     case types.SET_MARKETS:
       return { ...state, markets: payload }
+    case types.SET_MARKET_CANDLES:
+      return { ...state, marketCandles: payload }
+    case types.SET_PRICE_CHART_INTERVAL:
+      return {
+        ...state,
+        priceChart: {
+          intervals: state.priceChart.intervals.map(one => ({
+            ...one,
+            active: payload === one.id
+          }))
+        }
+      }
     default:
       return state
   }
