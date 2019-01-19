@@ -46,7 +46,12 @@ class TradeHistoryService {
 
   async attach () {
     if (!process.env.LOAD_TRADE_HISTORY_ON_STARTUP || process.env.LOAD_TRADE_HISTORY_ON_STARTUP === 'yes') {
-      await this.loadFullTradeHistory()
+      try {
+        await this.loadFullTradeHistory()
+      } catch (e) {
+        log.info('An unexpected error occured during trade history loading')
+        console.error(e)
+      }
     }
 
     await this.subscribeToTradeHistoryEvents()
