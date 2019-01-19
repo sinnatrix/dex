@@ -19,7 +19,8 @@ class App extends React.Component<any> {
   constructor (props) {
     super(props)
 
-    this.socketService = new SocketService(`ws://${window.location.host}/api/0x/v2`)
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    this.socketService = new SocketService(`${protocol}://${window.location.host}/api/0x/v2`)
 
     this.blockchainService = this.createBlockchainService()
 
