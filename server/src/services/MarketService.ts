@@ -1,4 +1,5 @@
 import AssetPairRepository from '../repositories/AssetPairRepository'
+import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import TradeHistoryService from './TradeHistoryService'
 import { ICandleWithStrings, IFillEntity, IMarket } from '../types'
 import AssetPairEntity from '../entities/AssetPair'
@@ -11,10 +12,16 @@ class MarketService {
   MARKETS_LIMIT = 20
 
   assetPairRepository: AssetPairRepository
+  tradeHistoryRepository: TradeHistoryRepository
   tradeHistoryService: TradeHistoryService
 
-  constructor ({ assetPairRepository, tradeHistoryService }) {
+  constructor ({
+    assetPairRepository,
+    tradeHistoryRepository,
+    tradeHistoryService
+  }) {
     this.assetPairRepository = assetPairRepository
+    this.tradeHistoryRepository = tradeHistoryRepository
     this.tradeHistoryService = tradeHistoryService
   }
 
@@ -35,8 +42,7 @@ class MarketService {
   async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
     const { assetA: quoteAsset, assetB: baseAsset } = assetPair
 
-    const [records24Hours, count24Hours] = await this.tradeHistoryService
-      .tradeHistoryRepository.getAssetPairRecordsAndCountForLast24Hours(assetPair)
+    const [records24Hours, count24Hours] = await this.tradeHistoryRepository.getAssetPairRecordsAndCountForLast24Hours(assetPair)
 
     const volume24Hours = this.getAssetPairVolume24Hours(assetPair, records24Hours)
     const price = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
@@ -159,7 +165,7 @@ class MarketService {
     toTimestamp: number,
     groupIntervalSeconds: number
   ): Promise<ICandleWithStrings[]> {
-    const candles = await this.tradeHistoryService.tradeHistoryRepository.getMarketCandles({
+    const candles = await this.tradeHistoryRepository.getMarketCandles({
       baseAssetSymbol: market.baseAsset.symbol,
       quoteAssetSymbol: market.quoteAsset.symbol,
       fromTimestamp,
