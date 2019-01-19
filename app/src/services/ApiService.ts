@@ -45,6 +45,11 @@ class ApiService {
     const { data } = await axios.get('/api/v1/markets')
     return data
   }
+
+  async loadMarketCandles (marketId, params) {
+    const { data } = await axios.get(`/api/v1/market/${marketId}/candles`, { params })
+    return data
+  }
 }
 
 export default ApiService

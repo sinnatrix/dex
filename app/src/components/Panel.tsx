@@ -7,7 +7,7 @@ const decorate = jss(theme => ({
   root: theme.mixins.gutters({
     paddingTop: 10,
     paddingBottom: 10,
-    marginTop: theme.spacing.unit * 3
+    marginTop: theme.spacing.unit
   })
 }))
 

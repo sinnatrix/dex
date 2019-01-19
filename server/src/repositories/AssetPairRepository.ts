@@ -44,7 +44,7 @@ export default class AssetPairRepository extends Repository<AssetPairEntity> {
   }
 
   getAllWithAssets () {
-    let query = this.createQueryBuilder('assetPairs')
+    const query = this.createQueryBuilder('assetPairs')
       .innerJoinAndSelect('assetPairs.assetA', 'assetsA')
       .innerJoinAndSelect('assetPairs.assetB', 'assetsB')
 

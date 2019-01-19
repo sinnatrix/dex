@@ -10,7 +10,7 @@ import {
   IRelayerWithId,
   ISRA2Orders,
   IDexEventLogExtended,
-  IFillEntity
+  IFillEntity, ICandleWithStrings
 } from '../types'
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
@@ -207,3 +207,14 @@ export const getFillPrice = (fillEntity: IFillEntity, assetPair: AssetPairEntity
 
   return price
 }
+
+export const floorTo = base => value => Math.floor(value / base) * base
+
+export const getEmptyCandleWithString = (timestamp?: number): ICandleWithStrings => ({
+  volume: '0',
+  open: null,
+  close: null,
+  high: null,
+  low: null,
+  timestamp: timestamp || (new Date()).getTime()
+})

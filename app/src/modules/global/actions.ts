@@ -8,3 +8,5 @@ export const setEthBalance = payload => ({ type: types.SET_ETH_BALANCE, payload 
 export const setTokenAllowance = (symbol, value) => ({ type: types.SET_TOKEN_ALLOWANCE, payload: { symbol, value } })
 export const setEnabled = payload => ({ type: types.SET_ENABLED, payload })
 export const setMarkets = payload => ({ type: types.SET_MARKETS, payload })
+export const setMarketCandles = payload => ({ type: types.SET_MARKET_CANDLES, payload })
+export const setPriceChartInterval = payload => ({ type: types.SET_PRICE_CHART_INTERVAL, payload })

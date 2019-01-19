@@ -1,10 +1,11 @@
 import AssetPairRepository from '../repositories/AssetPairRepository'
 import TradeHistoryService from './TradeHistoryService'
-import { IFillEntity, IMarket } from '../types'
+import { ICandleWithStrings, IFillEntity, IMarket } from '../types'
 import AssetPairEntity from '../entities/AssetPair'
 import AssetEntity from '../entities/Asset'
 import { BigNumber } from '@0x/utils'
 import * as R from 'ramda'
+import { floorTo, getEmptyCandleWithString } from '../utils/helpers'
 
 class MarketService {
   MARKETS_LIMIT = 20
@@ -22,7 +23,7 @@ class MarketService {
 
     let markets: IMarket[] = []
     for (let assetPair of assetPairsWithAssets) {
-      let market = await this.getMarketFromAssetPair(assetPair)
+      let market = await this.getMarketByAssetPair(assetPair)
       markets.push(market)
     }
 
@@ -31,7 +32,7 @@ class MarketService {
     return R.slice(0, this.MARKETS_LIMIT, R.sort(sorter, markets))
   }
 
-  async getMarketFromAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
+  async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
     const { assetA: quoteAsset, assetB: baseAsset } = assetPair
 
     const [records24Hours, count24Hours] = await this.tradeHistoryService
@@ -137,6 +138,58 @@ class MarketService {
 
   getMarketScore (market: IMarket): number {
     return market.stats.transactionCount
+  }
+
+  async getMarketByAssetPairSymbols (assetPairSymbols: string): Promise<IMarket> {
+    const [ baseAssetSymbol, quoteAssetSymbol ] = assetPairSymbols.split('-')
+
+    const assetPair = (await this.assetPairRepository.getAllWithAssets())
+      .find(one => one.assetA.symbol === quoteAssetSymbol && one.assetB.symbol === baseAssetSymbol)
+
+    if (!assetPair) {
+      throw new Error('Market not found')
+    }
+
+    return this.getMarketByAssetPair(assetPair)
+  }
+
+  async getMarketCandles (
+    market: IMarket,
+    fromTimestamp: number,
+    toTimestamp: number,
+    groupIntervalSeconds: number
+  ): Promise<ICandleWithStrings[]> {
+    const candles = await this.tradeHistoryService.tradeHistoryRepository.getMarketCandles({
+      baseAssetSymbol: market.baseAsset.symbol,
+      quoteAssetSymbol: market.quoteAsset.symbol,
+      fromTimestamp,
+      toTimestamp,
+      groupIntervalSeconds
+    })
+    const normalizedData = this.normalizeCandlesByTimeline(
+      candles,
+      this.getTimeLine(
+        fromTimestamp,
+        toTimestamp,
+        groupIntervalSeconds
+      )
+    )
+
+    return normalizedData
+  }
+
+  getTimeLine (fromTimestamp: number, toTimestamp: number, groupIntervalSeconds: number): number[] {
+    const floor = floorTo(groupIntervalSeconds)
+    const start = floor(fromTimestamp)
+    const end = floor(toTimestamp) + groupIntervalSeconds
+    const ticks = Math.floor((end - start) / groupIntervalSeconds)
+    return Array(ticks).fill(0).map((v, k) => start + groupIntervalSeconds * k)
+  }
+
+  normalizeCandlesByTimeline (candles: ICandleWithStrings[], timeLine: number[]): ICandleWithStrings[] {
+    return timeLine.map(timestamp =>
+      candles.find(one => one.timestamp === timestamp) || getEmptyCandleWithString(timestamp)
+    )
   }
 }
 

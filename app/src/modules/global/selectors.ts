@@ -43,3 +43,18 @@ export const getBaseAsset = (matchParams, state) => getMarket(matchParams, state
 export const getQuoteAsset = (matchParams, state) => getMarket(matchParams, state).quoteAsset
 
 export const getNetworkName = state => state.global.network
+
+export const getMarketCandles = (state) => {
+  const candles = state.global.marketCandles
+  return candles.map(one => ({
+    open: parseFloat(one.open),
+    close: parseFloat(one.close),
+    high: parseFloat(one.high),
+    low: parseFloat(one.low),
+    volume: parseFloat(one.volume),
+    date: new Date(one.timestamp * 1000),
+  }))
+}
+
+export const getPriceChartIntervals = state => state.global.priceChart.intervals
+export const getActivePriceChartInterval = state => getPriceChartIntervals(state).find(one => one.active)
