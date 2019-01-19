@@ -1,21 +1,24 @@
 import React from 'react'
+import { connect } from 'react-redux'
 import jss from 'react-jss'
+import { withRouter } from 'react-router'
 import Layout from 'components/Layout'
 import Wallet from './components/wallet/Wallet'
 import Marketplace from './components/Marketplace'
 import LimitOrderPanel from './components/LimitOrderPanel'
 import Orderbook from './components/orderbook/Orderbook'
+import TradeHistory from './components/tradeHistory/TradeHistory'
+import PriceChart from './components/PriceChart'
+import MessageListenerContainer from 'MessageListenerContainer'
 import routerListener from 'hocs/routerListener'
-import compose from 'ramda/es/compose'
-import { loadMarketplaceToken, loadCurrentToken } from 'modules/global'
 import { loadOrderbook } from 'modules/orders'
 import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
+import { loadMarketCandles } from 'modules/global'
+import { getActivePriceChartInterval, getAssetPairTradeHistory, getMarket } from 'selectors'
+import compose from 'ramda/es/compose'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
-import connect from 'react-redux/es/connect/connect'
-import TradeHistory from './components/wallet/TradeHistory'
-import { getAssetPairTradeHistory } from 'modules/tradeHistory/selectors'
 
 const TradeHistoryContainer = connect(
   state => ({
@@ -23,9 +26,16 @@ const TradeHistoryContainer = connect(
   })
 )(TradeHistory)
 
+const connector = connect(
+  (state, ownProps) => ({
+    market: getMarket(ownProps.match.params, state),
+    chartInterval: getActivePriceChartInterval(state)
+  })
+)
+
 const StyledTab = jss({
   root: {
-    minWidth: '50%'
+    minWidth: '33%'
   }
 })(
   props => <Tab {...props} />
@@ -41,33 +51,31 @@ const decorate = jss({
   },
   wallet: {
     width: 300,
-    paddingRight: 5,
+    paddingRight: 2,
     overflowY: 'auto'
   },
   left: {
     display: 'flex',
     flexDirection: 'column',
-    minWidth: 300,
-    marginLeft: 20,
-    paddingLeft: 5,
-    paddingRight: 5,
+    width: 300,
+    marginLeft: 0,
+    paddingLeft: 2,
+    paddingRight: 4,
     overflowY: 'auto'
-  },
-  right: {
-    flex: 1,
-    display: 'flex',
-    width: '100%',
-    marginLeft: 20,
-    '@media (max-width: 800px)': {
-      marginLeft: 0
-    }
   },
   panel: {
     display: 'flex',
     flex: 1,
     flexDirection: 'column',
     padding: 0,
-    marginLeft: 25
+    marginLeft: 0
+  },
+  chart: {
+    marginLeft: 4,
+    display: 'flex',
+    flex: 1,
+    flexDirection: 'column',
+    padding: 0
   }
 })
 
@@ -81,11 +89,12 @@ class TradePage extends React.Component<any> {
   }
 
   render () {
-    const { classes } = this.props
+    const { classes, chartInterval } = this.props
     const { value } = this.state
 
     return (
       <Layout contentClassName={classes.root}>
+        <MessageListenerContainer />
         <div className={classes.wallet}>
           <Wallet />
         </div>
@@ -101,21 +110,28 @@ class TradePage extends React.Component<any> {
           { value === 0 && <Orderbook /> }
           { value === 1 && <TradeHistoryContainer /> }
         </Panel>
+        <Panel className={classes.chart}>
+          <PriceChart chartInterval={chartInterval}/>
+        </Panel>
       </Layout>
     )
   }
 }
 
 export default compose(
+  withRouter,
+  connector,
   routerListener({
-    async onEnter (params, dispatch) {
-      await Promise.all([
-        dispatch(loadMarketplaceToken(params.marketplace)),
-        dispatch(loadCurrentToken(params.token))
-      ]).then(() => {
-        dispatch(loadOrderbook())
-        dispatch(loadAssetPairTradeHistory())
-      })
+    async onEnter (params, dispatch, ownProps) {
+      await dispatch(loadOrderbook(params))
+      await dispatch(loadAssetPairTradeHistory(params))
+      const now = Math.round((new Date()).getTime() / 1000)
+      await dispatch(loadMarketCandles(
+        ownProps.market,
+        now - ownProps.chartInterval.intervalSeconds,
+        now,
+        ownProps.chartInterval.groupIntervalSeconds
+      ))
     }
   } as any),
   decorate

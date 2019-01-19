@@ -15,6 +15,7 @@ import OrderRepository from './repositories/OrderRepository'
 import TradeHistoryRepository from './repositories/TradeHistoryRepository'
 import AssetRepository from './repositories/AssetRepository'
 import AssetPairRepository from './repositories/AssetPairRepository'
+import MarketService from './services/MarketService'
 
 const Web3 = require('web3')
 const { createContainer, asValue, asClass } = require('awilix')
@@ -56,7 +57,8 @@ const createAppContainer = ({ connection }) => {
     orderRepository: asValue(connection.getCustomRepository(OrderRepository)),
     tradeHistoryRepository: asValue(connection.getCustomRepository(TradeHistoryRepository)),
     assetRepository: asValue(connection.getCustomRepository(AssetRepository)),
-    assetPairRepository: asValue(connection.getCustomRepository(AssetPairRepository))
+    assetPairRepository: asValue(connection.getCustomRepository(AssetPairRepository)),
+    marketService: asClass(MarketService).singleton()
   })
 
   return container

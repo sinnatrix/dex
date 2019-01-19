@@ -1,14 +1,15 @@
 import React from 'react'
 import jss from 'react-jss'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import compose from 'ramda/es/compose'
 import OrdersTable from './OrdersTable'
 import { getOrderbookBids, getOrderbookAsks } from 'modules/orders/selectors'
 
 const connector = connect(
-  state => ({
-    bids: getOrderbookBids(state),
-    asks: getOrderbookAsks(state)
+  (state, ownProps) => ({
+    bids: getOrderbookBids(ownProps.match.params, state),
+    asks: getOrderbookAsks(ownProps.match.params, state)
   })
 )
 
@@ -49,6 +50,7 @@ class Orderbook extends React.Component<any> {
 }
 
 export default compose(
+  withRouter,
   connector,
   decorate
 )(Orderbook)

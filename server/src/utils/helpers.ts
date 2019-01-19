@@ -2,13 +2,15 @@ import { assetDataUtils } from '@0x/order-utils'
 import OrderEntity from '../entities/Order'
 import TradeHistory from '../entities/TradeHistory'
 import RelayerEntity from '../entities/Relayer'
+import AssetPairEntity from '../entities/AssetPair'
 import {
   ISRA2Order,
-  IFillEventLog,
   ISignedOrderWithStrings,
   ICancelEventLog,
   IRelayerWithId,
-  ISRA2Orders
+  ISRA2Orders,
+  IDexEventLogExtended,
+  IFillEntity, ICandleWithStrings
 } from '../types'
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
@@ -93,7 +95,7 @@ export const getDefaultOrderMetaData = (order: SignedOrder): OrderInfo => ({
   orderTakerAssetFilledAmount: new BigNumber(0)
 })
 
-export const convertFillEventToDexTradeHistory = (event: IFillEventLog): TradeHistory => {
+export const convertFillEventToDexTradeHistory = (event: IDexEventLogExtended): TradeHistory => {
   return {
     id: event.id,
     event: event.event,
@@ -110,7 +112,8 @@ export const convertFillEventToDexTradeHistory = (event: IFillEventLog): TradeHi
     makerAssetFilledAmount: event.returnValues.makerAssetFilledAmount,
     takerAssetFilledAmount: event.returnValues.takerAssetFilledAmount,
     makerFeePaid: event.returnValues.makerFeePaid,
-    takerFeePaid: event.returnValues.takerFeePaid
+    takerFeePaid: event.returnValues.takerFeePaid,
+    timestamp: event.timestamp
   }
 }
 
@@ -126,7 +129,8 @@ export const convertCancelEventToDexEventLogItem = (event: ICancelEventLog): Tra
     feeRecipientAddress: event.returnValues.feeRecipientAddress,
     makerAddress: event.returnValues.makerAddress.toLowerCase(),
     makerAssetData: event.returnValues.makerAssetData,
-    takerAssetData: event.returnValues.takerAssetData
+    takerAssetData: event.returnValues.takerAssetData,
+    timestamp: event.timestamp
   }
 }
 
@@ -185,3 +189,32 @@ export const getNetworkNameById = (id: number): string => ({
   42: 'kovan',
   50: 'test'
 })[id]
+
+export const getNowUnixtime = () => Math.round((new Date()).getTime() / 1000)
+
+export const getFillPrice = (fillEntity: IFillEntity, assetPair: AssetPairEntity): BigNumber => {
+  const quoteAsset = assetPair.assetA
+
+  let price
+
+  if (quoteAsset.assetData === fillEntity.makerAssetData) {
+    price = new BigNumber(fillEntity.makerAssetFilledAmount)
+      .dividedBy(new BigNumber(fillEntity.takerAssetFilledAmount))
+  } else {
+    price = new BigNumber(fillEntity.takerAssetFilledAmount)
+      .dividedBy(new BigNumber(fillEntity.makerAssetFilledAmount))
+  }
+
+  return price
+}
+
+export const floorTo = base => value => Math.floor(value / base) * base
+
+export const getEmptyCandleWithString = (timestamp?: number): ICandleWithStrings => ({
+  volume: '0',
+  open: null,
+  close: null,
+  high: null,
+  low: null,
+  timestamp: timestamp || (new Date()).getTime()
+})

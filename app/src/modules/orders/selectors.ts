@@ -1,6 +1,6 @@
 import { convertOrderDecimalsToBigNumber } from './helpers'
 import { assetDataUtils } from '@0x/order-utils'
-import { getMarketplaceToken, getCurrentToken } from 'modules/global/selectors'
+import { getQuoteAsset, getBaseAsset } from 'selectors'
 import { BigNumber } from '@0x/utils'
 import mergeWith from 'ramda/es/mergeWith'
 import descend from 'ramda/es/descend'
@@ -13,20 +13,20 @@ const getExpiration = (order: IDexOrder): string => path(['order', 'expirationTi
 const sortByPriceDesc = sort(descend(getPrice))
 const sortByExpirationDesc = sort(descend(getExpiration))
 
-export const getAccountOrders = state =>
-  sortByExpirationDesc(state.orders.accountOrders.map(hash => getOrderAsBidByHash(hash, state)))
+export const getAccountOrders = (matchParams, state) =>
+  sortByExpirationDesc(state.orders.accountOrders.map(hash => getOrderAsBidByHash(hash, matchParams, state)))
 
-export const getOrderbookBids = state =>
-  sortByPriceDesc(state.orders.bids.map(hash => getOrderAsBidByHash(hash, state)))
+export const getOrderbookBids = (matchParams, state) =>
+  sortByPriceDesc(state.orders.bids.map(hash => getOrderAsBidByHash(hash, matchParams, state)))
 
-export const getOrderbookAsks = state =>
-  sortByPriceDesc(state.orders.asks.map(hash => getOrderAsBidByHash(hash, state)))
+export const getOrderbookAsks = (matchParams, state) =>
+  sortByPriceDesc(state.orders.asks.map(hash => getOrderAsBidByHash(hash, matchParams, state)))
 
-const getOrderAsBidByHash = (hash, state) =>
+const getOrderAsBidByHash = (hash, matchParams, state) =>
   orderAsBid(
     getOrderByHash(hash, state),
-    getMarketplaceToken(state),
-    getCurrentToken(state)
+    getQuoteAsset(matchParams, state),
+    getBaseAsset(matchParams, state)
   )
 
 export const getOrderByHash = (hash, state) => state.orders.orders[hash]

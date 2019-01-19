@@ -1,4 +1,5 @@
 import React from 'react'
+import jss from 'react-jss'
 import { connect } from 'react-redux'
 import ProgressButton from 'components/ProgressButton'
 import { fillOrder } from 'modules/orders'
@@ -8,6 +9,15 @@ const connector = connect(
   { fillOrder }
 )
 
+const decorate = jss({
+  fillButton: {
+    backgroundColor: 'transparent',
+    '&:hover': {
+      backgroundColor: 'transparent'
+    }
+  }
+})
+
 class FillOrderButton extends React.Component<any> {
   handleClick = async () => {
     const { order } = this.props
@@ -15,12 +25,13 @@ class FillOrderButton extends React.Component<any> {
   }
 
   render () {
+    const { classes } = this.props
     return (
-      <ProgressButton onClick={this.handleClick} variant='contained' replaceContent>
+      <ProgressButton className={classes.fillButton} onClick={this.handleClick} variant='contained' replaceContent>
         Fill
       </ProgressButton>
     )
   }
 }
 
-export default connector(FillOrderButton)
+export default connector(decorate(FillOrderButton))

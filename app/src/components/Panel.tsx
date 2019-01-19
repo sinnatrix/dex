@@ -7,13 +7,13 @@ const decorate = jss(theme => ({
   root: theme.mixins.gutters({
     paddingTop: 10,
     paddingBottom: 10,
-    marginTop: theme.spacing.unit * 3
+    marginTop: theme.spacing.unit
   })
 }))
 
-const Panel = ({ classes, className, children }) => {
+const Panel = ({ classes, className, children, onClick }) => {
   return (
-    <Paper className={cx(classes.root, className)}>{children}</Paper>
+    <Paper className={cx(classes.root, className)} onClick={onClick}>{children}</Paper>
   )
 }
 

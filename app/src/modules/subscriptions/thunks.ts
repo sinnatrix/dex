@@ -27,7 +27,15 @@ export const wsSubscribe = (name, channel, payload) => async (dispatch, getState
   dispatch(actions.addSubscription({ requestId, channel, payload, name }))
 }
 
-export const processSocketMessage = message => (dispatch, getState) => {
+export const addMessageListener = getParams => (dispatch, getState, { socketService }) => {
+  socketService.addMessageListener(message => {
+    dispatch(
+      processSocketMessage(message, getParams())
+    )
+  })
+}
+
+export const processSocketMessage = (message, matchParams) => (dispatch, getState) => {
   const data = JSON.parse(message.data)
   const { type, payload, requestId } = data
 
@@ -40,7 +48,7 @@ export const processSocketMessage = message => (dispatch, getState) => {
   if (type === 'update') {
     switch (subscription.name) {
       case 'orders':
-        return dispatch(addOrders(payload))
+        return dispatch(addOrders(payload, matchParams))
       case 'accountOrders':
         return dispatch(addAccountOrders(payload))
       case 'assetPairTradeHistory':

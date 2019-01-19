@@ -1,12 +1,15 @@
 import { createStore, applyMiddleware } from 'redux'
 import thunk from 'redux-thunk'
-import rootReducer from './modules'
+import { routerMiddleware } from 'connected-react-router'
+import rootReducer from 'modules'
+import history from 'ownHistory'
 
 export default (extra?) => {
   return createStore(
-    rootReducer,
+    rootReducer({ history }),
     applyMiddleware(
-      thunk.withExtraArgument(extra)
+      thunk.withExtraArgument(extra),
+      routerMiddleware(history)
     )
   )
 }

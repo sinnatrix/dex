@@ -2,21 +2,24 @@ import React from 'react'
 import jss from 'react-jss'
 import TextField from '@material-ui/core/TextField'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import compose from 'ramda/es/compose'
 import { makeLimitOrder } from 'modules/orders'
 import { BigNumber } from '@0x/utils'
 import OrderModeRadio from './OrderModeRadio'
 import ProgressButton from 'components/ProgressButton'
+import cx from 'classnames'
+import { getQuoteAsset, getBaseAsset } from 'selectors'
 
 const connector = connect(
-  state => ({
-    marketplaceToken: state.global.marketplaceToken,
-    currentToken: state.global.currentToken
+  (state, ownProps) => ({
+    marketplaceToken: getQuoteAsset(ownProps.match.params, state),
+    currentToken: getBaseAsset(ownProps.match.params, state)
   }),
   { makeLimitOrder }
 )
 
-const decorate = jss({
+const decorate = jss(theme => ({
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -24,8 +27,14 @@ const decorate = jss({
   },
   button: {
     marginTop: 30
+  },
+  sell: {
+    backgroundColor: [theme.custom.bidColor.main, '!important']
+  },
+  buy: {
+    backgroundColor: [theme.custom.askColor.main, '!important']
   }
-})
+}))
 
 class LimitOrderForm extends React.Component<any> {
   state = {
@@ -60,7 +69,7 @@ class LimitOrderForm extends React.Component<any> {
       type: mode,
       amount: new BigNumber(amount),
       price: new BigNumber(price)
-    })
+    }, this.props.match.params)
   }
 
   render () {
@@ -90,17 +99,18 @@ class LimitOrderForm extends React.Component<any> {
         />
 
         <ProgressButton
-          className={classes.button}
+          className={cx(classes.button, classes[this.state.mode])}
           variant='contained'
           color='secondary'
           onClick={this.handlePlaceOrder}
-        >Place order</ProgressButton>
+        >Place {this.state.mode} order</ProgressButton>
       </div>
     )
   }
 }
 
 export default compose(
+  withRouter,
   connector,
   decorate
 )(LimitOrderForm)

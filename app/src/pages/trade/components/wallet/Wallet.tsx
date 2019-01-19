@@ -6,8 +6,8 @@ import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import TokensList from './TokensList'
 import OrdersList from './OrdersList'
-import TradeHistory from './TradeHistory'
-import connect from 'react-redux/es/connect/connect'
+import TradeHistory from '../tradeHistory/TradeHistory'
+import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
 import { loadAccountTradeHistory } from 'modules/tradeHistory'
 import { getAccountTradeHistory } from 'modules/tradeHistory/selectors'
@@ -37,10 +37,12 @@ const decorate = jss({
     alignItems: 'left',
     flex: 'none',
     flexDirection: 'column',
-    padding: 0
+    padding: 0,
+    fontSize: 14
   },
   tabRoot: {
-    minWidth: '33%'
+    minWidth: '33%',
+    fontSize: 12
   }
 })
 

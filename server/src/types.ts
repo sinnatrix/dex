@@ -1,6 +1,8 @@
 import { EventLog } from 'web3/types'
 import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
 import RelayerEntity from './entities/Relayer'
+import AssetEntity from './entities/Asset'
+import TradeHistoryEntity from './entities/TradeHistory'
 
 export interface ISRA2Order {
   order: SignedOrder
@@ -32,7 +34,11 @@ export interface IDexEventLog extends EventLog {
   returnValues: any
 }
 
-export interface IFillEventLog extends IDexEventLog {
+export interface IDexEventLogExtended extends IDexEventLog {
+  timestamp: number
+}
+
+export interface IFillEventLog extends IDexEventLogExtended {
   returnValues: {
     orderHash: string
     senderAddress: string
@@ -54,7 +60,7 @@ export interface IEventFilters {
   filter?: Object
 }
 
-export interface ICancelEventLog extends IDexEventLog {
+export interface ICancelEventLog extends IDexEventLogExtended {
   returnValues: {
     makerAddress: string
     feeRecipientAddress: string
@@ -106,11 +112,79 @@ export interface IWsRelayer extends RelayerEntity {
 export interface ISRA2Orders {
   total: number
   page: number
-  perPage: number,
+  perPage: number
   records: ISRA2Order[]
 }
 
 export interface IOrderbook {
   bids: ISRA2Orders
   asks: ISRA2Orders
+}
+
+export interface IRadarRelayAsset {
+  address: string
+  symbol: string
+  decimals: number
+  name: string
+  zeroex_official: number
+  active: number
+  quote: number
+  createDate: string
+  dydx?: {}
+}
+
+export interface ISRA2AssetPairAsset {
+  assetData: string
+  precision: number
+  minAmount: string
+  maxAmount: string
+}
+
+export interface ISRA2AssetPair {
+  assetDataA: ISRA2AssetPairAsset
+  assetDataB: ISRA2AssetPairAsset
+}
+
+export interface ISRA2AssetPairs {
+  total: number
+  page: number
+  perPage: number
+  records: ISRA2AssetPair[]
+}
+
+export interface IMarket {
+  id: string
+  name: string
+  path: string
+  baseAsset: AssetEntity
+  quoteAsset: AssetEntity
+  stats: IMarketStats
+  price: string | null
+  priceEth: string | null
+  score: number
+}
+
+export interface IMarketStats {
+  transactionCount: number
+  volume24Hours: string
+  percentChange24Hours: string
+  ethVolume24Hours: string
+}
+
+export interface IFillEntity extends TradeHistoryEntity {
+  makerAssetData: string
+  takerAssetData: string
+  makerFeePaid: string
+  takerFeePaid: string
+  makerAssetFilledAmount: string
+  takerAssetFilledAmount: string
+}
+
+export interface ICandleWithStrings {
+  volume: string
+  open: string | null
+  close: string | null
+  high: string | null
+  low: string | null
+  timestamp: number
 }

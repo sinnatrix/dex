@@ -1,6 +1,6 @@
 import { assetDataUtils } from '@0x/order-utils'
 import { BigNumber } from '@0x/utils'
-import { IDexToken } from 'types'
+import { IDexToken, IMarket } from 'types'
 
 export const DEFAULT_TOKEN = {
   id: 0,
@@ -26,8 +26,35 @@ export const getTokens = state => state.global.tokens.map(token => ({
 export const getTokenBySymbol = (symbol: string, state): IDexToken =>
   state.global.tokens.find(one => one.symbol === symbol) || DEFAULT_TOKEN
 
-export const getCurrentToken = state => state.global.currentToken
-export const getMarketplaceToken = state => state.global.marketplaceToken
-
 export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
   tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN
+
+export const getMarkets = state => state.global.markets
+
+export const getMarket = (matchParams, state) => {
+  const { baseAssetSymbol, quoteAssetSymbol } = matchParams
+
+  return getMarkets(state).find((one: IMarket) =>
+    one.baseAsset.symbol === baseAssetSymbol && one.quoteAsset.symbol === quoteAssetSymbol
+  )
+}
+
+export const getBaseAsset = (matchParams, state) => getMarket(matchParams, state).baseAsset
+export const getQuoteAsset = (matchParams, state) => getMarket(matchParams, state).quoteAsset
+
+export const getNetworkName = state => state.global.network
+
+export const getMarketCandles = (state) => {
+  const candles = state.global.marketCandles
+  return candles.map(one => ({
+    open: parseFloat(one.open),
+    close: parseFloat(one.close),
+    high: parseFloat(one.high),
+    low: parseFloat(one.low),
+    volume: parseFloat(one.volume),
+    date: new Date(one.timestamp * 1000),
+  }))
+}
+
+export const getPriceChartIntervals = state => state.global.priceChart.intervals
+export const getActivePriceChartInterval = state => getPriceChartIntervals(state).find(one => one.active)
