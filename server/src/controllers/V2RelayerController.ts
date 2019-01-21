@@ -9,7 +9,8 @@ import {
   convertSignedOrderWithStringsToSignedOrder,
   convertOrderToDexFormat,
   convertDexOrderToSRA2Format,
-  getDefaultOrderMetaData
+  getDefaultOrderMetaData,
+  toInt10
 } from '../utils/helpers'
 import { validateRequiredField, validateNetworkId } from '../validation'
 import OrderBlockchainService from '../services/OrderBlockchainService'
@@ -58,12 +59,10 @@ class V2RelayerController {
   }
 
   async getAssetPairs (req, res) {
-    const toInt = value => parseInt(value, 10)
-
     const params = R.evolve(
       {
-        page: toInt,
-        perPage: toInt
+        page: toInt10,
+        perPage: toInt10
       },
       R.pick(
         [
@@ -90,13 +89,11 @@ class V2RelayerController {
   async getOrderbook (req, res) {
     log.info('HTTP: GET /orderbook')
 
-    const toInt = value => parseInt(value, 10)
-
     const params = R.evolve(
       {
-        networkId: toInt,
-        page: toInt,
-        perPage: toInt
+        networkId: toInt10,
+        page: toInt10,
+        perPage: toInt10
       },
       R.pick(
         [

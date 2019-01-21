@@ -84,7 +84,7 @@ export default class OrderRepository extends Repository<OrderEntity> {
     for (let entity of entities) {
       const order = await this.findOne({ orderHash: entity.orderHash })
       if (!order) {
-        await this.save(entity)
+        await this.insert(entity)
       }
     }
   }

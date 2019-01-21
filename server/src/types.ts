@@ -3,6 +3,8 @@ import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
 import RelayerEntity from './entities/Relayer'
 import AssetEntity from './entities/Asset'
 import TradeHistoryEntity from './entities/TradeHistory'
+import { BlockType } from 'web3/eth/types'
+import JobEntity from './entities/Job'
 
 export interface ISRA2Order {
   order: SignedOrder
@@ -55,8 +57,8 @@ export interface IFillEventLog extends IDexEventLogExtended {
 }
 
 export interface IEventFilters {
-  fromBlock?: number
-  toBlock?: number | string
+  fromBlock?: BlockType
+  toBlock?: BlockType
   filter?: Object
 }
 
@@ -187,4 +189,17 @@ export interface ICandleWithStrings {
   high: string | null
   low: string | null
   timestamp: number
+}
+
+export enum JobStatus {
+  CREATED = 'CREATED',
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED'
+}
+
+export interface LoadEventsJobEntity extends JobEntity {
+  fromBlock: number
+  toBlock: number
 }

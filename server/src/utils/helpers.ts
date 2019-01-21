@@ -19,8 +19,9 @@ import * as R from 'ramda'
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-const toBN = value => new BigNumber(value)
-const toString10 = (value: BigNumber) => value.toString(10)
+export const toBN = value => new BigNumber(value)
+export const toString10 = (value: BigNumber) => value.toString(10)
+export const toInt10 = value => parseInt(value, 10)
 
 const createOrderTransformation = fn => ({
   makerFee: fn,

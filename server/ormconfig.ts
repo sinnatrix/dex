@@ -3,6 +3,7 @@ import AssetPairEntity from './src/entities/AssetPair'
 import OrderEntity from './src/entities/Order'
 import RelayerEntity from './src/entities/Relayer'
 import TradeHistoryEntity from './src/entities/TradeHistory'
+import JobEntity from './src/entities/Job'
 
 const ormconfig = {
   type: 'postgres',
@@ -19,7 +20,8 @@ const ormconfig = {
     AssetPairEntity,
     OrderEntity,
     RelayerEntity,
-    TradeHistoryEntity
+    TradeHistoryEntity,
+    JobEntity
   ]
 }
 
