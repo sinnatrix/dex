@@ -36,13 +36,22 @@ class MarketService {
 
     const sorter = R.descend(R.prop('score'))
 
-    return R.slice(0, this.MARKETS_LIMIT, R.sort(sorter, markets))
+    return R.slice(
+      0,
+      this.MARKETS_LIMIT
+        ? this.MARKETS_LIMIT
+        : markets.length,
+      R.sort(sorter, markets)
+    )
   }
 
   async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
     const { assetA: quoteAsset, assetB: baseAsset } = assetPair
 
-    const [records24Hours, count24Hours] = await this.tradeHistoryRepository.getAssetPairRecordsAndCountForLast24Hours(assetPair)
+    const [
+      records24Hours,
+      count24Hours
+    ] = await this.tradeHistoryRepository.getAssetPairRecordsAndCountForLast24Hours(assetPair)
 
     const volume24Hours = this.getAssetPairVolume24Hours(assetPair, records24Hours)
     const price = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)

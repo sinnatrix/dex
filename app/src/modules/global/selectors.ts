@@ -52,7 +52,7 @@ export const getMarketCandles = (state) => {
     high: parseFloat(one.high),
     low: parseFloat(one.low),
     volume: parseFloat(one.volume),
-    date: new Date(one.timestamp * 1000),
+    date: new Date(one.timestamp * 1000)
   }))
 }
 
