@@ -10,7 +10,7 @@ import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import JobRepository from '../repositories/JobRepository'
 
 class LoadTradeHistoryTask {
-  CHUNK_SIZE_BLOCKS = 2
+  CHUNK_SIZE_BLOCKS = 1000
 
   orderBlockchainService: OrderBlockchainService
   tradeHistoryRepository: TradeHistoryRepository

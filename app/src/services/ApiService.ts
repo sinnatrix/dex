@@ -6,8 +6,8 @@ class ApiService {
     return data
   }
 
-  async loadTokens () {
-    const { data } = await axios.get('/api/v1/tokens')
+  async loadTokens (params: any = {}) {
+    const { data } = await axios.get('/api/v1/tokens', { params })
     return data
   }
 

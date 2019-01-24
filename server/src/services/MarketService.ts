@@ -5,7 +5,6 @@ import { ICandleWithStrings, IFillEntity, IMarket } from '../types'
 import AssetPairEntity from '../entities/AssetPair'
 import AssetEntity from '../entities/Asset'
 import { BigNumber } from '@0x/utils'
-import * as R from 'ramda'
 import { floorTo, getEmptyCandleWithString } from '../utils/helpers'
 
 class MarketService {
@@ -25,24 +24,16 @@ class MarketService {
     this.tradeHistoryService = tradeHistoryService
   }
 
-  async getMarkets (): Promise<IMarket[]> {
-    const assetPairsWithAssets = await this.assetPairRepository.getAllWithAssets()
+  async getTopMarkets (): Promise<IMarket[]> {
+    const topRecords = await this.assetPairRepository.getTopRecordsByTxCount24Hours(this.MARKETS_LIMIT)
 
     let markets: IMarket[] = []
-    for (let assetPair of assetPairsWithAssets) {
-      let market = await this.getMarketByAssetPair(assetPair)
+    for (let record of topRecords) {
+      let market = await this.getMarketByAssetPairSymbols(record.marketId)
       markets.push(market)
     }
 
-    const sorter = R.descend(R.prop('score'))
-
-    return R.slice(
-      0,
-      this.MARKETS_LIMIT
-        ? this.MARKETS_LIMIT
-        : markets.length,
-      R.sort(sorter, markets)
-    )
+    return markets
   }
 
   async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
@@ -158,8 +149,7 @@ class MarketService {
   async getMarketByAssetPairSymbols (assetPairSymbols: string): Promise<IMarket> {
     const [ baseAssetSymbol, quoteAssetSymbol ] = assetPairSymbols.split('-')
 
-    const assetPair = (await this.assetPairRepository.getAllWithAssets())
-      .find(one => one.assetA.symbol === quoteAssetSymbol && one.assetB.symbol === baseAssetSymbol)
+    const assetPair = await this.assetPairRepository.getByAssetPairSymbols(quoteAssetSymbol, baseAssetSymbol)
 
     if (!assetPair) {
       throw new Error('Market not found')
@@ -181,7 +171,8 @@ class MarketService {
       toTimestamp,
       groupIntervalSeconds
     })
-    const normalizedData = this.normalizeCandlesByTimeline(
+
+    return this.normalizeCandlesByTimeline(
       candles,
       this.getTimeLine(
         fromTimestamp,
@@ -189,8 +180,6 @@ class MarketService {
         groupIntervalSeconds
       )
     )
-
-    return normalizedData
   }
 
   getTimeLine (fromTimestamp: number, toTimestamp: number, groupIntervalSeconds: number): number[] {
