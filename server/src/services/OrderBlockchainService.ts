@@ -2,7 +2,7 @@ import { ContractWrappers } from '0x.js'
 import log from '../utils/log'
 import WebsocketProviderWrapper from './WebsocketProviderWrapper'
 import { IDexEventLog, IDexEventLogExtended, IEventFilters, IFillEventLog } from '../types'
-import { Order, MethodOpts, OrderInfo } from '@0x/contract-wrappers'
+import { Order, MethodOpts, OrderInfo, SignedOrder } from '@0x/contract-wrappers'
 import { Block, BlockType } from 'web3/eth/types'
 import { EventLog } from 'web3/types'
 import { delay } from '../utils/helpers'
@@ -103,6 +103,10 @@ class OrderBlockchainService {
 
   getOrderInfoAsync (order: Order, opts: MethodOpts = {}): Promise<OrderInfo> {
     return this.httpContractWrappers.exchange.getOrderInfoAsync(order, opts)
+  }
+
+  getOrdersInfoAsync (orders: SignedOrder[], opts: MethodOpts = {}): Promise<OrderInfo[]> {
+    return this.httpContractWrappers.exchange.getOrdersInfoAsync(orders, opts)
   }
 
   async getBlock (blockNumber: BlockType): Promise<Block> {

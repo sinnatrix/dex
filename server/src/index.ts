@@ -44,6 +44,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
   container.resolve('v2RelayerController').attach()
   container.resolve('tradeHistoryService').attach()
   container.resolve('relayerSocketConnectionService').attach()
+  container.resolve('cronService').attach()
 
   container.resolve('server').listen(process.env.PORT, () => {
     log.info('started server on port', process.env.PORT)

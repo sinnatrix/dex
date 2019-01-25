@@ -203,3 +203,7 @@ export interface LoadEventsJobEntity extends JobEntity {
   fromBlock: number
   toBlock: number
 }
+
+export interface ITask {
+  run (job: JobEntity): Promise<JobEntity>
+}

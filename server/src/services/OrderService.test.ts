@@ -41,7 +41,7 @@ test('updateOrderInfoByHash', async t => {
   const orderService = new OrderService({ orderRepository, orderBlockchainService } as any)
   await orderService.updateOrderInfo(orderHash)
 
-  t.equal(saveFake.lastCall.args[0].orderTakerAssetFilledAmount, '0')
+  t.equal(saveFake.lastCall.args[0][0].orderTakerAssetFilledAmount, '0')
 
   t.end()
 })
