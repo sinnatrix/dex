@@ -1,5 +1,6 @@
 import RelayerRegistryService from '../services/RelayerRegistryService'
 import RelayerRepository from '../repositories/RelayerRepository'
+import JobEntity from '../entities/Job'
 import * as R from 'ramda'
 import { convertRelayerToDexFormat } from '../utils/helpers'
 
@@ -14,7 +15,7 @@ export default class LoadRelayersTask {
     this.relayerRepository = relayerRepository
   }
 
-  async run () {
+  async run (job: JobEntity): Promise<JobEntity> {
     const itemsWithUnderscores = await this.relayerRegistryService.loadRelayers()
 
     const itemsAsArray = R.values(
@@ -34,5 +35,7 @@ export default class LoadRelayersTask {
     const itemsToSave = itemsForCurrentNetwork.map(convertRelayerToDexFormat)
 
     await this.relayerRepository.insertIgnore(itemsToSave)
+
+    return job
   }
 }

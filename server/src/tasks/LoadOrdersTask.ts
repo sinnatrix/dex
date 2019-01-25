@@ -1,6 +1,7 @@
 import OrderRepository from '../repositories/OrderRepository'
 import RelayerRepository from '../repositories/RelayerRepository'
 import RelayerService from '../services/RelayerService'
+import JobEntity from '../entities/Job'
 import { convertOrderToDexFormat, getDefaultOrderMetaData } from '../utils/helpers'
 import log from '../utils/log'
 
@@ -15,12 +16,14 @@ export default class LoadOrdersTask {
     this.relayerService = relayerService
   }
 
-  async run () {
+  async run (job: JobEntity): Promise<JobEntity> {
     const relayers = await this.relayerRepository.getAllActiveWithHttpEndpoint()
 
     for (let relayer of relayers) {
       await this.loadOrdersAndSave(relayer)
     }
+
+    return job
   }
 
   async loadOrdersAndSave (relayer, page: number = 1) {

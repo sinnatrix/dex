@@ -4,6 +4,7 @@ import config from '../config'
 import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { ISRA2Order } from '../types'
 import MarketService from '../services/MarketService'
+import { In } from 'typeorm'
 
 class V1OwnController {
   application: any
@@ -48,7 +49,7 @@ class V1OwnController {
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
     router.post('/orders', this.createOrder.bind(this))
-    router.get('/markets', this.getMarkets.bind(this))
+    router.get('/markets', this.getTopMarkets.bind(this))
     router.get('/market/:marketId/candles', this.getMarketCandles.bind(this))
 
     this.application.use(config.OWN_API_PATH, router)
@@ -60,7 +61,19 @@ class V1OwnController {
   }
 
   async getTokens (req, res) {
-    const tokens = await this.assetRepository.find()
+    const { symbols: symbolsString } = req.query
+    let tokens
+    if (symbolsString) {
+      const symbols = symbolsString.split(',')
+      tokens = await this.assetRepository.find({
+        where: {
+          symbol: In(symbols)
+        }
+      })
+    } else {
+      tokens = await this.assetRepository.find()
+    }
+
     res.json(tokens)
   }
 
@@ -147,8 +160,9 @@ class V1OwnController {
     res.json(tradeHistory)
   }
 
-  async getMarkets (req, res) {
-    const markets = await this.marketService.getMarkets()
+  async getTopMarkets (req, res) {
+    const markets = await this.marketService.getTopMarkets()
+
     res.send(markets)
   }
 
@@ -163,7 +177,8 @@ class V1OwnController {
       +toTimestamp,
       +groupIntervalSeconds
     )
-    return res.send(candles)
+
+    res.send(candles)
   }
 }
 

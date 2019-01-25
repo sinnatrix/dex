@@ -98,6 +98,7 @@ const decorate = jss({
     padding: 15,
     width: 500,
     maxWidth: 500,
+    maxHeight: 300,
     overflow: 'auto'
   },
   arrow: {

@@ -18,6 +18,7 @@ class JobService {
   async execute (taskName, taskParams) {
     let job
     let entityProps = {
+      taskName,
       ...taskParams,
       status: JobStatus.ACTIVE
     }
@@ -31,7 +32,6 @@ class JobService {
         : toBlock
 
       entityProps = {
-        taskName,
         ...rest,
         fromBlock,
         toBlock

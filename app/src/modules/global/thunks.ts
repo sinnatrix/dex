@@ -56,7 +56,7 @@ export const setZeroTokenAllowance = token => async (dispatch, getState, { block
 }
 
 export const loadTokens = () => async (dispatch, getState, { apiService }) => {
-  const tokens = await apiService.loadTokens()
+  const tokens = await apiService.loadTokens({ symbols: 'WETH,DAI,ZRX' })
   dispatch(actions.setTokens(tokens))
 }
 
