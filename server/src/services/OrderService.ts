@@ -9,7 +9,7 @@ import WsRelayerServerFacade from '../wsRelayerServer/WsRelayerServerFacade'
 export default class OrderService {
   orderRepository: OrderRepository
   orderBlockchainService: OrderBlockchainService
-  wsRelayerServer: WsRelayerServer
+  wsRelayerServer?: WsRelayerServer
 
   constructor ({ orderRepository, orderBlockchainService, wsRelayerServer }) {
     this.orderRepository = orderRepository
@@ -22,7 +22,9 @@ export default class OrderService {
 
     const order = await this.getOrderByHashOrThrow(orderHash)
     const sra2Order = convertDexOrderToSRA2Format(order)
-    WsRelayerServerFacade.pushOrders(this.wsRelayerServer, [sra2Order])
+    if (this.wsRelayerServer) {
+      WsRelayerServerFacade.pushOrders(this.wsRelayerServer, [sra2Order])
+    }
   }
 
   async updateOrderInfo (orderHash: string) {
@@ -52,18 +54,15 @@ export default class OrderService {
   }
 
   async saveOrderInfo (orderInfo: OrderInfo) {
-    await this.orderRepository.save({
-      ...orderInfo,
-      orderTakerAssetFilledAmount: orderInfo.orderTakerAssetFilledAmount.toString(10)
-    } as any)
+    return this.saveOrdersInfo([orderInfo])
   }
 
-  // async updateOrdersInfo () {
-  //   const orders = await this.orderRepository.find()
-  //   log.info(`Updating info for ${orders.length} orders`)
-  //
-  //   for (let order of orders) {
-  //     await this.updateOrderInfoAndPush(order.orderHash)
-  //   }
-  // }
+  async saveOrdersInfo (ordersInfo: OrderInfo[]) {
+    const ordersInfoToSave = ordersInfo.map(orderInfo => ({
+      ...orderInfo,
+      orderTakerAssetFilledAmount: orderInfo.orderTakerAssetFilledAmount.toString(10)
+    }))
+
+    return this.orderRepository.save(ordersInfoToSave)
+  }
 }

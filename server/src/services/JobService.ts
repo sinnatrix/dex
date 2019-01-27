@@ -1,24 +1,30 @@
+import { AwilixContainer } from 'awilix'
 import JobRepository from '../repositories/JobRepository'
+import JobEntity from '../entities/Job'
 import { getNowUnixtime } from '../utils/helpers'
 import log from '../utils/log'
-import { JobStatus } from '../types'
+import { JobStatus, ITask } from '../types'
 import OrderBlockchainService from './OrderBlockchainService'
 
 class JobService {
-  task: any
+  container: AwilixContainer
   jobRepository: JobRepository
   orderBlockchainService: OrderBlockchainService
 
-  constructor ({ connection, orderBlockchainService, task }) {
+  constructor ({ container, connection, orderBlockchainService }) {
+    this.container = container
     this.orderBlockchainService = orderBlockchainService
     this.jobRepository = connection.getCustomRepository(JobRepository)
-    this.task = task
   }
 
-  async execute (taskName, taskParams) {
+  async execute (taskName: string, taskParams: any = {}) {
+    const fullTaskName = taskName + 'Task'
+
+    const task = this.container.resolve<ITask>(fullTaskName)
+
     let job
     let entityProps = {
-      taskName,
+      taskName: fullTaskName,
       ...taskParams,
       status: JobStatus.ACTIVE
     }
@@ -43,10 +49,10 @@ class JobService {
     }
 
     if (job) {
-      log.info(`Job for task ${taskName} found; params ${JSON.stringify(taskParams)}`)
+      log.info(`Job for task ${fullTaskName} found; params ${JSON.stringify(taskParams)}`)
       return
     }
-    log.info(`No jobs for task ${taskName} found; params ${JSON.stringify(taskParams)}`)
+    log.info(`No jobs for task ${fullTaskName} found; params ${JSON.stringify(taskParams)}`)
 
     job = {
       ...entityProps,
@@ -56,12 +62,12 @@ class JobService {
     await this.jobRepository.save(job)
 
     try {
-      const completedJob = await this.task.run(job)
+      const completedJob = await task.run(job)
       await this.jobRepository.save({
         ...completedJob,
         updatedAt: getNowUnixtime(),
         status: JobStatus.COMPLETED
-      })
+      } as any)
     } catch (e) {
       log.error(`Job failed:`, e.message)
       await this.jobRepository.update({ id: job.id }, {

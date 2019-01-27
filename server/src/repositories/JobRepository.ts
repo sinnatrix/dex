@@ -14,7 +14,7 @@ class JobRepository extends Repository<any> {
       query.where('"status" = :status', { status: JobStatus.CREATED })
     }
 
-    query.andWhere('int8range("fromBlock", "toBlock", \'[]\') && int8range(:fromBlock, :toBlock, \'[]\')')
+    query.andWhere(`int8range("fromBlock", "toBlock", '[]') && int8range(:fromBlock, :toBlock, '[]')`)
       .setParameters({ fromBlock, toBlock })
     query.andWhere({ ...rest })
       .setParameters({ ...rest })
