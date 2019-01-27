@@ -1,11 +1,13 @@
+import { AwilixContainer } from 'awilix'
 import JobRepository from '../repositories/JobRepository'
+import JobEntity from '../entities/Job'
 import { getNowUnixtime } from '../utils/helpers'
 import log from '../utils/log'
 import { JobStatus, ITask } from '../types'
 import OrderBlockchainService from './OrderBlockchainService'
 
 class JobService {
-  container: any
+  container: AwilixContainer
   jobRepository: JobRepository
   orderBlockchainService: OrderBlockchainService
 
@@ -18,7 +20,7 @@ class JobService {
   async execute (taskName: string, taskParams: any = {}) {
     const fullTaskName = taskName + 'Task'
 
-    const task: ITask = this.container.resolve(fullTaskName)
+    const task = this.container.resolve<ITask>(fullTaskName)
 
     let job
     let entityProps = {
@@ -65,7 +67,7 @@ class JobService {
         ...completedJob,
         updatedAt: getNowUnixtime(),
         status: JobStatus.COMPLETED
-      })
+      } as any)
     } catch (e) {
       log.error(`Job failed:`, e.message)
       await this.jobRepository.update({ id: job.id }, {

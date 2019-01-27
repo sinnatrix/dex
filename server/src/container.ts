@@ -1,4 +1,5 @@
 import * as WebSocket from 'ws'
+import { createContainer, asValue, asClass } from 'awilix'
 import WsRelayerServer from './wsRelayerServer/WsRelayerServer'
 import V1OwnController from './controllers/V1OwnController'
 import V2RelayerController from './controllers/V2RelayerController'
@@ -30,7 +31,6 @@ import SendEthTask from './tasks/SendEthTask'
 import ValidateOrderTask from './tasks/ValidateOrderTask'
 
 const Web3 = require('web3')
-const { createContainer, asValue, asClass } = require('awilix')
 
 const makeHttpProvider = () => {
   return new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL as string)
