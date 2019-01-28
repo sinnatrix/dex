@@ -22,20 +22,20 @@ class CronService {
     )
     log.info(`CheckActiveOrdersTask: is${!checkActiveOrders.running ? ' not' : ''} running`)
 
-    const incrementalLoadTradeHistory = new CronJob(
+    const loadTradeHistoryLastBlocksJob = new CronJob(
       '0 */10 * * * *',
-      this.incrementalLoadTradeHistory.bind(this),
+      this.loadTradeHistoryLastBlocks.bind(this),
       null,
       true
     )
-    log.info(`IncrementalLoadTradeHistory: is${!incrementalLoadTradeHistory.running ? ' not' : ''} running`)
+    log.info(`LoadTradeHistoryLastBlocks: is${!loadTradeHistoryLastBlocksJob.running ? ' not' : ''} running`)
   }
 
   async checkActiveOrders () {
     await this.jobService.execute('checkActiveOrders')
   }
 
-  async incrementalLoadTradeHistory () {
+  async loadTradeHistoryLastBlocks () {
     const CHUNK_SIZE_BLOCKS = 1000
     const TASK_NAME = 'loadTradeHistory'
 
