@@ -58,3 +58,5 @@ export const getMarketCandles = (state) => {
 
 export const getPriceChartIntervals = state => state.global.priceChart.intervals
 export const getActivePriceChartInterval = state => getPriceChartIntervals(state).find(one => one.active)
+
+export const getTokenAllowance = (symbol: string, state: any) => state.global.tokenAllowances[symbol]

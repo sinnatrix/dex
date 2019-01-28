@@ -19,6 +19,7 @@ import compose from 'ramda/es/compose'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
+import MarketplaceAllowances from './components/MarketplaceAllowances'
 
 const TradeHistoryContainer = connect(
   state => ({
@@ -101,6 +102,7 @@ class TradePage extends React.Component<any> {
         <div className={classes.left}>
           <Marketplace />
           <LimitOrderPanel />
+          <MarketplaceAllowances />
         </div>
         <Panel className={classes.panel}>
           <Tabs onChange={this.handleChange} value={value}>

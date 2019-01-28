@@ -15,6 +15,7 @@ import {
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
 import { OrderStatus, OrderInfo, SignedOrder } from '@0x/contract-wrappers'
+import { ERC20AssetData } from '@0x/types'
 import * as R from 'ramda'
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -67,8 +68,8 @@ export const convertDexOrderToSRA2Format = (order: OrderEntity): ISRA2Order => (
 })
 
 export const convertOrderToDexFormat = (order: ISRA2Order): OrderEntity => {
-  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
-  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
+  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData) as ERC20AssetData
+  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData) as ERC20AssetData
 
   const orderMetaData = {
     ...getDefaultOrderMetaData(order.order),

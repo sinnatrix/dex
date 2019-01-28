@@ -12,7 +12,6 @@ export const loadEthBalance = () => async (dispatch, getState, { blockchainServi
 
 export const loadTokenAllowance = token => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState().global
-
   const result = await blockchainService.getTokenAllowance(account, token.address)
 
   dispatch(actions.setTokenAllowance(token.symbol, !result.isZero()))
@@ -58,6 +57,10 @@ export const setZeroTokenAllowance = token => async (dispatch, getState, { block
 export const loadTokens = () => async (dispatch, getState, { apiService }) => {
   const tokens = await apiService.loadTokens({ symbols: 'WETH,DAI,ZRX' })
   dispatch(actions.setTokens(tokens))
+
+  for (let token of tokens) {
+    dispatch(loadTokenAllowance(token))
+  }
 }
 
 export const loadTokenBalance = token => async (dispatch, getState, { blockchainService }) => {
