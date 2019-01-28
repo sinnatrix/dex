@@ -34,11 +34,9 @@ const StyledTab = jss({
 const decorate = jss({
   root: {
     display: 'flex',
-    alignItems: 'left',
     flex: 'none',
     flexDirection: 'column',
-    padding: 0,
-    fontSize: 14
+    padding: 0
   },
   tabRoot: {
     minWidth: '33%',
@@ -80,7 +78,7 @@ class Wallet extends React.Component<any> {
   }
 }
 
-export default compose(
+export default (compose as any)(
   connector,
   decorate
 )(Wallet)

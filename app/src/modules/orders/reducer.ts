@@ -1,5 +1,9 @@
 import * as types from './types'
-import { map, path, dissocPath, assocPath, without } from 'ramda/es/index'
+import map from 'ramda/es/map'
+import path from 'ramda/es/path'
+import dissocPath from 'ramda/es/dissocPath'
+import assocPath from 'ramda/es/assocPath'
+import without from 'ramda/es/without'
 import { OrderStatus } from '@0x/contract-wrappers'
 import {
   mergeItemsReducer,

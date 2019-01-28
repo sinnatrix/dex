@@ -1,4 +1,6 @@
 import * as types from './types'
+import assocPath from 'ramda/es/assocPath'
+import mergeDeepRight from 'ramda/es/mergeDeepRight'
 
 const initialState = {
   market: null,
@@ -8,7 +10,12 @@ const initialState = {
   ethBalance: 0,
   tokenBalances: {},
   tokenAllowances: {},
-  tokens: [],
+  tokens: {
+    entities: {
+      tokens: {}
+    },
+    result: []
+  },
   markets: [],
   marketCandles: [],
   priceChart: {
@@ -55,23 +62,14 @@ export default (state = initialState, { type, payload }) => {
     case types.SET_ETH_BALANCE:
       return { ...state, ethBalance: payload }
     case types.SET_TOKEN_BALANCE:
-      return {
-        ...state,
-        tokenBalances: {
-          ...state.tokenBalances,
-          [payload.symbol]: payload.value
-        }
-      }
+      return assocPath(['tokenBalances', payload.symbol], payload.value, state)
     case types.SET_TOKEN_ALLOWANCE:
+      return assocPath(['tokenAllowances', payload.symbol], payload.value, state)
+    case types.MERGE_TOKENS:
       return {
         ...state,
-        tokenAllowances: {
-          ...state.tokenAllowances,
-          [payload.symbol]: payload.value
-        }
+        tokens: mergeDeepRight(state.tokens, payload)
       }
-    case types.SET_TOKENS:
-      return { ...state, tokens: payload }
     case types.SET_MARKETS:
       return { ...state, markets: payload }
     case types.SET_MARKET_CANDLES:

@@ -18,13 +18,15 @@ export const DEFAULT_TOKEN = {
 
 export const getAccount = state => state.global.account
 
-export const getTokens = state => state.global.tokens.map(token => ({
+export const getTokens = state => state.global.tokens.result.map(symbol =>
+  getTokenBySymbol(symbol, state)
+).map(token => ({
   ...token,
   assetData: assetDataUtils.encodeERC20AssetData(token.address)
 }))
 
 export const getTokenBySymbol = (symbol: string, state): IDexToken =>
-  state.global.tokens.find(one => one.symbol === symbol) || DEFAULT_TOKEN
+  state.global.tokens.entities.tokens[symbol] || DEFAULT_TOKEN
 
 export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
   tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN
@@ -60,3 +62,6 @@ export const getPriceChartIntervals = state => state.global.priceChart.intervals
 export const getActivePriceChartInterval = state => getPriceChartIntervals(state).find(one => one.active)
 
 export const getTokenAllowance = (symbol: string, state: any) => state.global.tokenAllowances[symbol]
+export const getTokenBalance = (symbol: string, state: any) => state.global.tokenBalances[symbol]
+
+export const getEthBalance = state => state.global.ethBalance

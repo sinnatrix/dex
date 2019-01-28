@@ -4,12 +4,11 @@ import { getQuoteAsset, getBaseAsset } from 'selectors'
 import { BigNumber } from '@0x/utils'
 import mergeWith from 'ramda/es/mergeWith'
 import descend from 'ramda/es/descend'
-import path from 'ramda/es/path'
 import sort from 'ramda/es/sort'
 import { IDexOrder } from 'types'
 
-const getPrice = (order: IDexOrder): string => path(['extra', 'price'], order).toString(10)
-const getExpiration = (order: IDexOrder): string => path(['order', 'expirationTimeSeconds'], order).toString(10)
+const getPrice = (order: IDexOrder): string => order.extra.price.toString(10)
+const getExpiration = (order: IDexOrder): string => order.order.expirationTimeSeconds.toString(10)
 const sortByPriceDesc = sort(descend(getPrice))
 const sortByExpirationDesc = sort(descend(getExpiration))
 

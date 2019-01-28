@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import FillOrderButton from './FillOrderButton'
 import OrderTrComponent from './OrderTrComponent'
-import ReactTable, { ReactTableDefaults } from 'react-table'
+import ReactTable from 'react-table'
 import 'react-table/react-table.css'
 import red from '@material-ui/core/colors/red'
 import { getQuoteAsset, getBaseAsset, getMarket } from 'selectors'
@@ -185,7 +185,7 @@ class OrdersTable extends React.Component<any> {
   }
 }
 
-export default compose(
+export default (compose as any)(
   withRouter,
   connector,
   decorate

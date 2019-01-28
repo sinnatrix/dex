@@ -14,7 +14,7 @@ import routerListener from 'hocs/routerListener'
 import { loadOrderbook } from 'modules/orders'
 import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
 import { loadMarketCandles } from 'modules/global'
-import { getActivePriceChartInterval, getAssetPairTradeHistory, getMarket } from 'selectors'
+import { getActivePriceChartInterval, getAssetPairTradeHistory, getMarket, getAccount } from 'selectors'
 import compose from 'ramda/es/compose'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
@@ -30,7 +30,8 @@ const TradeHistoryContainer = connect(
 const connector = connect(
   (state, ownProps) => ({
     market: getMarket(ownProps.match.params, state),
-    chartInterval: getActivePriceChartInterval(state)
+    chartInterval: getActivePriceChartInterval(state),
+    account: getAccount(state)
   })
 )
 
@@ -90,7 +91,7 @@ class TradePage extends React.Component<any> {
   }
 
   render () {
-    const { classes, chartInterval } = this.props
+    const { classes, chartInterval, account } = this.props
     const { value } = this.state
 
     return (
@@ -102,7 +103,9 @@ class TradePage extends React.Component<any> {
         <div className={classes.left}>
           <Marketplace />
           <LimitOrderPanel />
-          <MarketplaceAllowances />
+          {account &&
+            <MarketplaceAllowances />
+          }
         </div>
         <Panel className={classes.panel}>
           <Tabs onChange={this.handleChange} value={value}>
@@ -120,7 +123,7 @@ class TradePage extends React.Component<any> {
   }
 }
 
-export default compose(
+export default (compose as any)(
   withRouter,
   connector,
   routerListener({

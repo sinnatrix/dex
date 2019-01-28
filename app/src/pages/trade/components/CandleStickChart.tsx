@@ -7,14 +7,9 @@ import {
   CandlestickSeries
 } from 'react-stockcharts/lib/series'
 import { XAxis, YAxis } from 'react-stockcharts/lib/axes'
-import {
-  CrossHairCursor,
-  CurrentCoordinate,
-  MouseCoordinateX,
-  MouseCoordinateY
-} from 'react-stockcharts/lib/coordinates'
+import { CrossHairCursor, MouseCoordinateY } from 'react-stockcharts/lib/coordinates'
 import { discontinuousTimeScaleProvider } from 'react-stockcharts/lib/scale'
-import { OHLCTooltip, MovingAverageTooltip } from 'react-stockcharts/lib/tooltip'
+import { OHLCTooltip } from 'react-stockcharts/lib/tooltip'
 import { fitDimensions } from 'react-stockcharts/lib/helper'
 import { last } from 'react-stockcharts/lib/utils'
 

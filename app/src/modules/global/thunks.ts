@@ -1,7 +1,10 @@
+import { normalize, schema } from 'normalizr'
 import * as actions from './actions'
 import { getTokenBySymbol, getActivePriceChartInterval, getMarket } from './selectors'
 import { convertMarketDecimalsToNumbers } from './helpers'
 import { IMarket } from 'types'
+
+const tokenSchema = new schema.Entity('tokens', {}, { idAttribute: 'symbol' })
 
 export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState().global
@@ -56,11 +59,13 @@ export const setZeroTokenAllowance = token => async (dispatch, getState, { block
 
 export const loadTokens = () => async (dispatch, getState, { apiService }) => {
   const tokens = await apiService.loadTokens({ symbols: 'WETH,DAI,ZRX' })
-  dispatch(actions.setTokens(tokens))
 
-  for (let token of tokens) {
-    dispatch(loadTokenAllowance(token))
-  }
+  const normalized = normalize(
+    tokens,
+    [tokenSchema]
+  )
+
+  dispatch(actions.mergeTokens(normalized))
 }
 
 export const loadTokenBalance = token => async (dispatch, getState, { blockchainService }) => {

@@ -5,16 +5,19 @@ import { loadEthBalance } from 'modules/global'
 import WrapEthForm from './WrapEthForm'
 import TokenHeader from './TokenHeader'
 import TokenBalance from './TokenBalance'
+import { getEthBalance } from 'selectors'
 
 const connector = connect(
   state => ({
-    ethBalance: state.global.ethBalance
+    ethBalance: getEthBalance(state)
   }),
   { loadEthBalance }
 )
 
 const decorate = jss({
-  root: {},
+  root: {
+    fontSize: 14
+  },
   content: {
     display: 'flex',
     alignItems: 'center',

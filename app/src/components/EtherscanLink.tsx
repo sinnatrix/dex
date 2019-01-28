@@ -13,7 +13,8 @@ const connector = connect(
 
 const decorate = jss({
   root: {
-    display: 'flex'
+    display: 'flex',
+    fontSize: 12
   },
   content: {
     overflow: 'hidden',

@@ -9,7 +9,11 @@ import { ETHER_SYMBOL, toBN } from 'helpers/general'
 import {
   getTokens,
   findTokenByAssetData,
-  getAccount, getBaseAsset, getQuoteAsset, getMarket, getNetworkName
+  getAccount,
+  getBaseAsset,
+  getQuoteAsset,
+  getMarket,
+  getNetworkName
 } from 'selectors'
 import compose from 'ramda/es/compose'
 import { TradeHistoryEntity, IMarket, IDexToken } from 'types'
@@ -191,7 +195,7 @@ class TradeHistory extends React.Component<any> {
   }
 }
 
-export default compose(
+export default (compose as any)(
   withRouter,
   connector,
   decorate
