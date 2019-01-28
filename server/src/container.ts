@@ -14,6 +14,7 @@ import RelayerSocketConnectionService from './services/RelayerSocketConnectionSe
 import RelayerRepository from './repositories/RelayerRepository'
 import OrderRepository from './repositories/OrderRepository'
 import TradeHistoryRepository from './repositories/TradeHistoryRepository'
+import JobRepository from './repositories/JobRepository'
 import AssetRepository from './repositories/AssetRepository'
 import AssetPairRepository from './repositories/AssetPairRepository'
 import MarketService from './services/MarketService'
@@ -71,6 +72,7 @@ const createAppContainer = ({ connection }) => {
     tradeHistoryRepository: asValue(connection.getCustomRepository(TradeHistoryRepository)),
     assetRepository: asValue(connection.getCustomRepository(AssetRepository)),
     assetPairRepository: asValue(connection.getCustomRepository(AssetPairRepository)),
+    jobRepository: asValue(connection.getCustomRepository(JobRepository)),
     marketService: asClass(MarketService).singleton(),
     jobService: asClass(JobService).singleton(),
     cronService: asClass(CronService).singleton(),

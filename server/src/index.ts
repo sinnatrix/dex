@@ -48,9 +48,9 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
   container.resolve<WsRelayerServer>('wsRelayerServer').attach()
   container.resolve<V1OwnController>('v1OwnController').attach()
   container.resolve<V2RelayerController>('v2RelayerController').attach()
-  container.resolve<TradeHistoryService>('tradeHistoryService').attach()
-  container.resolve<RelayerSocketConnectionService>('relayerSocketConnectionService').attach()
-  container.resolve<CronService>('cronService').attach()
+  await container.resolve<TradeHistoryService>('tradeHistoryService').attach()
+  await container.resolve<RelayerSocketConnectionService>('relayerSocketConnectionService').attach()
+  await container.resolve<CronService>('cronService').attach()
 
   container.resolve<http.Server>('server').listen(process.env.PORT, () => {
     log.info('started server on port', process.env.PORT)
