@@ -1,7 +1,7 @@
 import createStore from 'createStore'
 import test from 'tape'
 import { addSubscription } from './actions'
-import { setMarkets, setTokens } from 'modules/global/actions'
+import { setMarkets, mergeTokens } from 'modules/global/actions'
 import { processSocketMessage } from './thunks'
 import { getOrderByHash } from 'modules/orders/selectors'
 import { generateSRA2Order, generateMarket } from 'helpers/testUtils'
@@ -18,10 +18,18 @@ test('processSocketMessage', async t => {
 
     store.dispatch(setMarkets([market]))
 
-    store.dispatch(setTokens([
-      market.baseAsset,
-      market.quoteAsset
-    ]))
+    store.dispatch(mergeTokens({
+      entities: {
+        tokens: {
+          [market.baseAsset.symbol]: market.baseAsset,
+          [market.quoteAsset.symbol]: market.quoteAsset
+        }
+      },
+      result: [
+        market.baseAsset.symbol,
+        market.quoteAsset.symbol
+      ]
+    }))
 
     const subscription = {
       requestId,

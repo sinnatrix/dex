@@ -10,9 +10,9 @@ import CancelOrderButton from './CancelOrderButton'
 import compose from 'ramda/es/compose'
 
 const connector = connect(
-  (state, ownProps) => {
-    return { accountOrders: getAccountOrders(ownProps.match.params, state) }
-  },
+  (state, ownProps) => ({
+    accountOrders: getAccountOrders(ownProps.match.params, state)
+  }),
   { loadActiveAccountOrders }
 )
 
@@ -102,7 +102,7 @@ class OrdersList extends React.Component<any> {
   }
 }
 
-export default compose(
+export default (compose as any)(
   withRouter,
   connector,
   decorate

@@ -13,5 +13,5 @@ export const convertMarketDecimalsToNumbers = (market: IMarketWithStrings): IMar
     }
   }
 
-  return evolve(transformation, market)
+  return evolve(transformation, market) as any
 }

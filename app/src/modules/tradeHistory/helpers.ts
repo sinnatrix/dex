@@ -24,5 +24,5 @@ export const convertTradeHistoryDecimalsToBigNumber = (tradeHistoryItem: IFillEv
     takerFeePaid: toBN
   }
 
-  return evolve(transformation, tradeHistoryItem)
+  return evolve(transformation, tradeHistoryItem as any) as any
 }

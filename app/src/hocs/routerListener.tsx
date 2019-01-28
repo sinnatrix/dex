@@ -47,7 +47,7 @@ const wrap = WrappedComponent => {
 }
 
 export default ({ onEnter, onLeave }) => WrappedComponent =>
-  compose(
+  (compose as any)(
     makeConnector({ onEnter, onLeave }),
     wrap
   )(WrappedComponent)

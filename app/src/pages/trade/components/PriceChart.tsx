@@ -63,7 +63,7 @@ class PriceChart extends React.Component<any> {
   }
 }
 
-export default compose(
+export default (compose as any)(
   connector,
   decorate
 )(PriceChart)
