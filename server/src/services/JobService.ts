@@ -1,6 +1,6 @@
 import { AwilixContainer } from 'awilix'
 import JobRepository from '../repositories/JobRepository'
-import JobEntity from '../entities/Job'
+
 import { getNowUnixtime } from '../utils/helpers'
 import log from '../utils/log'
 import { JobStatus, ITask } from '../types'

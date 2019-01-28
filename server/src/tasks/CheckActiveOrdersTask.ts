@@ -1,3 +1,4 @@
+import { orderHashUtils } from '0x.js'
 import JobEntity from '../entities/Job'
 import OrderRepository from '../repositories/OrderRepository'
 import OrderBlockchainService from '../services/OrderBlockchainService'
@@ -41,7 +42,12 @@ class CheckActiveOrdersTask implements ITask {
 
       const dexOrders = await ordersQuery.getMany()
       const signedOrders = dexOrders.map(one => convertDexOrderToSRA2Format(one).order)
-      const ordersInfo = await this.orderBlockchainService.getOrdersInfoAsync(signedOrders)
+
+      let ordersInfo = await this.orderBlockchainService.getOrdersInfoAsync(signedOrders)
+      ordersInfo = ordersInfo.map((one, index) => ({
+        ...one,
+        orderHash: orderHashUtils.getOrderHashHex(signedOrders[index])
+      }))
 
       await this.orderService.saveOrdersInfo(ordersInfo)
     }
