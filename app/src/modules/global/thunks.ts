@@ -1,6 +1,11 @@
 import { normalize, schema } from 'normalizr'
 import * as actions from './actions'
-import { getTokenBySymbol, getActivePriceChartInterval, getMarket } from './selectors'
+import {
+  getTokens,
+  getTokenBySymbol,
+  getActivePriceChartInterval,
+  getMarket
+} from './selectors'
 import { convertMarketDecimalsToNumbers } from './helpers'
 import { IMarket } from 'types'
 
@@ -58,7 +63,7 @@ export const setZeroTokenAllowance = token => async (dispatch, getState, { block
 }
 
 export const loadTokens = () => async (dispatch, getState, { apiService }) => {
-  const tokens = await apiService.loadTokens({ symbols: 'WETH,DAI,ZRX' })
+  const tokens = await apiService.loadTokens()
 
   const normalized = normalize(
     tokens,
@@ -66,6 +71,17 @@ export const loadTokens = () => async (dispatch, getState, { apiService }) => {
   )
 
   dispatch(actions.mergeTokens(normalized))
+  await dispatch(loadTokenBalances())
+}
+
+export const loadTokenBalances = () => async (dispatch, getState) => {
+  const tokens = getTokens(getState())
+
+  await Promise.all(
+    tokens.map(token =>
+      dispatch(loadTokenBalance(token))
+    )
+  )
 }
 
 export const loadTokenBalance = token => async (dispatch, getState, { blockchainService }) => {
