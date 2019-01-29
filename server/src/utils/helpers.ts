@@ -15,12 +15,14 @@ import {
 import { BigNumber } from '@0x/utils'
 import { orderHashUtils } from '0x.js'
 import { OrderStatus, OrderInfo, SignedOrder } from '@0x/contract-wrappers'
+import { ERC20AssetData } from '@0x/types'
 import * as R from 'ramda'
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-const toBN = value => new BigNumber(value)
-const toString10 = (value: BigNumber) => value.toString(10)
+export const toBN = value => new BigNumber(value)
+export const toString10 = (value: BigNumber) => value.toString(10)
+export const toInt10 = value => parseInt(value, 10)
 
 const createOrderTransformation = fn => ({
   makerFee: fn,
@@ -66,8 +68,8 @@ export const convertDexOrderToSRA2Format = (order: OrderEntity): ISRA2Order => (
 })
 
 export const convertOrderToDexFormat = (order: ISRA2Order): OrderEntity => {
-  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData)
-  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData)
+  const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.makerAssetData) as ERC20AssetData
+  const decodedTakerAssetData = assetDataUtils.decodeAssetDataOrThrow(order.order.takerAssetData) as ERC20AssetData
 
   const orderMetaData = {
     ...getDefaultOrderMetaData(order.order),

@@ -4,7 +4,11 @@ import prop from 'ramda/es/prop'
 import { convertTradeHistoryDecimalsToBigNumber } from './helpers'
 import { IFillEventLog, IFillEventLogWithStrings } from 'types'
 
-const sortByBlockNumberDesc = sortBy(descend(prop('blockNumber')))
+const sortByBlockNumberDesc = sortBy(
+  descend(
+    prop('blockNumber') as any
+  ) as any
+)
 
 const getTradeHistoryItemInDexFormatById = (id, state): IFillEventLog =>
   convertTradeHistoryDecimalsToBigNumber(getEventLogItemById(id, state))

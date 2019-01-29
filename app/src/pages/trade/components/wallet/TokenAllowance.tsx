@@ -1,14 +1,15 @@
 import React from 'react'
 import jss from 'react-jss'
 import { connect } from 'react-redux'
-import { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance } from 'modules/global'
+import { setUnlimitedTokenAllowance, setZeroTokenAllowance } from 'modules/global'
+import { getTokenAllowance } from 'selectors'
 import SmartToggleButton from 'components/SmartToggleButton'
 
 const connector = connect(
   (state, ownProps) => ({
-    allowance: state.global.tokenAllowances[ownProps.token.symbol]
+    allowance: getTokenAllowance(ownProps.token.symbol, state)
   }),
-  { setUnlimitedTokenAllowance, setZeroTokenAllowance, loadTokenAllowance }
+  { setUnlimitedTokenAllowance, setZeroTokenAllowance }
 )
 
 const decorate = jss({
@@ -19,12 +20,6 @@ const decorate = jss({
 })
 
 class TokenAllowance extends React.Component<any> {
-  componentDidMount () {
-    const { token, loadTokenAllowance } = this.props
-
-    loadTokenAllowance(token)
-  }
-
   handleChange = e => {
     const { token } = this.props
     const { checked } = e.target

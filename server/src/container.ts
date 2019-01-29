@@ -1,4 +1,5 @@
 import * as WebSocket from 'ws'
+import { createContainer, asValue, asClass } from 'awilix'
 import WsRelayerServer from './wsRelayerServer/WsRelayerServer'
 import V1OwnController from './controllers/V1OwnController'
 import V2RelayerController from './controllers/V2RelayerController'
@@ -13,12 +14,24 @@ import RelayerSocketConnectionService from './services/RelayerSocketConnectionSe
 import RelayerRepository from './repositories/RelayerRepository'
 import OrderRepository from './repositories/OrderRepository'
 import TradeHistoryRepository from './repositories/TradeHistoryRepository'
+import JobRepository from './repositories/JobRepository'
 import AssetRepository from './repositories/AssetRepository'
 import AssetPairRepository from './repositories/AssetPairRepository'
 import MarketService from './services/MarketService'
+import JobService from './services/JobService'
+import CronService from './services/CronService'
+import CheckActiveOrdersTask from './tasks/CheckActiveOrdersTask'
+import FillOrderTask from './tasks/FillOrderTask'
+import LoadOrderbookTask from './tasks/LoadOrderbookTask'
+import LoadOrdersTask from './tasks/LoadOrdersTask'
+import LoadRelayersTask from './tasks/LoadRelayersTask'
+import LoadTokenIconsTask from './tasks/LoadTokenIconsTask'
+import LoadTradeHistoryTask from './tasks/LoadTradeHistoryTask'
+import SeedTask from './tasks/SeedTask'
+import SendEthTask from './tasks/SendEthTask'
+import ValidateOrderTask from './tasks/ValidateOrderTask'
 
 const Web3 = require('web3')
-const { createContainer, asValue, asClass } = require('awilix')
 
 const makeHttpProvider = () => {
   return new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE_URL as string)
@@ -36,6 +49,7 @@ const createAppContainer = ({ connection }) => {
   const container = createContainer()
 
   container.register({
+    container: asValue(container),
     connection: asValue(connection),
     networkId: asValue(parseInt(process.env.NETWORK_ID as string, 10)),
     wsRelayerServer: asClass(WsRelayerServer).singleton(),
@@ -58,7 +72,20 @@ const createAppContainer = ({ connection }) => {
     tradeHistoryRepository: asValue(connection.getCustomRepository(TradeHistoryRepository)),
     assetRepository: asValue(connection.getCustomRepository(AssetRepository)),
     assetPairRepository: asValue(connection.getCustomRepository(AssetPairRepository)),
-    marketService: asClass(MarketService).singleton()
+    jobRepository: asValue(connection.getCustomRepository(JobRepository)),
+    marketService: asClass(MarketService).singleton(),
+    jobService: asClass(JobService).singleton(),
+    cronService: asClass(CronService).singleton(),
+    checkActiveOrdersTask: asClass(CheckActiveOrdersTask),
+    fillOrderTask: asClass(FillOrderTask),
+    loadOrderbookTask: asClass(LoadOrderbookTask),
+    loadOrdersTask: asClass(LoadOrdersTask),
+    loadRelayersTask: asClass(LoadRelayersTask),
+    loadTokenIconsTask: asClass(LoadTokenIconsTask),
+    loadTradeHistoryTask: asClass(LoadTradeHistoryTask),
+    seedTask: asClass(SeedTask),
+    sendEthTask: asClass(SendEthTask),
+    validateOrderTask: asClass(ValidateOrderTask)
   })
 
   return container

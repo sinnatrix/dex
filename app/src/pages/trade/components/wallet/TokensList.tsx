@@ -4,11 +4,12 @@ import EthToken from './EthToken'
 import Token from './Token'
 import WethToken from './WethToken'
 import { connect } from 'react-redux'
+import { getTokens, getAccount } from 'selectors'
 
 const connector = connect(
   state => ({
-    account: state.global.account,
-    tokens: state.global.tokens
+    account: getAccount(state),
+    tokens: getTokens(state)
   })
 )
 

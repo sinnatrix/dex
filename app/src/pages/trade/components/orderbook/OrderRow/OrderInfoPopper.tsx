@@ -76,7 +76,7 @@ const OrderInfoPopper = ({ classes, order, market, anchorEl }) =>
     </Paper>
   </Popper>
 
-export default compose(
+export default (compose as any)(
   withRouter,
   connector,
   decorate

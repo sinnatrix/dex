@@ -1,6 +1,5 @@
 import RelayerSocketConnectionService from './RelayerSocketConnectionService'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
-import RelayerRepository from '../repositories/RelayerRepository'
 import { convertSignedOrderToSignedOrderWithStrings, delay } from '../utils/helpers'
 import { generateSRA2Order } from '../utils/testUtils'
 import * as http from 'http'

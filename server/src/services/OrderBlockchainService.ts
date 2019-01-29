@@ -1,8 +1,11 @@
 import { ContractWrappers } from '0x.js'
 import log from '../utils/log'
 import WebsocketProviderWrapper from './WebsocketProviderWrapper'
-import { IEventFilters } from '../types'
-import { Order, MethodOpts, OrderInfo } from '@0x/contract-wrappers'
+import { IDexEventLog, IDexEventLogExtended, IEventFilters, IFillEventLog } from '../types'
+import { Order, MethodOpts, OrderInfo, SignedOrder } from '@0x/contract-wrappers'
+import { Block, BlockType } from 'web3/eth/types'
+import { EventLog } from 'web3/types'
+import { delay } from '../utils/helpers'
 const Web3 = require('web3')
 
 class OrderBlockchainService {
@@ -56,7 +59,7 @@ class OrderBlockchainService {
    * Load order history from blockchain.
    * We load info about past fill events filtered by orderHash so result may contain
    */
-  loadOrderHistory (orderHash: string, { fromBlock = 0 } = {}) {
+  loadOrderHistory (orderHash: string, { fromBlock = 0 } = {}): Promise<EventLog[]> {
     return this.getPastEvents(
       'Fill',
       {
@@ -68,7 +71,10 @@ class OrderBlockchainService {
     )
   }
 
-  getPastEvents (event, filters: IEventFilters = { fromBlock: 0, toBlock: 'latest', filter: {} }) {
+  getPastEvents (
+    event: string,
+    filters: IEventFilters = { fromBlock: 0, toBlock: 'latest', filter: {} }
+    ): Promise<any> {
     return this.httpContract.getPastEvents(
       event,
       filters
@@ -97,6 +103,44 @@ class OrderBlockchainService {
 
   getOrderInfoAsync (order: Order, opts: MethodOpts = {}): Promise<OrderInfo> {
     return this.httpContractWrappers.exchange.getOrderInfoAsync(order, opts)
+  }
+
+  getOrdersInfoAsync (orders: SignedOrder[], opts: MethodOpts = {}): Promise<OrderInfo[]> {
+    return this.httpContractWrappers.exchange.getOrdersInfoAsync(orders, opts)
+  }
+
+  async getBlock (blockNumber: BlockType): Promise<Block> {
+    const web3 = new Web3(this.httpProvider)
+    let block = await web3.eth.getBlock(blockNumber)
+
+    let i = 0
+    while (!block) {
+      i++
+      await delay(i * 100)
+      block = await web3.eth.getBlock(blockNumber)
+    }
+
+    return block
+  }
+
+  async loadTradeHistory (event: string, fromBlock: BlockType, toBlock: BlockType = 'latest'): Promise<IDexEventLogExtended[]> {
+    const fillEvents: IFillEventLog[] = await this.getPastEvents(event, { fromBlock, toBlock })
+
+    let result: IDexEventLogExtended[] = []
+    for (let fillEvent of fillEvents) {
+      const fillEventWithTs = await this.addTimestampToEventLog(fillEvent)
+      result.push(fillEventWithTs)
+    }
+
+    return result
+  }
+
+  async addTimestampToEventLog (item: IDexEventLog): Promise<IDexEventLogExtended> {
+    const block = await this.getBlock(item.blockNumber)
+    return {
+      ...item,
+      timestamp: block.timestamp
+    }
   }
 }
 

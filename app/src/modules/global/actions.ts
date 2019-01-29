@@ -1,6 +1,6 @@
 import * as types from './types'
 
-export const setTokens = payload => ({ type: types.SET_TOKENS, payload })
+export const mergeTokens = payload => ({ type: types.MERGE_TOKENS, payload })
 export const setAccount = payload => ({ type: types.SET_ACCOUNT, payload })
 export const setNetwork = payload => ({ type: types.SET_NETWORK, payload })
 export const setTokenBalance = (symbol, value) => ({ type: types.SET_TOKEN_BALANCE, payload: { symbol, value } })

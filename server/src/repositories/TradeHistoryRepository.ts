@@ -20,12 +20,12 @@ class TradeHistoryRepository extends Repository<any> {
     })
   }
 
-  async getMaxBlockNumber () {
+  async getMaxBlockNumber (): Promise<number> {
     const records = await this.createQueryBuilder()
       .select('MAX("blockNumber")')
       .execute()
 
-    if (records.length === 0) {
+    if (records.length === 0 || records[0].max === null) {
       return -1
     }
 
