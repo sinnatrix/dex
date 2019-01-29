@@ -7,7 +7,7 @@ const decorate = jss({
     display: 'flex'
   },
   symbol: {
-    width: 45,
+    width: 70,
     marginRight: 30
   }
 })

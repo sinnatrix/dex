@@ -25,6 +25,12 @@ export const getTokens = state => state.global.tokens.result.map(symbol =>
   assetData: assetDataUtils.encodeERC20AssetData(token.address)
 }))
 
+export const getTokensToDisplay = state => getTokens(state)
+  .filter(one => one.symbol !== 'WETH')
+  .filter(one =>
+    one.symbol === 'DAI' || getTokenBalance(one.symbol, state)
+  )
+
 export const getTokenBySymbol = (symbol: string, state): IDexToken =>
   state.global.tokens.entities.tokens[symbol] || DEFAULT_TOKEN
 
