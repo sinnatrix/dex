@@ -4,13 +4,15 @@ import EthToken from './EthToken'
 import Token from './Token'
 import WethToken from './WethToken'
 import { connect } from 'react-redux'
-import { getTokens, getAccount } from 'selectors'
+import { getTokensToDisplay, getTokenBySymbol } from 'selectors'
+import { loadTokenBalances } from 'modules/global'
 
 const connector = connect(
   state => ({
-    account: getAccount(state),
-    tokens: getTokens(state)
-  })
+    tokens: getTokensToDisplay(state),
+    wethToken: getTokenBySymbol('WETH', state)
+  }),
+  { loadTokenBalances }
 )
 
 const decorate = jss({
@@ -21,33 +23,30 @@ const decorate = jss({
   }
 })
 
-const TokensList = ({ classes, tokens, account }) => {
-  if (tokens.length === 0 || !account) {
-    return null
-  }
+class TokensList extends React.Component<any> {
+  render () {
+    const { classes, tokens, wethToken } = this.props
 
-  const wethToken = tokens.find(one => one.symbol === 'WETH')
-  if (!wethToken) {
-    return null
-  }
-
-  return (
-    <React.Fragment>
-      <div className={classes.token}>
-        <EthToken />
-      </div>
-
-      <div className={classes.token}>
-        <WethToken token={wethToken} />
-      </div>
-
-      {tokens.filter(token => token.symbol !== 'WETH').map(token =>
-        <div key={token.address} className={classes.token}>
-          <Token token={token} />
+    return (
+      <>
+        <div className={classes.token}>
+          <EthToken />
         </div>
-      )}
-    </React.Fragment>
-  )
+
+        {!!wethToken && !!wethToken.address &&
+          <div className={classes.token}>
+            <WethToken token={wethToken}/>
+          </div>
+        }
+
+        {tokens.map(token =>
+          <div key={token.address} className={classes.token}>
+            <Token token={token} />
+          </div>
+        )}
+      </>
+    )
+  }
 }
 
 export default connector(decorate(TokensList))

@@ -1,17 +1,16 @@
 import React from 'react'
 import jss from 'react-jss'
-import { loadTokenBalance, loadTokenAllowance } from 'modules/global'
+import { loadTokenAllowance } from 'modules/global'
 import { connect } from 'react-redux'
 import TokenAllowance from './TokenAllowance'
 import TokenHeader from './TokenHeader'
-import TokenBalance from './TokenBalance'
 import { getTokenBalance } from 'selectors'
 
 const connector = connect(
   (state, ownProps) => ({
     balance: getTokenBalance(ownProps.token.symbol, state)
   }),
-  { loadTokenBalance, loadTokenAllowance }
+  { loadTokenAllowance }
 )
 
 const decorate = jss({
@@ -22,12 +21,14 @@ const decorate = jss({
     display: 'flex',
     alignItems: 'center',
     height: 32
+  },
+  balance: {
+    width: 65,
+    marginRight: 20
   }
 })
 
 class Token extends React.Component<any> {
-  loadBalance = () => this.props.loadTokenBalance(this.props.token)
-
   componentDidMount () {
     this.props.loadTokenAllowance(this.props.token)
   }
@@ -39,7 +40,9 @@ class Token extends React.Component<any> {
       <div className={classes.root}>
         <TokenHeader symbol={token.symbol} name={token.name} />
         <div className={classes.content}>
-          <TokenBalance balance={balance} load={this.loadBalance} />
+          <span className={classes.balance}>
+            {balance ? balance.toFixed(7) : '0'}
+          </span>
           <TokenAllowance token={token} />
         </div>
       </div>

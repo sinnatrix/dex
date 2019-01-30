@@ -11,6 +11,7 @@ import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
 import { loadAccountTradeHistory } from 'modules/tradeHistory'
 import { getAccountTradeHistory } from 'modules/tradeHistory/selectors'
+import { getAccount } from 'selectors'
 
 const TradeHistoryContainer = connect(
   state => ({
@@ -19,7 +20,9 @@ const TradeHistoryContainer = connect(
 )(TradeHistory)
 
 const connector = connect(
-  null,
+  state => ({
+    account: getAccount(state)
+  }),
   { loadAccountTradeHistory }
 )
 
@@ -59,20 +62,26 @@ class Wallet extends React.Component<any> {
   }
 
   render () {
-    const { classes } = this.props
+    const { classes, account } = this.props
     const { value } = this.state
 
     return (
       <Panel className={classes.root}>
         <ConnectionWidget />
-        <Tabs onChange={this.handleChange} value={value}>
-          <StyledTab label='Tokens' />
-          <StyledTab label='Orders' />
-          <StyledTab label='History' />
-        </Tabs>
-        {value === 0 && <TokensList />}
-        {value === 1 && <OrdersList />}
-        {value === 2 && <TradeHistoryContainer />}
+
+        {!!account &&
+          <>
+            <Tabs onChange={this.handleChange} value={value}>
+              <StyledTab label='Tokens'/>
+              <StyledTab label='Orders'/>
+              <StyledTab label='History'/>
+            </Tabs>
+
+            {value === 0 && <TokensList />}
+            {value === 1 && <OrdersList />}
+            {value === 2 && <TradeHistoryContainer />}
+          </>
+        }
       </Panel>
     )
   }
