@@ -33,15 +33,15 @@ test-server:
   script:
     - docker run --rm -t dex-server-builder yarn test
 
-# deploy-develop:
-#   stage: deploy
-#   only:
-#     refs:
-#       - develop
-#   script:
-#     - gpg -v --import <(echo "$GPG_PRIVATE_KEY")
-#     - git secret reveal -f
-#     - docker-compose -p development -f docker-compose.yml -f docker-compose.develop.yml up --force-recreate -d
+deploy-develop:
+  stage: deploy
+  only:
+    refs:
+      - develop
+  script:
+    - gpg -v --import <(echo "$GPG_PRIVATE_KEY")
+    - git secret reveal -f
+    - docker-compose -p development -f docker-compose.yml -f docker-compose.develop.yml up --force-recreate -d
 
 # deploy-production:
 #   stage: deploy
