@@ -23,7 +23,12 @@ class LoadTradeHistoryTask {
   }
 
   async run (job: LoadEventsJobEntity): Promise<LoadEventsJobEntity> {
-    const { fromBlock, toBlock } = job
+    let { fromBlock, toBlock } = job
+
+    const latestBlock = await this.orderBlockchainService.getBlock('latest')
+
+    toBlock = toBlock > latestBlock.number ? latestBlock.number : toBlock
+
     let chunkSize = this.CHUNK_SIZE_BLOCKS
     let start
     let end

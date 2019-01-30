@@ -42,11 +42,11 @@ class CronService {
     const query = this.jobRepository.createQueryBuilder('jobs')
       .where(`"taskName" = :taskName`, { taskName: `${TASK_NAME}Task` })
       .andWhere(`status = :status`, { status: JobStatus.COMPLETED })
-      .orderBy(`"updatedAt"`, 'DESC')
+      .orderBy(`"toBlock"`, 'DESC')
 
     const latestCompletedJob = await query.getOne()
 
-    const fromBlock = latestCompletedJob ? +latestCompletedJob.currentBlock + 1 : 1
+    const fromBlock = latestCompletedJob ? +latestCompletedJob.toBlock + 1 : 1
     const toBlock = fromBlock + CHUNK_SIZE_BLOCKS - 1
 
     await this.jobService.execute(TASK_NAME, { fromBlock, toBlock })
