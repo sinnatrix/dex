@@ -23,43 +23,13 @@ class JobService {
     const task = this.container.resolve<ITask>(fullTaskName)
 
     let job
-    let entityProps = {
-      taskName: fullTaskName,
-      ...taskParams,
-      status: JobStatus.ACTIVE
-    }
 
-    if (taskParams.fromBlock !== undefined || taskParams.toBlock !== undefined) {
-      let { fromBlock, toBlock, ...rest } = entityProps
-
-      fromBlock = fromBlock === undefined ? 1 : fromBlock
-      toBlock = toBlock === undefined
-        ? (await this.orderBlockchainService.getBlock('latest')).number
-        : toBlock
-
-      entityProps = {
-        ...rest,
-        fromBlock,
-        toBlock
-      }
-
-      job = await this.jobRepository.findLoadEventsJob(entityProps)
-    } else {
-      job = await this.jobRepository.findActiveJob(entityProps)
-    }
-
-    if (job) {
-      log.info(`Job for task ${fullTaskName} found; params ${JSON.stringify(taskParams)}`)
+    try {
+      job = await this.createJob(fullTaskName, taskParams)
+    } catch (e) {
+      log.error(e)
       return
     }
-    log.info(`No jobs for task ${fullTaskName} found; params ${JSON.stringify(taskParams)}`)
-
-    job = {
-      ...entityProps,
-      createdAt: getNowUnixtime()
-    }
-
-    await this.jobRepository.save(job)
 
     try {
       const completedJob = await task.run(job)
@@ -75,6 +45,50 @@ class JobService {
         status: JobStatus.FAILED
       } as any)
     }
+  }
+
+  async createJob (fullTaskName, taskParams) {
+    let job
+    let entityProps = {
+      taskName: fullTaskName,
+      ...taskParams,
+      status: JobStatus.ACTIVE
+    }
+
+    if (taskParams.fromBlock !== undefined || taskParams.toBlock !== undefined) {
+      let { fromBlock, toBlock, ...rest } = entityProps
+
+      fromBlock = fromBlock === undefined ? 1 : fromBlock
+      const latestBlockNumber = (await this.orderBlockchainService.getBlock('latest')).number
+
+      toBlock = Math.min(
+        toBlock === undefined ? latestBlockNumber : toBlock,
+        latestBlockNumber
+      )
+
+      entityProps = {
+        ...rest,
+        fromBlock,
+        toBlock
+      }
+
+      job = await this.jobRepository.findLoadEventsJob(entityProps)
+    } else {
+      job = await this.jobRepository.findActiveJob(entityProps)
+    }
+
+    if (job) {
+      throw new Error(`Job for task ${fullTaskName} found; params ${JSON.stringify(taskParams)}`)
+    }
+
+    job = {
+      ...entityProps,
+      createdAt: getNowUnixtime()
+    }
+
+    await this.jobRepository.save(job)
+
+    return job
   }
 }
 
