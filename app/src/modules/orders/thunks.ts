@@ -14,6 +14,10 @@ export const loadOrderbook = matchParams => async (dispatch, getState, { apiServ
   const quoteAsset = getQuoteAsset(matchParams, getState())
   const baseAsset = getBaseAsset(matchParams, getState())
 
+  if (!quoteAsset || !baseAsset) {
+    return
+  }
+
   const data = await apiService.loadOrderbook({
     baseAssetData: baseAsset.assetData,
     quoteAssetData: quoteAsset.assetData
@@ -43,6 +47,10 @@ export const loadOrderbook = matchParams => async (dispatch, getState, { apiServ
 export const addOrders = (orders: ISRA2Order[], matchParams) => async (dispatch, getState) => {
   const quoteAsset = getQuoteAsset(matchParams, getState())
   const baseAsset = getBaseAsset(matchParams, getState())
+
+  if (!quoteAsset || !baseAsset) {
+    return
+  }
 
   const isBid = ({ order }) => order.takerAssetData === quoteAsset.assetData &&
     order.makerAssetData === baseAsset.assetData

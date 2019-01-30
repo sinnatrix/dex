@@ -6,10 +6,11 @@ import {
   getActivePriceChartInterval,
   getMarket
 } from './selectors'
-import { convertMarketDecimalsToNumbers } from './helpers'
 import { IMarket } from 'types'
 
 const tokenSchema = new schema.Entity('tokens', {}, { idAttribute: 'symbol' })
+
+const marketSchema = new schema.Entity('markets', {}, { idAttribute: 'id' })
 
 export const loadEthBalance = () => async (dispatch, getState, { blockchainService }) => {
   const { account } = getState().global
@@ -137,9 +138,22 @@ export const unwrapWeth = amount => async (dispatch, getState, { blockchainServi
 }
 
 export const loadMarkets = () => async (dispatch, getState, { apiService }) => {
-  const marketsWithStrings = await apiService.loadMarkets()
-  const markets = marketsWithStrings.map(convertMarketDecimalsToNumbers)
-  dispatch(actions.setMarkets(markets))
+  const markets = await apiService.loadMarkets()
+
+  const normalized = normalize(
+    markets,
+    [marketSchema]
+  )
+
+  dispatch(actions.mergeMarkets(normalized))
+}
+
+export const loadMarket = matchParams => async (dispatch, getState, { apiService }) => {
+  const { baseAssetSymbol, quoteAssetSymbol } = matchParams
+  const marketId = `${baseAssetSymbol}-${quoteAssetSymbol}`
+  const market = await apiService.loadMarket(marketId)
+
+  dispatch(actions.addMarket(market))
 }
 
 export const loadMarketCandles = (market: IMarket, fromTimestamp, toTimestamp, groupIntervalSeconds) =>
@@ -157,9 +171,16 @@ export const loadMarketCandles = (market: IMarket, fromTimestamp, toTimestamp, g
   }
 
 export const setPriceChartIntervalById = (matchParams, id: string) => async (dispatch, getState) => {
-  dispatch(actions.setPriceChartInterval(id))
   const market = getMarket(matchParams, getState())
+
+  if (!market) {
+    return
+  }
+
+  dispatch(actions.setPriceChartInterval(id))
+
   const interval = getActivePriceChartInterval(getState())
   const now = Math.round((new Date()).getTime() / 1000)
+
   dispatch(loadMarketCandles(market, now - interval.intervalSeconds, now, interval.groupIntervalSeconds))
 }

@@ -29,12 +29,16 @@ export const loadAccountTradeHistory = () => async (dispatch, getState, { apiSer
 }
 
 export const loadAssetPairTradeHistory = (matchParams, page?, perPage?) => async (dispatch, getState, { apiService }) => {
-  const marketplaceToken = getQuoteAsset(matchParams, getState())
-  const currentToken = getBaseAsset(matchParams, getState())
+  const baseAsset = getBaseAsset(matchParams, getState())
+  const quoteAsset = getQuoteAsset(matchParams, getState())
+
+  if (!quoteAsset || !baseAsset) {
+    return
+  }
 
   const tradeHistory = await apiService.loadTradeHistory({
-    baseAssetData: currentToken.assetData,
-    quoteAssetData: marketplaceToken.assetData,
+    baseAssetData: baseAsset.assetData,
+    quoteAssetData: quoteAsset.assetData,
     page,
     perPage
   })
@@ -53,8 +57,8 @@ export const loadAssetPairTradeHistory = (matchParams, page?, perPage?) => async
     'tradeHistory',
     {
       $or: [
-        { makerAssetData: currentToken.assetData, takerAssetData: marketplaceToken.assetData },
-        { makerAssetData: marketplaceToken.assetData, takerAssetData: currentToken.assetData }
+        { makerAssetData: baseAsset.assetData, takerAssetData: quoteAsset.assetData },
+        { makerAssetData: quoteAsset.assetData, takerAssetData: baseAsset.assetData }
       ]
     }
   ))

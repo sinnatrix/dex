@@ -1,6 +1,7 @@
 import { assetDataUtils } from '@0x/order-utils'
 import { BigNumber } from '@0x/utils'
 import { IDexToken, IMarket } from 'types'
+import { convertMarketDecimalsToNumbers } from './helpers'
 
 export const DEFAULT_TOKEN = {
   id: 0,
@@ -37,18 +38,29 @@ export const getTokenBySymbol = (symbol: string, state): IDexToken =>
 export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
   tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN
 
-export const getMarkets = state => state.global.markets
+export const getMarkets = (state): IMarket[] => state.global.markets.result
+  .map(id => getMarketById(id, state))
+
+export const getMarketById = (id: string, state: any): IMarket =>
+  convertMarketDecimalsToNumbers(state.global.markets.entities.markets[id])
 
 export const getMarket = (matchParams, state) => {
   const { baseAssetSymbol, quoteAssetSymbol } = matchParams
-
-  return getMarkets(state).find((one: IMarket) =>
-    one.baseAsset.symbol === baseAssetSymbol && one.quoteAsset.symbol === quoteAssetSymbol
-  )
+  const id = `${baseAssetSymbol}-${quoteAssetSymbol}`
+  const market = state.global.markets.entities.markets[id]
+  return market ? convertMarketDecimalsToNumbers(market) : null
 }
 
-export const getBaseAsset = (matchParams, state) => getMarket(matchParams, state).baseAsset
-export const getQuoteAsset = (matchParams, state) => getMarket(matchParams, state).quoteAsset
+export const getBaseAsset = (matchParams, state) => {
+  const market = getMarket(matchParams, state)
+
+  return market ? market.baseAsset : null
+}
+export const getQuoteAsset = (matchParams, state) => {
+  const market = getMarket(matchParams, state)
+
+  return market ? market.quoteAsset : null
+}
 
 export const getNetworkName = state => state.global.network
 

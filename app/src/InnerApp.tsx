@@ -2,7 +2,7 @@ import React from 'react'
 import { Route, Switch, Redirect } from 'react-router-dom'
 import { ConnectedRouter } from 'connected-react-router'
 import { connect } from 'react-redux'
-import TradePageWrapper from 'pages/trade/TradePageWrapper'
+import TradePage from 'pages/trade/TradePage'
 import { loadMarkets } from 'modules/global'
 import { getMarkets } from 'selectors'
 import history from 'ownHistory'
@@ -24,25 +24,11 @@ class InnerApp extends React.Component<any> {
       <ConnectedRouter history={history}>
         <React.Fragment>
           <Switch>
-            {this.renderRedirect()}
-            <Route path='/:baseAssetSymbol/:quoteAssetSymbol' component={TradePageWrapper} />
+            <Route exact path='/' render={() => <Redirect to={'/WETH/DAI'} />} />
+            <Route path='/:baseAssetSymbol/:quoteAssetSymbol' component={TradePage} />
           </Switch>
         </React.Fragment>
       </ConnectedRouter>
-    )
-  }
-
-  renderRedirect () {
-    const { markets } = this.props
-    if (!markets.length) {
-      return null
-    }
-
-    const { baseAsset, quoteAsset } = markets[0]
-    const redirectTo = `/${baseAsset.symbol}/${quoteAsset.symbol}`
-
-    return (
-      <Route exact path='/' render={() => <Redirect to={redirectTo} />} />
     )
   }
 }
