@@ -3,7 +3,6 @@ import assocPath from 'ramda/es/assocPath'
 import mergeDeepRight from 'ramda/es/mergeDeepRight'
 
 const initialState = {
-  market: null,
   enabled: false,
   account: '',
   network: '',
@@ -16,7 +15,12 @@ const initialState = {
     },
     result: []
   },
-  markets: [],
+  markets: {
+    entities: {
+      markets: {}
+    },
+    result: []
+  },
   marketCandles: [],
   priceChart: {
     intervals: [
@@ -70,8 +74,28 @@ export default (state = initialState, { type, payload }) => {
         ...state,
         tokens: mergeDeepRight(state.tokens, payload)
       }
-    case types.SET_MARKETS:
-      return { ...state, markets: payload }
+    case types.MERGE_MARKETS:
+      return {
+        ...state,
+        markets: mergeDeepRight(
+          state.markets,
+          payload
+        )
+      }
+    case types.ADD_MARKET:
+      return {
+        ...state,
+        markets: {
+          ...state.markets,
+          entities: {
+            ...state.markets.entities,
+            markets: {
+              ...state.markets.entities.markets,
+              [payload.id]: payload
+            }
+          }
+        }
+      }
     case types.SET_MARKET_CANDLES:
       return { ...state, marketCandles: payload }
     case types.SET_PRICE_CHART_INTERVAL:
