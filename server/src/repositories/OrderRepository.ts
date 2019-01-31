@@ -3,12 +3,13 @@ import {
   EntityRepository,
   Not,
   LessThan,
-  MoreThan
+  MoreThan, Brackets
 } from 'typeorm'
 import OrderEntity from '../entities/Order'
 import { convertDexOrderToSRA2Format } from '../utils/helpers'
 import { OrderStatus } from '@0x/contract-wrappers'
-import { IOrderbook } from '../types'
+import { OrdersResponse, PagedRequestOpts } from '@0x/types'
+import { IOrderbook, OrdersRequestOptsExtended } from '../types'
 
 @EntityRepository(OrderEntity)
 export default class OrderRepository extends Repository<OrderEntity> {
@@ -86,6 +87,61 @@ export default class OrderRepository extends Repository<OrderEntity> {
       if (!order) {
         await this.insert(entity)
       }
+    }
+  }
+
+  async getOrders (params: OrdersRequestOptsExtended & PagedRequestOpts): Promise<OrdersResponse> {
+    const {
+      page = 1,
+      perPage = 100,
+      traderAddress,
+      traderAssetData,
+      ...where
+    } = params
+    const skip = perPage * (page - 1)
+
+    const query = this.createQueryBuilder('orders')
+      .skip(skip)
+      .take(perPage)
+      .where('"orderStatus" = :orderStatus', { orderStatus: OrderStatus.FILLABLE })
+
+    if (traderAddress) {
+      query
+        .andWhere(new Brackets(qb => {
+          qb.where('"makerAddress" = :traderAddress')
+            .orWhere('"takerAddress" = :traderAddress')
+        }))
+        .setParameters({ traderAddress })
+    }
+
+    if (traderAssetData) {
+      query
+        .andWhere(new Brackets(qb => {
+          qb.where('"makerAssetData" = :traderAssetData')
+            .orWhere('"takerAssetData" = :traderAssetData')
+        }))
+        .setParameters({ traderAssetData })
+    }
+
+    if (where.makerAssetData && where.takerAssetData) {
+      query
+        .addSelect('("takerAssetAmount"/"makerAssetAmount") as sort')
+        .orderBy('sort', 'ASC')
+    }
+
+    for (let property of Object.keys(where)) {
+      query.andWhere(`"${property}" = :${property}`, { [property]: where[property] })
+    }
+
+    const [ entities, total ] = await query.getManyAndCount()
+
+    const records = entities.map(one => convertDexOrderToSRA2Format(one))
+
+    return {
+      total,
+      records,
+      page,
+      perPage
     }
   }
 }
