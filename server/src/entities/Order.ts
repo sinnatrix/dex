@@ -17,16 +17,16 @@ export default class Order {
   @Column()
   senderAddress: string
 
-  @Column()
+  @Column('decimal', { precision: 72 })
   makerAssetAmount: string
 
-  @Column()
+  @Column('decimal', { precision: 72 })
   takerAssetAmount: string
 
-  @Column()
+  @Column('decimal', { precision: 72 })
   makerFee: string
 
-  @Column()
+  @Column('decimal', { precision: 72 })
   takerFee: string
 
   @Column()
@@ -49,7 +49,7 @@ export default class Order {
   /** /SignedOrder */
 
   /** OrderInfo */
-  @Column({ default: '0' })
+  @Column('decimal', { precision: 72 , default: '0' })
   orderTakerAssetFilledAmount: string
 
   @PrimaryColumn()
