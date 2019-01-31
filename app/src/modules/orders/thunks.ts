@@ -119,7 +119,7 @@ export const cancelOrder = (order: IDexOrder) => async (dispatch, getState, { bl
   await blockchainService.awaitTransaction(txHash)
 }
 
-export const makeLimitOrder = ({ type, amount, price }, matchParams) =>
+export const makeLimitOrder = ({ type, amount, price, expires }, matchParams) =>
   async (dispatch, getState, { blockchainService, apiService }) => {
     const account = getAccount(getState())
     const quoteAsset = getQuoteAsset(matchParams, getState())
@@ -132,14 +132,16 @@ export const makeLimitOrder = ({ type, amount, price }, matchParams) =>
         takerToken: baseAsset,
         takerAmount: amount,
         makerToken: quoteAsset,
-        makerAmount: price.times(amount)
+        makerAmount: price.times(amount),
+        expires
       }
     } else {
       data = {
         takerToken: quoteAsset,
         takerAmount: price.times(amount),
         makerToken: baseAsset,
-        makerAmount: amount
+        makerAmount: amount,
+        expires
       }
     }
 

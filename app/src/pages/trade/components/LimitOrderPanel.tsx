@@ -1,7 +1,7 @@
 import React from 'react'
 import jss from 'react-jss'
 import Panel from 'components/Panel'
-import LimitOrderForm from './LimitOrderForm'
+import LimitOrderForm from './limitOrderForm/LimitOrderForm'
 
 const decorate = jss({
   root: {

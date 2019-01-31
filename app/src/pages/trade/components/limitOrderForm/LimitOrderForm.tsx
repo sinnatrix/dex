@@ -1,14 +1,15 @@
 import React from 'react'
 import jss from 'react-jss'
+import cx from 'classnames'
 import TextField from '@material-ui/core/TextField'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
 import compose from 'ramda/es/compose'
 import { makeLimitOrder } from 'modules/orders'
 import { BigNumber } from '@0x/utils'
-import OrderModeRadio from './OrderModeRadio'
+import OrderModeRadio from '../OrderModeRadio'
 import ProgressButton from 'components/ProgressButton'
-import cx from 'classnames'
+import ExpiresInput from './ExpiresInput'
 import { getQuoteAsset, getBaseAsset } from 'selectors'
 
 const connector = connect(
@@ -28,6 +29,9 @@ const decorate = jss(theme => ({
   button: {
     marginTop: 30
   },
+  price: {
+    marginTop: 10
+  },
   sell: {
     backgroundColor: [theme.custom.bidColor.main, '!important']
   },
@@ -40,7 +44,8 @@ class LimitOrderForm extends React.Component<any> {
   state = {
     mode: 'buy',
     amount: 1,
-    price: 0.001
+    price: 0.001,
+    expires: 86400
   }
 
   handleModeChange = mode => {
@@ -61,21 +66,30 @@ class LimitOrderForm extends React.Component<any> {
     })
   }
 
+  handleExpiresChange = expires => {
+    this.setState({
+      expires
+    })
+  }
+
   handlePlaceOrder = async () => {
-    const { mode, amount, price } = this.state
+    const { mode, amount, price, expires } = this.state
     const { makeLimitOrder } = this.props
 
     await makeLimitOrder({
       type: mode,
       amount: new BigNumber(amount),
-      price: new BigNumber(price)
+      price: new BigNumber(price),
+      expires: new BigNumber(
+        Math.floor(Date.now() / 1000 + expires)
+      )
     }, this.props.match.params)
   }
 
   render () {
     const { classes } = this.props
     const { marketplaceToken, currentToken } = this.props
-    const { mode, amount, price } = this.state
+    const { mode, amount, price, expires } = this.state
 
     return (
       <div className={classes.root}>
@@ -92,10 +106,16 @@ class LimitOrderForm extends React.Component<any> {
         />
 
         <TextField
+          className={classes.price}
           type='number'
           label={`Price (${marketplaceToken.symbol})`}
           value={price}
           onChange={this.handlePriceChange}
+        />
+
+        <ExpiresInput
+          value={expires}
+          onChange={this.handleExpiresChange}
         />
 
         <ProgressButton

@@ -187,7 +187,10 @@ test('makeLimitOrderAsync', async t => {
         makerToken,
         makerAmount: new BigNumber(0.01),
         takerToken,
-        takerAmount: new BigNumber(0.01)
+        takerAmount: new BigNumber(0.01),
+        expires: new BigNumber(
+          Math.floor(Date.now() / 1000 + 86400)
+        )
       }
     )
 
