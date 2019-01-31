@@ -1,7 +1,7 @@
 import createStore from 'createStore'
 import test from 'tape'
 import { addSubscription } from './actions'
-import { setMarkets, mergeTokens } from 'modules/global/actions'
+import { mergeMarkets, mergeTokens } from 'modules/global/actions'
 import { processSocketMessage } from './thunks'
 import { getOrderByHash } from 'modules/orders/selectors'
 import { generateSRA2Order, generateMarket } from 'helpers/testUtils'
@@ -16,7 +16,14 @@ test('processSocketMessage', async t => {
 
     const market = generateMarket()
 
-    store.dispatch(setMarkets([market]))
+    store.dispatch(mergeMarkets({
+      entities: {
+        markets: {
+          [market.id]: market
+        }
+      },
+      result: [market.id]
+    }))
 
     store.dispatch(mergeTokens({
       entities: {

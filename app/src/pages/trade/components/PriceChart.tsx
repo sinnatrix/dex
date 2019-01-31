@@ -2,15 +2,17 @@ import React from 'react'
 import { connect } from 'react-redux'
 import jss from 'react-jss'
 import { withRouter } from 'react-router'
-import { getMarketCandles } from 'selectors'
+import { getMarketCandles, getMarket, getActivePriceChartInterval } from 'selectors'
 import { loadMarketCandles } from 'modules/global'
 import compose from 'ramda/es/compose'
 import Chart from './CandleStickChart'
 import PriceChartIntervals from './PriceChartIntervals'
 
 const connector = connect(
-  state => ({
-    candles: getMarketCandles(state)
+  (state, ownProps) => ({
+    candles: getMarketCandles(state),
+    market: getMarket(ownProps.match.params, state),
+    chartInterval: getActivePriceChartInterval(state)
   }),
   { loadMarketCandles }
 )
@@ -33,6 +35,26 @@ const decorate = jss(() => ({
 }))
 
 class PriceChart extends React.Component<any> {
+  componentDidMount (): void {
+    this.loadCandles()
+  }
+
+  componentDidUpdate (prevProps: Readonly<any>, prevState: Readonly<{}>, snapshot?: any): void {
+    if (prevProps.market.id !== this.props.market.id) {
+      this.loadCandles()
+    }
+  }
+
+  loadCandles () {
+    const now = Math.round((new Date()).getTime() / 1000)
+    this.props.loadMarketCandles(
+      this.props.market,
+      now - this.props.chartInterval.intervalSeconds,
+      now,
+      this.props.chartInterval.groupIntervalSeconds
+    )
+  }
+
   render () {
     const { classes, candles } = this.props
 
@@ -64,6 +86,7 @@ class PriceChart extends React.Component<any> {
 }
 
 export default (compose as any)(
+  withRouter,
   connector,
   decorate
 )(PriceChart)

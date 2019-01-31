@@ -13,8 +13,8 @@ import MessageListenerContainer from 'MessageListenerContainer'
 import routerListener from 'hocs/routerListener'
 import { loadOrderbook } from 'modules/orders'
 import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
-import { loadMarketCandles } from 'modules/global'
-import { getActivePriceChartInterval, getAssetPairTradeHistory, getMarket, getAccount } from 'selectors'
+import { loadMarket } from 'modules/global'
+import { getAssetPairTradeHistory, getMarket, getAccount } from 'selectors'
 import compose from 'ramda/es/compose'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
@@ -30,7 +30,6 @@ const TradeHistoryContainer = connect(
 const connector = connect(
   (state, ownProps) => ({
     market: getMarket(ownProps.match.params, state),
-    chartInterval: getActivePriceChartInterval(state),
     account: getAccount(state)
   })
 )
@@ -91,7 +90,12 @@ class TradePage extends React.Component<any> {
   }
 
   render () {
-    const { classes, chartInterval, account } = this.props
+    const { classes, chartInterval, account, market } = this.props
+
+    if (!market) {
+      return null
+    }
+
     const { value } = this.state
 
     return (
@@ -100,24 +104,28 @@ class TradePage extends React.Component<any> {
         <div className={classes.wallet}>
           <Wallet />
         </div>
-        <div className={classes.left}>
-          <Marketplace />
-          <LimitOrderPanel />
-          {account &&
-            <MarketplaceAllowances />
-          }
-        </div>
-        <Panel className={classes.panel}>
-          <Tabs onChange={this.handleChange} value={value}>
-            <StyledTab label='Orderbook' />
-            <StyledTab label='Trade History' />
-          </Tabs>
-          { value === 0 && <Orderbook /> }
-          { value === 1 && <TradeHistoryContainer /> }
-        </Panel>
-        <Panel className={classes.chart}>
-          <PriceChart chartInterval={chartInterval}/>
-        </Panel>
+        {!!market &&
+          <>
+            <div className={classes.left}>
+              <Marketplace />
+              <LimitOrderPanel />
+              {!!account &&
+                <MarketplaceAllowances />
+              }
+            </div>
+            <Panel className={classes.panel}>
+              <Tabs onChange={this.handleChange} value={value}>
+                <StyledTab label='Orderbook' />
+                <StyledTab label='Trade History' />
+              </Tabs>
+              { value === 0 && <Orderbook /> }
+              { value === 1 && <TradeHistoryContainer /> }
+            </Panel>
+            <Panel className={classes.chart}>
+              <PriceChart chartInterval={chartInterval}/>
+            </Panel>
+          </>
+        }
       </Layout>
     )
   }
@@ -127,16 +135,10 @@ export default (compose as any)(
   withRouter,
   connector,
   routerListener({
-    async onEnter (params, dispatch, ownProps) {
+    async onEnter (params, dispatch) {
+      await dispatch(loadMarket(params))
       await dispatch(loadOrderbook(params))
       await dispatch(loadAssetPairTradeHistory(params))
-      const now = Math.round((new Date()).getTime() / 1000)
-      await dispatch(loadMarketCandles(
-        ownProps.market,
-        now - ownProps.chartInterval.intervalSeconds,
-        now,
-        ownProps.chartInterval.groupIntervalSeconds
-      ))
     }
   } as any),
   decorate
