@@ -187,7 +187,7 @@ class BlockchainService {
     await this.awaitTransaction(txHash)
   }
 
-  async makeLimitOrderAsync (account, { makerToken, makerAmount, takerToken, takerAmount }) {
+  async makeLimitOrderAsync (account, { makerToken, makerAmount, takerToken, takerAmount, expires }) {
     const makerAddress = account
 
     const EXCHANGE_ADDRESS = this.contractWrappers.exchange.address
@@ -205,7 +205,7 @@ class BlockchainService {
       takerFee: new BigNumber(0),
       makerAssetAmount: Web3Wrapper.toBaseUnitAmount(makerAmount, makerToken.decimals),
       takerAssetAmount: Web3Wrapper.toBaseUnitAmount(takerAmount, takerToken.decimals),
-      expirationTimeSeconds: new BigNumber(parseInt((Date.now() / 1000 + 3600 * 24).toString(), 10)) // Valid for up to a day
+      expirationTimeSeconds: expires
     }
 
     const provider = process.env.NODE_ENV === 'test'
