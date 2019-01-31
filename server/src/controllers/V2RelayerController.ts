@@ -138,11 +138,62 @@ class V2RelayerController {
   }
 
   async getOrders (req, res) {
-    const orders = await this.orderRepository.find({
-      order: {
-        expirationTimeSeconds: 'DESC'
-      }
+    log.info('HTTP: GET /orders')
+
+    const params = R.evolve(
+      {
+        networkId: toInt10,
+        page: toInt10,
+        perPage: toInt10
+      },
+      R.pick(
+        [
+          'makerAssetProxyId',
+          'takerAssetProxyId',
+          'makerAssetAddress',
+          'takerAssetAddress',
+          'exchangeAddress',
+          'senderAddress',
+          'makerAssetData',
+          'takerAssetData',
+          'traderAssetData',
+          'makerAddress',
+          'takerAddress',
+          'traderAddress',
+          'feeRecipientAddress',
+          'networkId',
+          'page',
+          'perPage'
+        ],
+        req.query
+      )
+    )
+
+    const { networkId, ...ordersRequestParams } = params
+
+    res.set({
+      'X-RateLimit-Limit': 0,
+      'X-RateLimit-Remaining': 0,
+      'X-RateLimit-Reset': 0,
+      'Content-Type': 'application/json'
     })
+
+    const validationErrors = [
+      validateNetworkId(networkId, this.networkId)
+    ].filter(one => !!one)
+
+    if (validationErrors.length > 0) {
+      res.status(400)
+      res.send(JSON.stringify({
+        code: 101,
+        reason: 'Validation failed',
+        validationErrors
+      }))
+
+      return null
+    }
+
+    const orders = await this.orderRepository.getOrders(ordersRequestParams)
 
     res.send(orders)
   }

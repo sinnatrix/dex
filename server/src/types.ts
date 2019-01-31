@@ -5,6 +5,7 @@ import AssetEntity from './entities/Asset'
 import TradeHistoryEntity from './entities/TradeHistory'
 import { BlockType } from 'web3/eth/types'
 import JobEntity from './entities/Job'
+import { OrdersRequestOpts } from '@0x/types'
 
 export interface ISRA2Order {
   order: SignedOrder
@@ -206,4 +207,8 @@ export interface LoadEventsJobEntity extends JobEntity {
 
 export interface ITask {
   run (job: JobEntity): Promise<JobEntity>
+}
+
+export interface OrdersRequestOptsExtended extends OrdersRequestOpts {
+  traderAssetData: string
 }

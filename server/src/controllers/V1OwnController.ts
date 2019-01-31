@@ -48,7 +48,6 @@ class V1OwnController {
     router.get('/tradeHistory', this.getTradeHistory.bind(this))
     router.post('/orders/:hash/validate', this.validateOrder.bind(this))
     router.get('/orders/:hash/history', this.loadOrderTradeHistory.bind(this))
-    router.post('/orders', this.createOrder.bind(this))
     router.get('/markets', this.getTopMarkets.bind(this))
     router.get('/market/:marketId', this.getMarket.bind(this))
     router.get('/market/:marketId/candles', this.getMarketCandles.bind(this))
@@ -105,18 +104,6 @@ class V1OwnController {
         error: e.message
       })
     }
-  }
-
-  async createOrder (req, res) {
-    const data = req.body
-    let order = await this.orderRepository.findOne({ orderHash: data.hash })
-    if (order) {
-      throw new Error('order already exists')
-    }
-
-    order = await this.orderRepository.save(data)
-
-    res.send(order)
   }
 
   async getActiveAccountOrders (req, res) {
