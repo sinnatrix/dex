@@ -188,6 +188,12 @@ class Marketplace extends React.Component<any, IOwnState> {
     }, 100)
   }
 
+  handleClose = () => {
+    this.setState({
+      open: false
+    })
+  }
+
   render () {
     const { classes, market } = this.props
     const { anchorEl, open, arrowRef } = this.state
@@ -241,7 +247,7 @@ class Marketplace extends React.Component<any, IOwnState> {
           <span className={classes.arrow} ref={this.handleArrowRef} />
           <Paper className={classes.paper}>
             <ClickAwayListener onClickAway={this.handleClickAway}>
-              <MarketsList />
+              <MarketsList onClose={this.handleClose} />
             </ClickAwayListener>
           </Paper>
         </Popper>
