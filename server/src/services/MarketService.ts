@@ -42,10 +42,15 @@ class MarketService {
     const {
       volume,
       count
-    } = await this.tradeHistoryRepository.getAssetPairRecordsAndCountForLast24Hours(assetPair)
+    } = await this.tradeHistoryRepository.getAssetPairVolumeAndCountForLast24Hours(assetPair)
 
-    const price = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
-    const priceEth = price ? await this.convertPriceToEth(price, quoteAsset) : null
+    const latestPrice = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
+    const priceEth = latestPrice ? await this.convertPriceToEth(latestPrice, quoteAsset) : null
+
+    const latestPriceExcl24 = await this.tradeHistoryService.getAssetPairLatestPriceExcl24Hours(assetPair)
+
+    const ethVolume = await this.convertVolumeToEth(volume, quoteAsset, latestPrice)
+    const priceChange = await this.calcPriceChange(latestPrice, latestPriceExcl24)
 
     const market = {
       id: `${baseAsset.symbol}-${quoteAsset.symbol}`,
@@ -56,10 +61,10 @@ class MarketService {
       stats: {
         transactionCount: count,
         volume24Hours: volume.toFixed(7),
-        percentChange24Hours: (await this.getAssetPairPercentChange24Hours(assetPair)).toFixed(2),
-        ethVolume24Hours: (await this.convertVolumeToEth(volume, quoteAsset, price)).toFixed(7)
+        percentChange24Hours: priceChange.toFixed(2),
+        ethVolume24Hours: ethVolume.toFixed(7)
       },
-      price: price ? price.toFixed(7) : null,
+      price: latestPrice ? latestPrice.toFixed(7) : null,
       priceEth: priceEth ? priceEth.toFixed(7) : null,
       score: 0
     }
@@ -70,20 +75,21 @@ class MarketService {
     }
   }
 
-  async getAssetPairPercentChange24Hours (assetPair: AssetPairEntity): Promise<BigNumber> {
-    const latestPrice = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
-    const latestPriceExcl24 = await this.tradeHistoryService.getAssetPairLatestPriceExcl24Hours(assetPair)
-
-    if (!latestPrice || !latestPriceExcl24) {
+  async calcPriceChange (price1, price2): Promise<BigNumber> {
+    if (!price1 || !price2) {
       return new BigNumber(0)
     }
 
-    return latestPrice.dividedBy(latestPriceExcl24)
+    return price1.dividedBy(price2)
       .minus(new BigNumber(1))
       .mul(new BigNumber(100))
   }
 
   async convertPriceToEth (price: BigNumber | null, quoteAsset: AssetEntity): Promise<BigNumber | null> {
+    if (!price) {
+      return null
+    }
+
     if (quoteAsset.symbol === 'WETH') {
       return price
     }
@@ -98,7 +104,7 @@ class MarketService {
 
     const latestPrice = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
 
-    if (!price || !latestPrice) {
+    if (!latestPrice) {
       return null
     }
 
