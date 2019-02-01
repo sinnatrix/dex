@@ -70,8 +70,11 @@ const decorate = jss({
 })
 
 class MarketsList extends React.Component<any> {
-  selectMarket (market) {
+  selectMarket (e, market) {
+    e.stopPropagation()
+
     this.props.history.push(market.path)
+    this.props.onClose()
   }
 
   render () {
@@ -94,7 +97,7 @@ class MarketsList extends React.Component<any> {
             <div
               className={ cx(classes.gridRow, classes.marketRow) }
               key={market.id}
-              onClick={() => this.selectMarket(market)}
+              onClick={e => this.selectMarket(e, market)}
             >
               <div className={classes.assetPair}>
                 <img src={`/token-icons/${market.quoteAsset.symbol}.png`} alt='' />
