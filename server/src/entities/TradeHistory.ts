@@ -1,21 +1,27 @@
-import { Entity, PrimaryColumn, Column, Unique } from 'typeorm'
+import { Entity, PrimaryColumn, Column, Unique, Index } from 'typeorm'
 
 @Entity('tradeHistory')
 @Unique('tradeHistory_uq_blockNumber_logIndex', ['blockNumber', 'logIndex'])
+@Index(['makerAssetData', 'timestamp'])
+@Index(['takerAssetData', 'timestamp'])
 export default class TradeHistory {
   @PrimaryColumn()
   id: string
 
   @Column()
+  @Index()
   event: string
 
   @Column()
+  @Index()
   orderHash: string
 
   @Column()
+  @Index()
   transactionHash: string
 
   @Column('bigint')
+  @Index()
   blockNumber: number
 
   @Column('bigint')
@@ -34,9 +40,11 @@ export default class TradeHistory {
   takerAddress?: string
 
   @Column()
+  @Index()
   makerAssetData: string
 
   @Column()
+  @Index()
   takerAssetData: string
 
   @Column('decimal', { precision: 72, nullable: true })
@@ -52,5 +60,6 @@ export default class TradeHistory {
   takerFeePaid?: string
 
   @Column('bigint')
+  @Index()
   timestamp: number
 }

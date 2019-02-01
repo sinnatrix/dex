@@ -1,7 +1,7 @@
 import AssetPairRepository from '../repositories/AssetPairRepository'
 import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
 import TradeHistoryService from './TradeHistoryService'
-import { ICandleWithStrings, IFillEntity, IMarket } from '../types'
+import { ICandleWithStrings, IMarket } from '../types'
 import AssetPairEntity from '../entities/AssetPair'
 import AssetEntity from '../entities/Asset'
 import { BigNumber } from '@0x/utils'
@@ -39,12 +39,11 @@ class MarketService {
   async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
     const { assetA: quoteAsset, assetB: baseAsset } = assetPair
 
-    const [
-      records24Hours,
-      count24Hours
-    ] = await this.tradeHistoryRepository.getAssetPairRecordsAndCountForLast24Hours(assetPair)
+    const {
+      volume,
+      count
+    } = await this.tradeHistoryRepository.getAssetPairRecordsAndCountForLast24Hours(assetPair)
 
-    const volume24Hours = this.getAssetPairVolume24Hours(assetPair, records24Hours)
     const price = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
     const priceEth = price ? await this.convertPriceToEth(price, quoteAsset) : null
 
@@ -55,10 +54,10 @@ class MarketService {
       baseAsset,
       quoteAsset,
       stats: {
-        transactionCount: count24Hours,
-        volume24Hours: volume24Hours.toFixed(7),
+        transactionCount: count,
+        volume24Hours: volume.toFixed(7),
         percentChange24Hours: (await this.getAssetPairPercentChange24Hours(assetPair)).toFixed(2),
-        ethVolume24Hours: (await this.convertVolumeToEth(volume24Hours, quoteAsset, price)).toFixed(7)
+        ethVolume24Hours: (await this.convertVolumeToEth(volume, quoteAsset, price)).toFixed(7)
       },
       price: price ? price.toFixed(7) : null,
       priceEth: priceEth ? priceEth.toFixed(7) : null,
@@ -69,20 +68,6 @@ class MarketService {
       ...market,
       score: this.getMarketScore(market)
     }
-  }
-
-  getAssetPairVolume24Hours (assetPair: AssetPairEntity, fillEntities: IFillEntity[]): BigNumber {
-    let volume = new BigNumber(0)
-
-    for (let fillEntity of fillEntities) {
-      let assetFilledAmount = fillEntity.makerAssetData === assetPair.assetDataA
-        ? fillEntity.makerAssetFilledAmount
-        : fillEntity.takerAssetFilledAmount
-
-      volume = volume.plus(new BigNumber(assetFilledAmount))
-    }
-
-    return volume
   }
 
   async getAssetPairPercentChange24Hours (assetPair: AssetPairEntity): Promise<BigNumber> {

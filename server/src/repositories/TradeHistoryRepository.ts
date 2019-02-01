@@ -1,6 +1,7 @@
 import { EntityRepository, Repository, Brackets } from 'typeorm'
 import TradeHistoryEntity from '../entities/TradeHistory'
 import { EventType, IFillEntity } from '../types'
+import { BigNumber } from '@0x/utils'
 import AssetPairEntity from '../entities/AssetPair'
 import { getNowUnixtime } from '../utils/helpers'
 
@@ -73,15 +74,28 @@ class TradeHistoryRepository extends Repository<any> {
       })
   }
 
-  getAssetPairRecordsAndCountForLast24Hours (assetPair: AssetPairEntity): Promise<[IFillEntity[], number]> {
+  async getAssetPairRecordsAndCountForLast24Hours (assetPair: AssetPairEntity): Promise<{volume: BigNumber, count: number}> {
     const query = this.prepareAssetPairFillQuery(assetPair)
 
-    query.andWhere('"timestamp" >= :timestamp', { timestamp: getNowUnixtime() - this.SECONDS_IN_DAY })
-      .orderBy({
-        timestamp: 'DESC'
-      })
+    query
+      .select('COUNT(*)', 'count')
+      .addSelect(`(
+        SUM(
+          CASE WHEN "makerAssetData" = :quoteAssetData THEN "takerAssetFilledAmount" ELSE 0 END
+        )
+        +
+        SUM(
+          CASE WHEN "takerAssetData" = :quoteAssetData THEN "makerAssetFilledAmount" ELSE 0 END
+        )
+      )`, 'volume')
+      .andWhere('"timestamp" >= :timestamp', { timestamp: getNowUnixtime() - this.SECONDS_IN_DAY })
 
-    return query.getManyAndCount()
+    const { count, volume } = await query.getRawOne()
+
+    return {
+      volume: new BigNumber(volume || '0'),
+      count: parseInt(count, 10)
+    }
   }
 
   getLatestAssetPairFillEntity (assetPair: AssetPairEntity): Promise<IFillEntity> {
