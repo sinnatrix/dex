@@ -74,7 +74,7 @@ class TradeHistoryRepository extends Repository<any> {
       })
   }
 
-  async getAssetPairRecordsAndCountForLast24Hours (assetPair: AssetPairEntity): Promise<{volume: BigNumber, count: number}> {
+  async getAssetPairVolumeAndCountForLast24Hours (assetPair: AssetPairEntity): Promise<{volume: BigNumber, count: number}> {
     const query = this.prepareAssetPairFillQuery(assetPair)
 
     query
