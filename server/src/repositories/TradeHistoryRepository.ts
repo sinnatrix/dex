@@ -101,9 +101,11 @@ class TradeHistoryRepository extends Repository<any> {
   getLatestAssetPairFillEntity (assetPair: AssetPairEntity): Promise<IFillEntity> {
     const query = this.prepareAssetPairFillQuery(assetPair)
 
-    query.orderBy({
-      timestamp: 'DESC'
-    })
+    query
+      .orderBy({
+        timestamp: 'DESC'
+      })
+      .limit(1)
 
     return query.getOne()
   }
@@ -111,10 +113,12 @@ class TradeHistoryRepository extends Repository<any> {
   getLatestAssetPairFillEntityExclLast24Hours (assetPair: AssetPairEntity): Promise<IFillEntity> {
     const query = this.prepareAssetPairFillQuery(assetPair)
 
-    query.andWhere('"timestamp" < :timestamp', { timestamp: getNowUnixtime() - this.SECONDS_IN_DAY })
+    query
+      .andWhere('"timestamp" < :timestamp', { timestamp: getNowUnixtime() - this.SECONDS_IN_DAY })
       .orderBy({
         timestamp: 'DESC'
       })
+      .limit(1)
 
     return query.getOne()
   }
