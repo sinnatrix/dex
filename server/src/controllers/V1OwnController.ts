@@ -1,24 +1,32 @@
 import * as express from 'express'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import config from '../config'
-import { convertDexOrderToSRA2Format } from '../utils/helpers'
+import { convertDexOrderToSRA2Format, convertSignedOrderWithStringsToSignedOrder } from '../utils/helpers'
 import { ISRA2Order } from '../types'
 import MarketService from '../services/MarketService'
 import { In } from 'typeorm'
+import AssetPairRepository from '../repositories/AssetPairRepository'
+import AssetRepository from '../repositories/AssetRepository'
+import RelayerRepository from '../repositories/RelayerRepository'
+import OrderRepository from '../repositories/OrderRepository'
+import TradeHistoryRepository from '../repositories/TradeHistoryRepository'
+import OrderBlockchainService from '../services/OrderBlockchainService'
 
 class V1OwnController {
   application: any
-  assetRepository: any
-  relayerRepository: any
-  orderRepository: any
-  tradeHistoryRepository: any
-  orderBlockchainService: any
+  assetRepository: AssetRepository
+  assetPairRepository: AssetPairRepository
+  relayerRepository: RelayerRepository
+  orderRepository: OrderRepository
+  tradeHistoryRepository: TradeHistoryRepository
+  orderBlockchainService: OrderBlockchainService
   wsRelayerServer: WsRelayerServer
   marketService: MarketService
 
   constructor ({
     application,
     assetRepository,
+    assetPairRepository,
     relayerRepository,
     orderRepository,
     tradeHistoryRepository,
@@ -29,6 +37,7 @@ class V1OwnController {
     this.application = application
 
     this.assetRepository = assetRepository
+    this.assetPairRepository = assetPairRepository
     this.relayerRepository = relayerRepository
     this.orderRepository = orderRepository
     this.tradeHistoryRepository = tradeHistoryRepository
@@ -93,8 +102,15 @@ class V1OwnController {
     const { hash } = req.params
     const order = await this.orderRepository.findOne({ orderHash: hash })
 
+    if (!order) {
+      throw new Error('Order not found')
+    }
+
     try {
-      await order.validateInBlockchain()
+      await this.orderBlockchainService.validateInBlockchain(
+        convertSignedOrderWithStringsToSignedOrder(order)
+      )
+
       res.send({
         error: ''
       })
@@ -156,7 +172,12 @@ class V1OwnController {
 
   async getMarket (req, res) {
     const { marketId: assetPairSymbols } = req.params
-    const market = await this.marketService.getMarketByAssetPairSymbols(assetPairSymbols)
+    const assetPair = await this.assetPairRepository.getByAssetPairSymbolsString(assetPairSymbols)
+
+    if (!assetPair) {
+      throw new Error('Market not found')
+    }
+    const market = await this.marketService.getMarketByAssetPair(assetPair)
 
     res.send(market)
   }
@@ -165,7 +186,14 @@ class V1OwnController {
     const { marketId: assetPairSymbols } = req.params
     const { fromTimestamp, toTimestamp, groupIntervalSeconds } = req.query
 
-    const market = await this.marketService.getMarketByAssetPairSymbols(assetPairSymbols)
+    const assetPair = await this.assetPairRepository.getByAssetPairSymbolsString(assetPairSymbols)
+
+    if (!assetPair) {
+      throw new Error('Market not found')
+    }
+
+    const market = await this.marketService.getMarketByAssetPair(assetPair)
+
     const candles = await this.marketService.getMarketCandles(
       market,
       +fromTimestamp,

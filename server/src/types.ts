@@ -168,7 +168,7 @@ export interface IMarket {
 }
 
 export interface IMarketStats {
-  transactionCount: number
+  transactionsCount: number
   volume24Hours: string
   percentChange24Hours: string
   ethVolume24Hours: string

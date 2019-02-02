@@ -29,7 +29,14 @@ class MarketService {
 
     let markets: IMarket[] = []
     for (let record of topRecords) {
-      let market = await this.getMarketByAssetPairSymbols(record.marketId)
+      const assetPair = await this.assetPairRepository.getByAssetPairSymbolsString(record.marketId) as AssetPairEntity
+
+      const market = await this.recordToMarket(assetPair, {
+        volume: new BigNumber(record.volume),
+        transactionsCount: record.transactionsCount,
+        latestPrice: new BigNumber(record.price || '0')
+      })
+
       markets.push(market)
     }
 
@@ -37,59 +44,73 @@ class MarketService {
   }
 
   async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
-    const { assetA: quoteAsset, assetB: baseAsset } = assetPair
-
     const {
       volume,
       count
     } = await this.tradeHistoryRepository.getAssetPairVolumeAndCountForLast24Hours(assetPair)
 
     const latestPrice = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
-    const priceEth = latestPrice ? await this.convertPriceToEth(latestPrice, quoteAsset) : null
+
+    return this.recordToMarket(
+      assetPair,
+      {
+        transactionsCount: count,
+        volume,
+        latestPrice
+      }
+    )
+  }
+
+  async recordToMarket (
+    assetPair,
+    {
+      volume,
+      transactionsCount,
+      latestPrice
+    }
+  ): Promise<IMarket> {
+    const { assetA: quoteAsset, assetB: baseAsset } = assetPair
 
     const latestPriceExcl24 = await this.tradeHistoryService.getAssetPairLatestPriceExcl24Hours(assetPair)
+    const priceEth = latestPrice ? await this.convertPriceToEth(latestPrice, quoteAsset) : null
 
-    const ethVolume = await this.convertVolumeToEth(volume, quoteAsset, latestPrice)
-    const priceChange = await this.calcPriceChange(latestPrice, latestPriceExcl24)
+    let ethVolume
+    if (quoteAsset.symbol === 'WETH') {
+      ethVolume = volume
+    } else if (priceEth) {
+      ethVolume = volume.mul(priceEth)
+    } else {
+      ethVolume = new BigNumber(0)
+    }
 
-    const market = {
+    let priceChange
+    if (!latestPrice || !latestPriceExcl24) {
+      priceChange = new BigNumber(0)
+    } else {
+      priceChange = latestPrice.dividedBy(latestPriceExcl24)
+        .minus(new BigNumber(1))
+        .mul(new BigNumber(100))
+    }
+
+    return {
       id: `${baseAsset.symbol}-${quoteAsset.symbol}`,
       name: `${baseAsset.symbol}/${quoteAsset.symbol}`,
       path: `/${baseAsset.symbol}/${quoteAsset.symbol}`,
       baseAsset,
       quoteAsset,
       stats: {
-        transactionCount: count,
+        transactionsCount,
         volume24Hours: volume.toFixed(7),
         percentChange24Hours: priceChange.toFixed(2),
         ethVolume24Hours: ethVolume.toFixed(7)
       },
       price: latestPrice ? latestPrice.toFixed(7) : null,
       priceEth: priceEth ? priceEth.toFixed(7) : null,
-      score: 0
-    }
-
-    return {
-      ...market,
-      score: this.getMarketScore(market)
+      score: transactionsCount
     }
   }
 
-  async calcPriceChange (price1, price2): Promise<BigNumber> {
-    if (!price1 || !price2) {
-      return new BigNumber(0)
-    }
-
-    return price1.dividedBy(price2)
-      .minus(new BigNumber(1))
-      .mul(new BigNumber(100))
-  }
-
-  async convertPriceToEth (price: BigNumber | null, quoteAsset: AssetEntity): Promise<BigNumber | null> {
-    if (!price) {
-      return null
-    }
-
+  async convertPriceToEth (price: BigNumber, quoteAsset: AssetEntity): Promise<BigNumber | null> {
     if (quoteAsset.symbol === 'WETH') {
       return price
     }
@@ -111,36 +132,8 @@ class MarketService {
     return price.mul(latestPrice)
   }
 
-  async convertVolumeToEth (
-    volume: BigNumber,
-    quoteAsset: AssetEntity,
-    price: BigNumber | null
-  ): Promise<BigNumber> {
-    if (quoteAsset.symbol === 'WETH') {
-      return volume
-    }
-
-    if (!price) {
-      return new BigNumber(0)
-    }
-
-    const priceEth = await this.convertPriceToEth(price, quoteAsset)
-
-    if (!priceEth) {
-      throw new Error('Cannot convert price to ETH')
-    }
-
-    return volume.mul(priceEth)
-  }
-
-  getMarketScore (market: IMarket): number {
-    return market.stats.transactionCount
-  }
-
   async getMarketByAssetPairSymbols (assetPairSymbols: string): Promise<IMarket> {
-    const [ baseAssetSymbol, quoteAssetSymbol ] = assetPairSymbols.split('-')
-
-    const assetPair = await this.assetPairRepository.getByAssetPairSymbols(quoteAssetSymbol, baseAssetSymbol)
+    const assetPair = await this.assetPairRepository.getByAssetPairSymbolsString(assetPairSymbols)
 
     if (!assetPair) {
       throw new Error('Market not found')
