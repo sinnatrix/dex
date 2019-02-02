@@ -109,6 +109,10 @@ class OrderBlockchainService {
     return this.httpContractWrappers.exchange.getOrdersInfoAsync(orders, opts)
   }
 
+  async validateInBlockchain (order: SignedOrder) {
+    await this.httpContractWrappers.exchange.validateOrderFillableOrThrowAsync(order)
+  }
+
   async getBlock (blockNumber: BlockType): Promise<Block> {
     const web3 = new Web3(this.httpProvider)
     let block = await web3.eth.getBlock(blockNumber)
