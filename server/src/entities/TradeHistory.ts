@@ -4,6 +4,9 @@ import { Entity, PrimaryColumn, Column, Unique, Index } from 'typeorm'
 @Unique('tradeHistory_uq_blockNumber_logIndex', ['blockNumber', 'logIndex'])
 @Index(['makerAssetData', 'timestamp'])
 @Index(['takerAssetData', 'timestamp'])
+@Index(['makerAssetData', 'takerAssetData'])
+@Index('makerAssetData_takerAssetData_timestamp', ['makerAssetData', 'takerAssetData', 'timestamp'])
+@Index('takerAssetData_makerAssetData_timestamp', ['takerAssetData', 'makerAssetData', 'timestamp'])
 export default class TradeHistory {
   @PrimaryColumn()
   id: string

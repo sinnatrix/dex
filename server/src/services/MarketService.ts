@@ -34,7 +34,8 @@ class MarketService {
       const market = await this.recordToMarket(assetPair, {
         volume: new BigNumber(record.volume),
         transactionsCount: record.transactionsCount,
-        latestPrice: new BigNumber(record.price || '0')
+        latestPrice: record.price === null ? null : new BigNumber(record.price),
+        latestPriceExcl24: record.priceExcl24 === null ? null : new BigNumber(record.priceExcl24)
       })
 
       markets.push(market)
@@ -50,13 +51,15 @@ class MarketService {
     } = await this.tradeHistoryRepository.getAssetPairVolumeAndCountForLast24Hours(assetPair)
 
     const latestPrice = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
+    const latestPriceExcl24 = await this.tradeHistoryService.getAssetPairLatestPriceExcl24Hours(assetPair)
 
     return this.recordToMarket(
       assetPair,
       {
         transactionsCount: count,
         volume,
-        latestPrice
+        latestPrice,
+        latestPriceExcl24
       }
     )
   }
@@ -66,12 +69,12 @@ class MarketService {
     {
       volume,
       transactionsCount,
-      latestPrice
+      latestPrice,
+      latestPriceExcl24
     }
   ): Promise<IMarket> {
     const { assetA: quoteAsset, assetB: baseAsset } = assetPair
 
-    const latestPriceExcl24 = await this.tradeHistoryService.getAssetPairLatestPriceExcl24Hours(assetPair)
     const priceEth = latestPrice ? await this.convertPriceToEth(latestPrice, quoteAsset) : null
 
     let ethVolume
