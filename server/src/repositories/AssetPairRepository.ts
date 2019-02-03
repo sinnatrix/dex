@@ -44,12 +44,13 @@ export default class AssetPairRepository extends Repository<AssetPairEntity> {
     }
   }
 
-  getTopRecordsByTxCount24Hours (limit?: number) {
+  async getTopRecordsByTxCount24Hours (limit?: number) {
     const builder = new MarketsSqlBuilder({
       connection: this.manager.connection
     })
     const sql = builder.build({ limit, interval: 86400 })
 
+    await this.manager.connection.query('SET random_page_cost = 1')
     return this.query(sql)
   }
 
