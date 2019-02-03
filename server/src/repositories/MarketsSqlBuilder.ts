@@ -39,11 +39,12 @@ export default class MarketsSqlBuilder {
       ORDER BY
         g."transactionsCount" DESC
     `
-    console.log('sql: ', sql)
     return sql
   }
 
   buildVolumeAndTransactionsSql ({ limit, interval }) {
+    const timestampCond = Math.floor(Date.now() / 1000) - interval
+
     return `
       SELECT
         (
@@ -71,7 +72,7 @@ export default class MarketsSqlBuilder {
         WHERE
           event = 'Fill'
           AND
-          timestamp > extract(epoch from now()) - ${interval}
+          timestamp > ${timestampCond}
         GROUP BY
           "makerAssetData",
           "takerAssetData"
@@ -93,7 +94,7 @@ export default class MarketsSqlBuilder {
         WHERE
           event = 'Fill'
           AND
-          timestamp > extract(epoch from now()) - ${interval}
+          timestamp > ${timestampCond}
         GROUP BY
           "makerAssetData",
           "takerAssetData"
@@ -112,8 +113,10 @@ export default class MarketsSqlBuilder {
   }
 
   buildLatestPricesExclLastIntervalSql ({ interval }) {
+    const timestampCond = Math.floor(Date.now() / 1000) - interval
+
     const baseQuery = this.buildPricesBaseQuery()
-      .andWhere(`"timestamp" <= extract(epoch from now()) - ${interval}`)
+      .andWhere(`"timestamp" <= ${timestampCond}`)
 
     return this.buildPricesSqlWithBaseQuery(baseQuery)
   }
