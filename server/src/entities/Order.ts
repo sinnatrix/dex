@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm'
 import { OrderStatus } from '@0x/contract-wrappers'
 import RelayerEntity from './Relayer'
 
@@ -30,15 +30,18 @@ export default class Order {
   takerFee: string
 
   @Column()
+  @Index()
   expirationTimeSeconds: string
 
   @Column()
   salt: string
 
   @Column()
+  @Index()
   makerAssetData: string
 
   @Column()
+  @Index()
   takerAssetData: string
 
   @Column()
@@ -56,6 +59,7 @@ export default class Order {
   orderHash: string
 
   @Column({ default: OrderStatus.FILLABLE })
+  @Index()
   orderStatus: number
   /** /OrderInfo */
 

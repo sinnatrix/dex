@@ -1,6 +1,6 @@
 import { SelectQueryBuilder, Connection } from 'typeorm'
 
-export default class MarketsSqlBuilder {
+export default class TopMarketsSqlBuilder {
   connection: Connection
   qb: SelectQueryBuilder<any>
   constructor ({ connection }) {
@@ -12,8 +12,8 @@ export default class MarketsSqlBuilder {
     const sql = `
       SELECT
         CONCAT(qa.symbol, '-', ba.symbol) "marketId",
-        p."price",
-        pe."price" "priceExcl24",
+        g."assetDataA",
+        g."assetDataB",
         g."transactionsCount",
         g.volume
       FROM
@@ -26,16 +26,6 @@ export default class MarketsSqlBuilder {
         assets qa
         ON
           g."assetDataB" = qa."assetData"
-      LEFT JOIN (${this.buildLatestPricesSql()}) p
-        ON
-          p."makerAssetData"=g."assetDataB"
-          AND
-          p."takerAssetData"=g."assetDataA"
-      LEFT JOIN (${this.buildLatestPricesExclLastIntervalSql({ interval })}) pe
-        ON
-          pe."makerAssetData"=g."assetDataB"
-          AND
-          pe."takerAssetData"=g."assetDataA"
       ORDER BY
         g."transactionsCount" DESC
     `
@@ -110,65 +100,5 @@ export default class MarketsSqlBuilder {
         volume DESC
       ${limit ? `LIMIT ${limit}` : ''}
     `
-  }
-
-  buildLatestPricesExclLastIntervalSql ({ interval }) {
-    const timestampCond = Math.floor(Date.now() / 1000) - interval
-
-    const baseQuery = this.buildPricesBaseQuery()
-      .andWhere(`"timestamp" <= ${timestampCond}`)
-
-    return this.buildPricesSqlWithBaseQuery(baseQuery)
-  }
-
-  buildLatestPricesSql () {
-    const baseQuery = this.buildPricesBaseQuery()
-
-    return this.buildPricesSqlWithBaseQuery(baseQuery)
-  }
-
-  buildPricesSqlWithBaseQuery (baseQuery: SelectQueryBuilder<any>) {
-    const asksPricesSql = baseQuery
-      .orderBy(`"takerAssetData" DESC, "makerAssetData" DESC, "timestamp"`, 'DESC')
-      .getSql()
-
-    const bidsPricesSql = baseQuery
-      .orderBy(`"makerAssetData" DESC, "takerAssetData" DESC, "timestamp"`, 'DESC')
-      .getSql()
-
-    return `
-      SELECT
-        (CASE WHEN a."makerAssetData" IS NULL THEN b."takerAssetData" ELSE a."makerAssetData" END) "makerAssetData",
-        (CASE WHEN a."takerAssetData" IS NULL THEN b."makerAssetData" ELSE a."takerAssetData" END) "takerAssetData",
-        (
-          CASE
-            WHEN a."timestamp" IS NULL OR b."timestamp" > a."timestamp"
-            THEN b."makerAssetFilledAmount" / b."takerAssetFilledAmount"
-            ELSE a."takerAssetFilledAmount" / a."makerAssetFilledAmount"
-          END
-        ) "price"
-      FROM
-        (${asksPricesSql}) a
-      FULL OUTER JOIN
-        (${bidsPricesSql}) b
-      ON
-        a."makerAssetData"=b."takerAssetData"
-        AND
-        a."takerAssetData"=b."makerAssetData"
-    `
-  }
-
-  buildPricesBaseQuery () {
-    return this.connection.createQueryBuilder()
-      .select(`
-        DISTINCT ON("takerAssetData", "makerAssetData")
-          "takerAssetFilledAmount",
-          "makerAssetFilledAmount",
-          "makerAssetData",
-          "takerAssetData",
-          "timestamp"
-      `)
-      .from('tradeHistory', 'th')
-      .where(`"event" = 'Fill'`)
   }
 }

@@ -27,53 +27,40 @@ class MarketService {
   async getTopMarkets (): Promise<IMarket[]> {
     const topRecords = await this.assetPairRepository.getTopRecordsByTxCount24Hours(this.MARKETS_LIMIT)
 
-    let markets: IMarket[] = []
-    for (let record of topRecords) {
+    const marketPromises: Promise<IMarket>[] = topRecords.map(async record => {
       const assetPair = await this.assetPairRepository.getByAssetPairSymbolsString(record.marketId) as AssetPairEntity
 
-      const market = await this.recordToMarket(assetPair, {
-        volume: new BigNumber(record.volume),
-        transactionsCount: record.transactionsCount,
-        latestPrice: record.price === null ? null : new BigNumber(record.price),
-        latestPriceExcl24: record.priceExcl24 === null ? null : new BigNumber(record.priceExcl24)
-      })
+      const market = await this.generateMarket(
+        assetPair,
+        new BigNumber(record.volume),
+        record.transactionsCount
+      )
 
-      markets.push(market)
-    }
+      return market
+    })
 
-    return markets
+    return Promise.all(marketPromises)
   }
 
   async getMarketByAssetPair (assetPair: AssetPairEntity): Promise<IMarket> {
-    const {
+    const { volume, count } = await this.tradeHistoryRepository.getAssetPairVolumeAndCountForLast24Hours(assetPair)
+
+    return this.generateMarket(
+      assetPair,
       volume,
       count
-    } = await this.tradeHistoryRepository.getAssetPairVolumeAndCountForLast24Hours(assetPair)
-
-    const latestPrice = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
-    const latestPriceExcl24 = await this.tradeHistoryService.getAssetPairLatestPriceExcl24Hours(assetPair)
-
-    return this.recordToMarket(
-      assetPair,
-      {
-        transactionsCount: count,
-        volume,
-        latestPrice,
-        latestPriceExcl24
-      }
     )
   }
 
-  async recordToMarket (
+  async generateMarket (
     assetPair,
-    {
-      volume,
-      transactionsCount,
-      latestPrice,
-      latestPriceExcl24
-    }
+    volume,
+    transactionsCount
   ): Promise<IMarket> {
     const { assetA: quoteAsset, assetB: baseAsset } = assetPair
+
+    const latestPrice = await this.tradeHistoryService.getAssetPairLatestPrice(assetPair)
+    const latestPriceExcl24 = await this.tradeHistoryService.getAssetPairLatestPriceExcl24Hours(assetPair)
 
     const priceEth = latestPrice ? await this.convertPriceToEth(latestPrice, quoteAsset) : null
 
@@ -133,16 +120,6 @@ class MarketService {
     }
 
     return price.mul(latestPrice)
-  }
-
-  async getMarketByAssetPairSymbols (assetPairSymbols: string): Promise<IMarket> {
-    const assetPair = await this.assetPairRepository.getByAssetPairSymbolsString(assetPairSymbols)
-
-    if (!assetPair) {
-      throw new Error('Market not found')
-    }
-
-    return this.getMarketByAssetPair(assetPair)
   }
 
   async getMarketCandles (
