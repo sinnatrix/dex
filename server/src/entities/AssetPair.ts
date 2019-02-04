@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm'
+import { Entity, PrimaryColumn, ManyToOne, JoinColumn, Index } from 'typeorm'
 import AssetEntity from './Asset'
 
 @Entity('assetPairs')
@@ -12,9 +12,11 @@ export default class AssetPair {
   /** relations */
   @ManyToOne(() => AssetEntity)
   @JoinColumn({ name: 'assetDataA' })
+  @Index()
   assetA: AssetEntity
 
   @ManyToOne(() => AssetEntity)
   @JoinColumn({ name: 'assetDataB' })
+  @Index()
   assetB: AssetEntity
 }
