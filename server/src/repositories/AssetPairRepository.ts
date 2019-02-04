@@ -1,7 +1,7 @@
 import { Repository, EntityRepository } from 'typeorm'
 import AssetPairEntity from '../entities/AssetPair'
 import { ISRA2AssetPairs } from '../types'
-import MarketsSqlBuilder from './MarketsSqlBuilder'
+import TopMarketsSqlBuilder from './TopMarketsSqlBuilder'
 import * as R from 'ramda'
 
 @EntityRepository(AssetPairEntity)
@@ -45,7 +45,7 @@ export default class AssetPairRepository extends Repository<AssetPairEntity> {
   }
 
   async getTopRecordsByTxCount24Hours (limit?: number) {
-    const builder = new MarketsSqlBuilder({
+    const builder = new TopMarketsSqlBuilder({
       connection: this.manager.connection
     })
     const sql = builder.build({ limit, interval: 86400 })
