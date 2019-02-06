@@ -59,7 +59,7 @@ class PriceChart extends React.Component<any> {
     const { classes, candles } = this.props
 
     if (candles.length === 0) {
-      return <div>Loading...</div>
+      return <div className={classes.emptyChart}>Loading...</div>
     }
 
     return (
@@ -80,7 +80,13 @@ class PriceChart extends React.Component<any> {
     }
 
     return (
-      <Chart type={'svg'} data={candles} interval={chartInterval} className={classes.chart}/>
+      <Chart
+        type={'svg'}
+        data={candles}
+        interval={chartInterval}
+        className={classes.chart}
+        ratio={3}
+      />
     )
   }
 }

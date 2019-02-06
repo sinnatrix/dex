@@ -20,6 +20,7 @@ import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
 import MarketplaceAllowances from './components/MarketplaceAllowances'
+import DepthChartContainer from './components/depthChart/DepthChartContainer'
 
 const TradeHistoryContainer = connect(
   state => ({
@@ -71,12 +72,14 @@ const decorate = jss({
     padding: 0,
     marginLeft: 0
   },
-  chart: {
+  charts: {
     marginLeft: 4,
+    minWidth: 200,
     display: 'flex',
     flex: 1,
     flexDirection: 'column',
-    padding: 0
+    padding: 0,
+    overflowY: 'auto'
   }
 })
 
@@ -121,8 +124,13 @@ class TradePage extends React.Component<any> {
               { value === 0 && <Orderbook /> }
               { value === 1 && <TradeHistoryContainer /> }
             </Panel>
-            <Panel className={classes.chart}>
-              <PriceChart chartInterval={chartInterval}/>
+            <Panel className={classes.charts}>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <PriceChart chartInterval={chartInterval} />
+              </div>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <DepthChartContainer />
+              </div>
             </Panel>
           </>
         }
