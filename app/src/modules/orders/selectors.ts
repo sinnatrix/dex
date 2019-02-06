@@ -7,19 +7,34 @@ import descend from 'ramda/es/descend'
 import sort from 'ramda/es/sort'
 import { IDexOrder } from 'types'
 
-const getPrice = (order: IDexOrder): string => order.extra.price.toString(10)
+const getPrice = (order: IDexOrder): BigNumber => new BigNumber(order.extra.price)
 const getExpiration = (order: IDexOrder): string => order.order.expirationTimeSeconds.toString(10)
-const sortByPriceDesc = sort(descend(getPrice))
+
+const byPriceAscComparator = (a: IDexOrder, b: IDexOrder) => {
+  const priceA = getPrice(a)
+  const priceB = getPrice(b)
+
+  return priceA.greaterThan(priceB) ? -1 : priceA.lessThan(priceB) ? 1 : 0
+}
+
 const sortByExpirationDesc = sort(descend(getExpiration))
 
 export const getAccountOrders = (matchParams, state) =>
   sortByExpirationDesc(state.orders.accountOrders.map(hash => getOrderAsBidByHash(hash, matchParams, state)))
 
-export const getOrderbookBids = (matchParams, state) =>
-  sortByPriceDesc(state.orders.bids.map(hash => getOrderAsBidByHash(hash, matchParams, state)))
+export const getOrderbookBids = (matchParams, state) => {
+  return sort(
+    byPriceAscComparator,
+    state.orders.bids.map(hash => getOrderAsBidByHash(hash, matchParams, state))
+  )
+}
 
-export const getOrderbookAsks = (matchParams, state) =>
-  sortByPriceDesc(state.orders.asks.map(hash => getOrderAsBidByHash(hash, matchParams, state)))
+export const getOrderbookAsks = (matchParams, state) => {
+  return sort(
+    byPriceAscComparator,
+    state.orders.asks.map(hash => getOrderAsBidByHash(hash, matchParams, state))
+  )
+}
 
 const getOrderAsBidByHash = (hash, matchParams, state) =>
   orderAsBid(

@@ -15,12 +15,21 @@ import { last } from 'react-stockcharts/lib/utils'
 
 class CandleStickChart extends React.Component<any> {
   render () {
-    const { type, data: initialData, width, ratio, interval, className } = this.props
+    const { type, data: initialData, width, height, ratio, interval, className } = this.props
+
+    if (!initialData.length) {
+      return <>Loading...</>
+    }
+
+    if (initialData.length < 2) {
+      return <>Not enough data to build chart</>
+    }
+
     const xScaleProvider = discontinuousTimeScaleProvider
       .inputDateAccessor(d => d.date)
-    const margin = { left: 5, right: 35, top: 30, bottom: 30 }
-    const padding = { top: 0, right: 20, bottom: 0, left: 20 }
-    const height = this.props.height - 16
+    const margin = { left: 5, right: 60, top: 30, bottom: 30 }
+    const padding = { left: 20, right: 20, top: 16, bottom: 0 }
+
     const yTicks = 6
 
     const {
