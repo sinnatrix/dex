@@ -1,11 +1,11 @@
 import AssetEntity from '../src/entities/Asset'
 import { assetDataUtils } from '@0x/order-utils'
-import { IRadarRelayAsset, ISRA2AssetPair, ISRA2AssetPairAsset } from '../src/types'
+import { IRadarRelayAssetWithABI, ISRA2AssetPair, ISRA2AssetPairAsset } from '../src/types'
 import AssetPairRepository from '../src/repositories/AssetPairRepository'
 import AssetRepository from '../src/repositories/AssetRepository'
 
 export const up = async (connection, networkName) => {
-  const assets: IRadarRelayAsset[] = require(`./assets_${networkName}.json`)
+  const assets: IRadarRelayAssetWithABI[] = require(`./assets_${networkName}.json`)
   const assetPairs: ISRA2AssetPair[] = require(`./assetPairs_${networkName}.json`)
 
   const assetPairRepo = connection.getCustomRepository(AssetPairRepository)
@@ -28,7 +28,7 @@ export const up = async (connection, networkName) => {
 
 export const down = async () => {}
 
-const getAssetEntity = (assetPairAsset: ISRA2AssetPairAsset, assets: IRadarRelayAsset[]): AssetEntity | undefined => {
+const getAssetEntity = (assetPairAsset: ISRA2AssetPairAsset, assets: IRadarRelayAssetWithABI[]): AssetEntity | undefined => {
   const decodedAssetData = assetDataUtils.decodeERC20AssetData(assetPairAsset.assetData)
   const radarRelayAsset = assets.find(one => one.address === decodedAssetData.tokenAddress)
 
@@ -45,6 +45,7 @@ const getAssetEntity = (assetPairAsset: ISRA2AssetPairAsset, assets: IRadarRelay
     precision: assetPairAsset.precision,
     decimals: radarRelayAsset.decimals,
     symbol: radarRelayAsset.symbol,
-    name: radarRelayAsset.name
+    name: radarRelayAsset.name,
+    abi: radarRelayAsset.abi
   }
 }

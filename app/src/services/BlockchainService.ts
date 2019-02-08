@@ -7,6 +7,8 @@ import { delay } from 'helpers/general'
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 class BlockchainService {
+  GAS_COST = 21000 * 2
+
   web3
   contractAddresses
   contractWrappers
@@ -243,12 +245,12 @@ class BlockchainService {
     return fillTxHash
   }
 
-  async sendWrapWethTx (account, wethToken, amount) {
+  async sendWrapWethTx (account, wethToken, amount, gas = this.GAS_COST) {
     const rawTx = {
       to: wethToken.address,
       from: account,
       value: this.web3.utils.toWei(amount.toString()),
-      gas: 21000 * 2
+      gas
     }
 
     const txHash = await this.sendTransaction(rawTx)
@@ -256,7 +258,7 @@ class BlockchainService {
     return txHash
   }
 
-  async sendUnwrapWethTx (account, wethToken, amount) {
+  async sendUnwrapWethTx (account, wethToken, amount, gas = this.GAS_COST) {
     const contract = new this.web3.eth.Contract(wethToken.abi, wethToken.address)
 
     const value = this.web3.utils.toWei(amount.toString())
@@ -264,7 +266,7 @@ class BlockchainService {
     const txHash = await new Promise((resolve, reject) => {
       const rawTx = {
         from: account,
-        gas: 21000 * 2
+        gas
       }
       contract.methods.withdraw(value).send(rawTx, (err, result) => {
         if (err) {
