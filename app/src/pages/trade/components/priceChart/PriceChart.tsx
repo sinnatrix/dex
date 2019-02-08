@@ -10,6 +10,7 @@ import { discontinuousTimeScaleProvider } from 'react-stockcharts/lib/scale'
 import { OHLCTooltip } from 'react-stockcharts/lib/tooltip'
 import { fitDimensions } from 'react-stockcharts/lib/helper'
 import { last } from 'react-stockcharts/lib/utils'
+import { MIN_POINTS_TO_DRAW_CHART } from 'helpers/general'
 
 const decorate = jss({
   root: {
@@ -25,14 +26,12 @@ const decorate = jss({
 })
 
 class PriceChart extends React.Component<any> {
-  MIN_POINTS_TO_DRAW_CHART = 2
-
   render () {
     const { type, data: initialData, width, height, ratio, interval, classes } = this.props
 
     const candlesWithData = initialData.filter(one => one.open)
 
-    if (candlesWithData.length < this.MIN_POINTS_TO_DRAW_CHART) {
+    if (candlesWithData.length < MIN_POINTS_TO_DRAW_CHART) {
       return <div className={classes.loader}>Not enough data to build chart</div>
     }
 

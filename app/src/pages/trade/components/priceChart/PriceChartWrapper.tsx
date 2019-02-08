@@ -8,6 +8,7 @@ import { loadMarketCandles } from 'modules/global'
 import PriceChart from './PriceChart'
 import PriceChartIntervals from './PriceChartIntervals'
 import compose from 'ramda/es/compose'
+import { MIN_POINTS_TO_DRAW_CHART } from 'helpers/general'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -89,7 +90,7 @@ class PriceChartWrapper extends React.Component<any> {
     return (
       <div className={classes.root}>
         <div className={classes.title}>Price chart</div>
-        {candlesWithData.length >= 2 &&
+        {candlesWithData.length >= MIN_POINTS_TO_DRAW_CHART &&
           <PriceChartIntervals className={classes.intervals} />
         }
         <div className={classes.chartRoot}>

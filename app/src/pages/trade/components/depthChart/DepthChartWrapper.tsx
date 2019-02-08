@@ -9,6 +9,7 @@ import { BigNumber } from '@0x/utils'
 import equals from 'ramda/es/equals'
 import compose from 'ramda/es/compose'
 import reverse from 'ramda/es/reverse'
+import { IDexOrder } from 'types'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -74,10 +75,11 @@ class DepthChartWrapper extends React.Component<any> {
     )
   }
 
-  prepareData ({ bids = [], asks = [] }: {bids: any[], asks: any[]}) {
+  prepareData ({ bids = [], asks = [] }: {bids: IDexOrder[], asks: IDexOrder[]}) {
     let asksMakerVolume = new BigNumber(0)
     let asksTakerVolume = new BigNumber(0)
-    asks = asks.map(ask => {
+    let preparedAsks
+    preparedAsks = asks.map(ask => {
       asksMakerVolume = asksMakerVolume.plus(ask.extra.remainingMakerAssetAmount)
       asksTakerVolume = asksTakerVolume.plus(ask.extra.remainingTakerAssetAmount)
       return {
@@ -89,7 +91,8 @@ class DepthChartWrapper extends React.Component<any> {
 
     let bidsTakerVolume = new BigNumber(0)
     let bidsMakerVolume = new BigNumber(0)
-    bids = reverse(reverse(bids).map((bid: any) => {
+    let preparedBids
+    preparedBids = reverse(reverse(bids).map((bid: any) => {
       bidsTakerVolume = bidsTakerVolume.plus(bid.extra.remainingTakerAssetAmount)
       bidsMakerVolume = bidsMakerVolume.plus(bid.extra.remainingMakerAssetAmount)
       return {
@@ -99,25 +102,54 @@ class DepthChartWrapper extends React.Component<any> {
       }
     }))
 
-    const askPrice = asks.length ? asks[0].extra.price : new BigNumber(0)
-    const bidPrice = bids.length ? bids[bids.length - 1].extra.price : new BigNumber(0)
-    const midMarketPrice = askPrice.plus(bidPrice).dividedBy(2).toFixed(7)
+    const askPrice = preparedAsks.length ? preparedAsks[0].extra.price : null
+    const bidPrice = preparedBids.length ? preparedBids[preparedBids.length - 1].extra.price : null
+    let midMarketPrice
+    if (askPrice !== null && bidPrice !== null) {
+      midMarketPrice = askPrice.plus(bidPrice).dividedBy(2).toFixed(7)
+    } else {
+      midMarketPrice = null
+    }
 
-    bids = bids.reverse().map(bid => ({
+    preparedBids = preparedBids.reverse().map(bid => ({
       type: 'bid',
       price: bid.extra.price.toFixed(7),
       volumeSell: bid.bidsTakerVolume.toFixed(4),
       volumeBuy: bid.bidsMakerVolume.toFixed(4)
     }))
 
-    asks = asks.map(ask => ({
+    preparedAsks = preparedAsks.map(ask => ({
       type: 'ask',
       price: ask.extra.price.toFixed(7),
       volumeBuy: ask.asksMakerVolume.toFixed(4),
       volumeSell: ask.asksTakerVolume.toFixed(4)
     }))
 
-    return { bids, asks, midMarketPrice }
+    if (preparedBids.length) {
+      const lastBid = preparedBids[preparedBids.length - 1]
+      preparedBids.push({
+        ...lastBid,
+        showTooltip: false,
+        price: (parseFloat(lastBid.price) * 1.1).toFixed(7),
+        volumeSell: (parseFloat(lastBid.volumeSell) * 1.1).toFixed(4)
+      })
+    }
+
+    if (preparedAsks.length) {
+      const lastAsk = preparedAsks[preparedAsks.length - 1]
+      preparedAsks.push({
+        ...lastAsk,
+        showTooltip: false,
+        price: (parseFloat(lastAsk.price) * 0.7).toFixed(7),
+        volumeBuy: (parseFloat(lastAsk.volumeBuy) * 1.1).toFixed(4)
+      })
+    }
+
+    return {
+      bids: preparedBids,
+      asks: preparedAsks,
+      midMarketPrice
+    }
   }
 }
 

@@ -151,13 +151,8 @@ export default (compose as any)(
   connector,
   routerListener({
     async onEnter (params, dispatch) {
-      dispatch(actions.setOrderbookLoaded(false))
-
       await dispatch(loadMarket(params))
       await dispatch(loadOrderbook(params))
-
-      dispatch(actions.setOrderbookLoaded(true))
-
       await dispatch(loadAssetPairTradeHistory(params))
     }
   } as any),

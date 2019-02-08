@@ -4,6 +4,7 @@ import format from 'date-fns/format'
 
 export const DAI_SYMBOL = '⬙'
 export const ETHER_SYMBOL = 'Ξ'
+export const MIN_POINTS_TO_DRAW_CHART = 2
 
 export const getQuoteAssetSymbol = (market: IMarket): string =>
   market.quoteAsset.symbol === 'DAI' ? DAI_SYMBOL : ETHER_SYMBOL

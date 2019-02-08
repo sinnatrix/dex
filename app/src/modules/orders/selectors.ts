@@ -27,7 +27,7 @@ export const getOrderbookBids = (matchParams, state) => {
   const quoteAsset = getQuoteAsset(matchParams, state)
 
   if (!baseAsset || !quoteAsset) {
-    return
+    return []
   }
 
   return sort(
@@ -43,7 +43,7 @@ export const getOrderbookAsks = (matchParams, state) => {
   const quoteAsset = getQuoteAsset(matchParams, state)
 
   if (!baseAsset || !quoteAsset) {
-    return
+    return []
   }
 
   return sort(

@@ -18,7 +18,11 @@ export const loadOrderbook = matchParams => async (dispatch, getState) => {
     return
   }
 
+  dispatch(actions.setOrderbookLoaded(false))
+
   await dispatch(loadOrderbookByAssets(baseAsset, quoteAsset))
+
+  dispatch(actions.setOrderbookLoaded(true))
 }
 
 export const loadOrderbookByAssets = (
