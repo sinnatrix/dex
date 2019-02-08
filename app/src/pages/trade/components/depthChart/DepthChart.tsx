@@ -1,5 +1,4 @@
 import React from 'react'
-import jss from 'react-jss'
 import { format } from 'd3-format'
 import { scaleLinear, scalePoint } from 'd3-scale'
 import { curveStepBefore, curveStepAfter } from 'd3-shape'
@@ -10,33 +9,14 @@ import HoverTooltip from './CustomHoverTooltip'
 import { fitDimensions } from 'react-stockcharts/lib/helper'
 import { Label } from 'react-stockcharts/lib/annotation'
 import { withTheme } from '@material-ui/core/styles'
-import equals from 'ramda/es/equals'
 import CustomAreaOnlySeries from './CustomAreaOnlySeries'
 
-const decorate = jss({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 200,
-    minWidth: 200
-  },
-  loader: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
-})
-
 class DepthChart extends React.Component<any> {
-  // TODO fix multi-render and remove this method
-  shouldComponentUpdate (nextProps: Readonly<any>, nextState: Readonly<{}>, nextContext: any): boolean {
-    return !equals(nextProps, this.props)
-  }
   render () {
-    const { market, bids = [], asks = [], midMarketPrice, classes, theme } = this.props
+    const { market, bids = [], asks = [], midMarketPrice, theme } = this.props
 
     if (!bids.length && !asks.length) {
-      return <div className={classes.loader}>Not enough data to build chart</div>
+      return
     }
 
     const maxVolume = Math.max(...bids.map(b => b.volumeSell), ...asks.map(a => a.volumeBuy))
@@ -130,7 +110,7 @@ class DepthChart extends React.Component<any> {
   }
 }
 
-export default fitDimensions(decorate(withTheme()(DepthChart)))
+export default fitDimensions(withTheme()(DepthChart))
 
 const volumeFormat = format('.4f')
 

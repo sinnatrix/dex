@@ -39,6 +39,11 @@ const decorate = jss({
     fontSize: '1.25em',
     marginBottom: 5,
     flex: 'none'
+  },
+  loader: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 })
 
@@ -60,9 +65,9 @@ class DepthChartWrapper extends React.Component<any> {
       <div className={classes.root}>
         <div className={classes.title}>Depth chart</div>
         <div className={classes.chartRoot}>
-          {!loaded
-            ? <CircularProgress />
-            : <DepthChart
+          {!loaded && <CircularProgress />}
+          {asks.length || bids.length
+            ? <DepthChart
                 type={'svg'}
                 bids={bids}
                 asks={asks}
@@ -70,6 +75,7 @@ class DepthChartWrapper extends React.Component<any> {
                 market={market}
                 ratio={3}
               />
+            : <div className={classes.loader}>Not enough data to build chart</div>
           }
         </div>
       </div>
