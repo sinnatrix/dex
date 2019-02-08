@@ -9,8 +9,9 @@ import { BigNumber } from '@0x/utils'
 import equals from 'ramda/es/equals'
 import compose from 'ramda/es/compose'
 import reverse from 'ramda/es/reverse'
+import head from 'ramda/es/head'
+import last from 'ramda/es/last'
 import { IDepthChartPoint, IDexOrder, IDexOrderWithCummulativeVolumes, TOrder } from 'types'
-import { first, last } from 'react-stockcharts/lib/utils'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -36,12 +37,13 @@ const decorate = jss({
     minHeight: 0
   },
   title: {
-    fontSize: '1.25em',
+    fontSize: 18,
     marginBottom: 5,
     flex: 'none'
   },
   loader: {
     display: 'flex',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center'
   }
@@ -56,33 +58,35 @@ class DepthChartWrapper extends React.Component<any> {
   render () {
     let { market, classes, loaded } = this.props
 
-    const { asks, bids, midMarketPrice } = this.prepareData({
-      bids: this.props.bids,
-      asks: this.props.asks
-    })
+    const { asks, bids, midMarketPrice } = this.prepareData()
 
     return (
       <div className={classes.root}>
         <div className={classes.title}>Depth chart</div>
         <div className={classes.chartRoot}>
-          {!loaded && <CircularProgress />}
-          {asks.length || bids.length
-            ? <DepthChart
-                type={'svg'}
-                bids={bids}
-                asks={asks}
-                midMarketPrice={midMarketPrice}
-                market={market}
-                ratio={3}
-              />
-            : <div className={classes.loader}>Not enough data to render the chart</div>
+          {!loaded
+            ? <div className={classes.loader}>
+                <CircularProgress />
+              </div>
+            : !asks.length || !bids.length
+              ? <div className={classes.loader}>Not enough data to render the chart</div>
+              : <DepthChart
+                  type={'svg'}
+                  bids={bids}
+                  asks={asks}
+                  midMarketPrice={midMarketPrice}
+                  market={market}
+                  ratio={3}
+                />
           }
         </div>
       </div>
     )
   }
 
-  prepareData ({ bids = [], asks = [] }: {bids: IDexOrder[], asks: IDexOrder[]}) {
+  prepareData () {
+    const { asks = [], bids = [] } = this.props
+
     const asksWithVolumes = this.getCumulativeVolumesForOrders(asks)
     const bidsWithVolumes = reverse(this.getCumulativeVolumesForOrders(reverse(bids)))
 
@@ -121,7 +125,6 @@ class DepthChartWrapper extends React.Component<any> {
         ...lastBid,
         showTooltip: false,
         price: newPrice.toFixed(7),
-        // price: (parseFloat(lastBid.price) * 1.1).toFixed(7),
         volumeSell: (parseFloat(lastBid.volumeSell) * 1.1).toFixed(4)
       })
     }
@@ -142,13 +145,13 @@ class DepthChartWrapper extends React.Component<any> {
       bids: IDexOrderWithCummulativeVolumes[]
     }
   ): string | null => {
-    const askPrice = asks.length ? first(asks).extra.price : null
-    const bidPrice = bids.length ? last(bids).extra.price : null
+    const ask = head(asks)
+    const bid = last(bids)
 
     let midMarketPrice
 
-    if (askPrice !== null && bidPrice !== null) {
-      return askPrice.plus(bidPrice).dividedBy(2).toFixed(7)
+    if (ask && bid) {
+      return ask.extra.price.plus(bid.extra.price).dividedBy(2).toFixed(7)
     } else {
       return midMarketPrice = null
     }

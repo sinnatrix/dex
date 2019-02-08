@@ -16,11 +16,11 @@ class DepthChart extends React.Component<any> {
   render () {
     const { market, bids = [], asks = [], midMarketPrice, theme } = this.props
 
-    if (!bids.length && !asks.length) {
-      return
-    }
+    const maxVolume = Math.max(
+      ...bids.map(b => b.volumeSell),
+      ...asks.map(a => a.volumeBuy)
+    )
 
-    const maxVolume = Math.max(...bids.map(b => b.volumeSell), ...asks.map(a => a.volumeBuy))
     let data = [
       ...bids,
       ...asks
