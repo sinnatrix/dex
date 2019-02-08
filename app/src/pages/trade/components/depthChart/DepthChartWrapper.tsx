@@ -10,6 +10,7 @@ import equals from 'ramda/es/equals'
 import compose from 'ramda/es/compose'
 import reverse from 'ramda/es/reverse'
 import { IDexOrder } from 'types'
+import { first, last } from 'react-stockcharts/lib/utils'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -102,8 +103,8 @@ class DepthChartWrapper extends React.Component<any> {
       }
     }))
 
-    const askPrice = preparedAsks.length ? preparedAsks[0].extra.price : null
-    const bidPrice = preparedBids.length ? preparedBids[preparedBids.length - 1].extra.price : null
+    const askPrice = preparedAsks.length ? first(preparedAsks).extra.price : null
+    const bidPrice = preparedBids.length ? last(preparedBids).extra.price : null
     let midMarketPrice
     if (askPrice !== null && bidPrice !== null) {
       midMarketPrice = askPrice.plus(bidPrice).dividedBy(2).toFixed(7)
@@ -111,12 +112,13 @@ class DepthChartWrapper extends React.Component<any> {
       midMarketPrice = null
     }
 
-    preparedBids = preparedBids.reverse().map(bid => ({
-      type: 'bid',
-      price: bid.extra.price.toFixed(7),
-      volumeSell: bid.bidsTakerVolume.toFixed(4),
-      volumeBuy: bid.bidsMakerVolume.toFixed(4)
-    }))
+    preparedBids = preparedBids.reverse()
+      .map(bid => ({
+        type: 'bid',
+        price: bid.extra.price.toFixed(7),
+        volumeSell: bid.bidsTakerVolume.toFixed(4),
+        volumeBuy: bid.bidsMakerVolume.toFixed(4)
+      }))
 
     preparedAsks = preparedAsks.map(ask => ({
       type: 'ask',
@@ -126,7 +128,7 @@ class DepthChartWrapper extends React.Component<any> {
     }))
 
     if (preparedBids.length) {
-      const lastBid = preparedBids[preparedBids.length - 1]
+      const lastBid = last(preparedBids)
       preparedBids.push({
         ...lastBid,
         showTooltip: false,
@@ -136,7 +138,7 @@ class DepthChartWrapper extends React.Component<any> {
     }
 
     if (preparedAsks.length) {
-      const lastAsk = preparedAsks[preparedAsks.length - 1]
+      const lastAsk = last(preparedAsks)
       preparedAsks.push({
         ...lastAsk,
         showTooltip: false,

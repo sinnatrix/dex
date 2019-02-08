@@ -136,10 +136,6 @@ const volumeFormat = format('.4f')
 
 function tooltipContent (market) {
   return ({ currentItem }) => {
-    if (currentItem.extra) {
-      return { x: null, y: [] }
-    }
-
     const { type, price, volumeBuy, volumeSell } = currentItem
     let x: string
     let y: any[]
