@@ -8,6 +8,84 @@ const wethToken = require('fixtures/wethToken.json')
 
 /* eslint-env jest */
 
+test('wrapEth / unwrapWETH', async t => {
+  const ethBalance = new BigNumber(10).pow(18).mul(1000)
+  const amount = new BigNumber(10).pow(18).mul(500)
+  const gas = 21000 * 3
+
+  const web3 = initWeb3ByBalance(ethBalance.toString())
+  const [account] = await web3.eth.getAccounts()
+
+  const blockchainService = await initBlockchainService(web3)
+  const wethAddress = await deployWethContract(blockchainService, account)
+  const wethTokenWithAddress = {
+    ...wethToken,
+    address: wethAddress
+  }
+  const accountBalance = {
+    ETH: await blockchainService.getEthBalance(account),
+    WETH: await blockchainService.getTokenBalance(account, wethAddress)
+  }
+
+  await blockchainService.setUnlimitedTokenAllowanceAsync(account, wethAddress)
+
+  const amountToWrap = amount.dividedBy(Math.pow(10, 18))
+  const txHashWrap = await blockchainService.sendWrapWethTx(
+    account,
+    wethTokenWithAddress,
+    amountToWrap,
+   gas
+  )
+  await blockchainService.awaitTransaction(txHashWrap)
+
+  const wrappedAccountBalance = {
+    ETH: await blockchainService.getEthBalance(account),
+    WETH: await blockchainService.getTokenBalance(account, wethAddress)
+  }
+
+  t.equal(
+    wrappedAccountBalance.WETH.toString(),
+    amountToWrap.toString(),
+    'wrapETH: New WETH balance equals to wrapped amount'
+  )
+  t.equal(
+    wrappedAccountBalance.ETH < accountBalance.ETH,
+    true,
+    'wrapETH: ETH balance id decreased'
+  )
+
+  const txHashUnwrap = await blockchainService.sendUnwrapWethTx(
+    account,
+    wethTokenWithAddress,
+    amountToWrap,
+    gas
+  )
+  await blockchainService.awaitTransaction(txHashUnwrap)
+
+  const unwrappedAccountBalance = {
+    ETH: await blockchainService.getEthBalance(account),
+    WETH: await blockchainService.getTokenBalance(account, wethAddress)
+  }
+
+  t.equal(
+    unwrappedAccountBalance.WETH.toString(),
+    '0',
+    'unwrapWETH: WETH balance equals to 0'
+  )
+  t.equal(
+    unwrappedAccountBalance.ETH > wrappedAccountBalance.ETH,
+    true,
+    'unwrapWETH: ETH balance is increased'
+  )
+  t.equal(
+    unwrappedAccountBalance.ETH < accountBalance.ETH,
+    true,
+    'wrapETH: Final ETH balance less than initial ETH balance'
+  )
+
+  t.end()
+})
+
 test('getEthBalance', async t => {
   const balance = 1000
 
