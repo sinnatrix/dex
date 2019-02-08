@@ -2,44 +2,79 @@ import React from 'react'
 import { connect } from 'react-redux'
 import jss from 'react-jss'
 import { withRouter } from 'react-router'
-import compose from 'ramda/es/compose'
-import reverse from 'ramda/es/reverse'
-import { getMarket, getOrderbookAsks, getOrderbookBids } from 'selectors'
+import CircularProgress from '@material-ui/core/CircularProgress'
+import { getMarket, getOrderbookAsks, getOrderbookBids, getOrderbookLoaded } from 'selectors'
 import DepthChart from './DepthChart'
 import { BigNumber } from '@0x/utils'
 import equals from 'ramda/es/equals'
+import compose from 'ramda/es/compose'
+import reverse from 'ramda/es/reverse'
 
 const connector = connect(
   (state, ownProps) => ({
     bids: getOrderbookBids(ownProps.match.params, state),
     asks: getOrderbookAsks(ownProps.match.params, state),
-    market: getMarket(ownProps.match.params, state)
+    market: getMarket(ownProps.match.params, state),
+    loaded: getOrderbookLoaded(state)
   })
 )
 
 const decorate = jss({
-  chart: {
-    marginTop: 20
+  root: {
+    marginTop: 20,
+    paddingLeft: 10,
+    display: 'flex',
+    flex: 1,
+    flexDirection: 'column'
   },
-  emptyChart: {
-    marginLeft: 18,
-    marginTop: 18
+  chartRoot: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0
+  },
+  title: {
+    fontSize: '1.25em',
+    marginBottom: 5,
+    flex: 'none'
   }
 })
 
-class DepthChartContainer extends React.Component<any> {
+class DepthChartWrapper extends React.Component<any> {
   // TODO fix multi-render and remove this method
   shouldComponentUpdate (nextProps: Readonly<any>, nextState: Readonly<{}>, nextContext: any): boolean {
     return !equals(nextProps, this.props)
   }
 
   render () {
-    let { market, bids, asks, classes } = this.props
+    let { market, classes, loaded } = this.props
 
-    if (!asks.length || !bids.length) {
-      return <div className={classes.emptyChart}>Loading</div>
-    }
+    const { asks, bids, midMarketPrice } = this.prepareData({
+      bids: this.props.bids,
+      asks: this.props.asks
+    })
 
+    return (
+      <div className={classes.root}>
+        <div className={classes.title}>Depth chart</div>
+        <div className={classes.chartRoot}>
+          {!loaded
+            ? <CircularProgress />
+            : <DepthChart
+                type={'svg'}
+                bids={bids}
+                asks={asks}
+                midMarketPrice={midMarketPrice}
+                market={market}
+                ratio={3}
+              />
+          }
+        </div>
+      </div>
+    )
+  }
+
+  prepareData ({ bids = [], asks = [] }: {bids: any[], asks: any[]}) {
     let asksMakerVolume = new BigNumber(0)
     let asksTakerVolume = new BigNumber(0)
     asks = asks.map(ask => {
@@ -82,17 +117,7 @@ class DepthChartContainer extends React.Component<any> {
       volumeSell: ask.asksTakerVolume.toFixed(4)
     }))
 
-    return (
-      <DepthChart
-        type={'svg'}
-        bids={bids}
-        asks={asks}
-        midMarketPrice={midMarketPrice}
-        market={market}
-        ratio={3}
-        className={classes.chart}
-      />
-    )
+    return { bids, asks, midMarketPrice }
   }
 }
 
@@ -100,4 +125,4 @@ export default (compose as any)(
   withRouter,
   connector,
   decorate
-)(DepthChartContainer)
+)(DepthChartWrapper)

@@ -11,4 +11,6 @@ export const setOrderbookAsks = orders => setOrdersList(orders, 'asks')
 export const addOrderbookBids = orders => addOrdersList(orders, 'bids')
 export const addOrderbookAsks = orders => addOrdersList(orders, 'asks')
 
+export const setOrderbookLoaded = payload => ({ type: types.SET_ORDERBOOK_LOADED, payload })
+
 export const resetHighlighting = () => ({ type: types.RESET_HIGHLIGHTING })

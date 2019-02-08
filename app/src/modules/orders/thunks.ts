@@ -8,9 +8,9 @@ import {
   getQuoteAsset,
   getSubscriptionsByListType
 } from 'selectors'
-import { IDexOrder, ISRA2Order } from 'types'
+import { AssetEntity, IDexOrder, ISRA2Order } from 'types'
 
-export const loadOrderbook = matchParams => async (dispatch, getState, { apiService }) => {
+export const loadOrderbook = matchParams => async (dispatch, getState) => {
   const quoteAsset = getQuoteAsset(matchParams, getState())
   const baseAsset = getBaseAsset(matchParams, getState())
 
@@ -18,6 +18,13 @@ export const loadOrderbook = matchParams => async (dispatch, getState, { apiServ
     return
   }
 
+  await dispatch(loadOrderbookByAssets(baseAsset, quoteAsset))
+}
+
+export const loadOrderbookByAssets = (
+  baseAsset: AssetEntity,
+  quoteAsset: AssetEntity
+) => async (dispatch, getState, { apiService }) => {
   const data = await apiService.loadOrderbook({
     baseAssetData: baseAsset.assetData,
     quoteAssetData: quoteAsset.assetData
