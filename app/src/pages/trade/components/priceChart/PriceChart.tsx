@@ -17,23 +17,12 @@ const decorate = jss({
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0
-  },
-  loader: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
   }
 })
 
 class PriceChart extends React.Component<any> {
   render () {
     const { type, data: initialData, width, height, ratio, interval, classes } = this.props
-
-    const candlesWithData = initialData.filter(one => one.open)
-
-    if (candlesWithData.length < MIN_POINTS_TO_DRAW_CHART) {
-      return <div className={classes.loader}>Not enough data to build chart</div>
-    }
 
     const xScaleProvider = discontinuousTimeScaleProvider
       .inputDateAccessor(d => d.date)

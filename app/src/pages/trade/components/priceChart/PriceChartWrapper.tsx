@@ -36,6 +36,11 @@ const decorate = jss({
     fontSize: '1.25em',
     marginBottom: 5,
     flex: 'none'
+  },
+  loader: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 })
 
@@ -91,17 +96,19 @@ class PriceChartWrapper extends React.Component<any> {
       <div className={classes.root}>
         <div className={classes.title}>Price chart</div>
         {candlesWithData.length >= MIN_POINTS_TO_DRAW_CHART &&
-          <PriceChartIntervals className={classes.intervals} />
+          <PriceChartIntervals className={classes.intervals}/>
         }
         <div className={classes.chartRoot}>
           {!loaded
             ? <CircularProgress />
-            : <PriceChart
-                type={'svg'}
-                data={candles}
-                interval={chartInterval}
-                ratio={3}
-              />
+            : candlesWithData < MIN_POINTS_TO_DRAW_CHART
+              ? <div className={classes.loader}>Not enough data to render the chart</div>
+              : <PriceChart
+                  type={'svg'}
+                  data={candles}
+                  interval={chartInterval}
+                  ratio={3}
+                />
           }
         </div>
       </div>

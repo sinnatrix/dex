@@ -57,9 +57,9 @@ class DepthChart extends React.Component<any> {
         xAccessor={xAccessor}
         displayXAccessor={xAccessor}
         xScale={scaleLinear()}
-        zoomEvent={false}
-        panEvent={false}
-        clamp={true}
+        zoomEvent={true}
+        panEvent={true}
+        clamp={'both'}
         fontSize={10}
       >
         {midMarketPrice &&
@@ -95,11 +95,13 @@ class DepthChart extends React.Component<any> {
             dataFilter={d => d.type === 'bid'}
             opacity={0.5}
           />
-          <BarSeries
-            yAccessor={d => d.maxVolume}
-            fill={'#000'}
-            width={1}
-          />
+          {midMarketPrice &&
+            <BarSeries
+              yAccessor={d => d.maxVolume}
+              fill={'#000'}
+              width={1}
+            />
+          }
           <HoverTooltip
             tooltipContent={tooltipContent(market)}
             fontSize={12}
