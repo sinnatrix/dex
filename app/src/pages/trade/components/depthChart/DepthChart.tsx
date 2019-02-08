@@ -10,6 +10,7 @@ import { fitDimensions } from 'react-stockcharts/lib/helper'
 import { Label } from 'react-stockcharts/lib/annotation'
 import { withTheme } from '@material-ui/core/styles'
 import CustomAreaOnlySeries from './CustomAreaOnlySeries'
+import { first, last } from 'react-stockcharts/lib/utils'
 
 class DepthChart extends React.Component<any> {
   render () {
@@ -39,9 +40,10 @@ class DepthChart extends React.Component<any> {
     const margin = { left: 0, right: 60, top: 10, bottom: 50 }
     const padding = { left: 20, right: 20, top: 16, bottom: 0 }
 
-    const xExtents = list => list.map(d => xAccessor(d))
     const yExtents = d => [0, maxVolume * 1.2]
     const sortedData = data.sort((a, b) => xAccessor(a) - xAccessor(b))
+
+    const xExtents = [xAccessor(first(sortedData)), xAccessor(last(sortedData))]
 
     return (
       <ChartCanvas
