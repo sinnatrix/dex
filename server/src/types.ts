@@ -124,7 +124,7 @@ export interface IOrderbook {
   asks: ISRA2Orders
 }
 
-export interface IRadarRelayAsset {
+export interface IRadarRelayAssetWithABI {
   address: string
   symbol: string
   decimals: number
@@ -134,6 +134,7 @@ export interface IRadarRelayAsset {
   quote: number
   createDate: string
   dydx?: {}
+  abi?: {}
 }
 
 export interface ISRA2AssetPairAsset {

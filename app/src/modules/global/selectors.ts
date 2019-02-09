@@ -2,6 +2,8 @@ import { assetDataUtils } from '@0x/order-utils'
 import { BigNumber } from '@0x/utils'
 import { IDexToken, IMarket } from 'types'
 import { convertMarketDecimalsToNumbers } from './helpers'
+import { createSelector } from 'reselect'
+import moize from 'moize'
 
 export const DEFAULT_TOKEN = {
   id: 0,
@@ -38,17 +40,30 @@ export const getTokenBySymbol = (symbol: string, state): IDexToken =>
 export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
   tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN
 
-export const getMarkets = (state): IMarket[] => state.global.markets.result
+const getMarketsRaw = (state): IMarket[] => state.global.markets.result
   .map(id => getMarketById(id, state))
 
-export const getMarketById = (id: string, state: any): IMarket =>
-  convertMarketDecimalsToNumbers(state.global.markets.entities.markets[id])
+export const getMarkets = createSelector(
+  (state: any) => state.global.markets,
+  (markets: any) => markets.result.map(id =>
+    convertMarketDecimalsToNumbers(markets.entities.markets[id])
+  )
+)
+
+const convertMarketDecimalsToNumbersCached = moize(convertMarketDecimalsToNumbers)
+
+const getMarketById = (id: string, state: any): IMarket | null => {
+  const market = state.global.markets.entities.markets[id]
+  if (!market) {
+    return null
+  }
+  return convertMarketDecimalsToNumbersCached(market)
+}
 
 export const getMarket = (matchParams, state) => {
   const { baseAssetSymbol, quoteAssetSymbol } = matchParams
   const id = `${baseAssetSymbol}-${quoteAssetSymbol}`
-  const market = state.global.markets.entities.markets[id]
-  return market ? convertMarketDecimalsToNumbers(market) : null
+  return getMarketById(id, state)
 }
 
 export const getBaseAsset = (matchParams, state) => {

@@ -19,6 +19,7 @@ const getId = path(['metaData', 'orderHash'])
 const LIST_TYPES = ['asks', 'bids', 'accountOrders']
 
 const initialState = {
+  orderbookLoaded: false,
   [ENTITY_STORE_KEY]: {}
 }
 
@@ -28,6 +29,9 @@ for (let listType of LIST_TYPES) {
 
 const ordersReducer = (state = initialState, { type, payload }) => {
   switch (type) {
+    case types.SET_ORDERBOOK_LOADED:
+      return { ...state, orderbookLoaded: payload }
+
     case types.SET_ORDERS_LIST:
       return mergeItemsReducer({
         state: resetItemsReducer(state, payload.listType),

@@ -11,6 +11,21 @@ export interface IDexOrder extends ISRA2Order {
   extra: IDexOrderExtra
 }
 
+export interface IDexOrderWithCummulativeVolumes extends IDexOrder {
+  takerVolume: BigNumber
+  makerVolume: BigNumber
+}
+
+export type TOrder = 'bid' | 'ask'
+
+export interface IDepthChartPoint {
+  type: TOrder
+  price: string
+  volumeSell: string
+  volumeBuy: string
+  showTooltip?: boolean
+}
+
 export interface IDexToken {
   id: number
   assetData: string

@@ -1,26 +1,34 @@
 import React from 'react'
+import jss from 'react-jss'
 import { format } from 'd3-format'
 import { timeFormat } from 'd3-time-format'
 import { ChartCanvas, Chart } from 'react-stockcharts'
-import {
-  BarSeries,
-  CandlestickSeries
-} from 'react-stockcharts/lib/series'
+import { BarSeries, CandlestickSeries } from 'react-stockcharts/lib/series'
 import { XAxis, YAxis } from 'react-stockcharts/lib/axes'
 import { CrossHairCursor, MouseCoordinateY } from 'react-stockcharts/lib/coordinates'
 import { discontinuousTimeScaleProvider } from 'react-stockcharts/lib/scale'
 import { OHLCTooltip } from 'react-stockcharts/lib/tooltip'
 import { fitDimensions } from 'react-stockcharts/lib/helper'
 import { last } from 'react-stockcharts/lib/utils'
+import { MIN_POINTS_TO_DRAW_CHART } from 'helpers/general'
 
-class CandleStickChart extends React.Component<any> {
+const decorate = jss({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0
+  }
+})
+
+class PriceChart extends React.Component<any> {
   render () {
-    const { type, data: initialData, width, ratio, interval, className } = this.props
+    const { type, data: initialData, width, height, ratio, interval, classes } = this.props
+
     const xScaleProvider = discontinuousTimeScaleProvider
       .inputDateAccessor(d => d.date)
-    const margin = { left: 5, right: 35, top: 30, bottom: 30 }
-    const padding = { top: 0, right: 20, bottom: 0, left: 20 }
-    const height = this.props.height - 16
+    const margin = { left: 0, right: 60, top: 10, bottom: 30 }
+    const padding = { left: 20, right: 20, top: 16, bottom: 0 }
+
     const yTicks = 6
 
     const {
@@ -50,7 +58,7 @@ class CandleStickChart extends React.Component<any> {
         xExtents={xExtents}
         padding={padding}
         clamp={'both'}
-        className={className}
+        className={classes.chart}
       >
         <Chart
           id={1}
@@ -101,4 +109,4 @@ class CandleStickChart extends React.Component<any> {
   }
 }
 
-export default fitDimensions(CandleStickChart)
+export default fitDimensions(decorate(PriceChart))

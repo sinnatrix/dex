@@ -8,9 +8,7 @@ import { getMarkets } from 'selectors'
 import history from 'ownHistory'
 
 const connector = connect(
-  state => ({
-    markets: getMarkets(state)
-  }),
+  null,
   { loadMarkets }
 )
 

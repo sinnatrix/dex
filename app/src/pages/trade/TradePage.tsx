@@ -8,7 +8,8 @@ import Marketplace from './components/Marketplace'
 import LimitOrderPanel from './components/LimitOrderPanel'
 import Orderbook from './components/orderbook/Orderbook'
 import TradeHistory from './components/tradeHistory/TradeHistory'
-import PriceChart from './components/PriceChart'
+import PriceChartWrapper from './components/priceChart/PriceChartWrapper'
+import DepthChartWrapper from './components/depthChart/DepthChartWrapper'
 import MessageListenerContainer from 'MessageListenerContainer'
 import routerListener from 'hocs/routerListener'
 import { loadOrderbook } from 'modules/orders'
@@ -20,6 +21,7 @@ import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
 import MarketplaceAllowances from './components/MarketplaceAllowances'
+import * as actions from 'modules/orders/actions'
 
 const TradeHistoryContainer = connect(
   state => ({
@@ -71,12 +73,20 @@ const decorate = jss({
     padding: 0,
     marginLeft: 0
   },
-  chart: {
+  charts: {
     marginLeft: 4,
+    minWidth: 200,
     display: 'flex',
     flex: 1,
     flexDirection: 'column',
-    padding: 0
+    padding: 0,
+    overflowY: 'auto'
+  },
+  chartWrapper: {
+    display: 'flex',
+    flex: 1,
+    flexDirection: 'column',
+    minHeight: 0
   }
 })
 
@@ -121,8 +131,13 @@ class TradePage extends React.Component<any> {
               { value === 0 && <Orderbook /> }
               { value === 1 && <TradeHistoryContainer /> }
             </Panel>
-            <Panel className={classes.chart}>
-              <PriceChart chartInterval={chartInterval}/>
+            <Panel className={classes.charts}>
+              <div className={classes.chartWrapper}>
+                <PriceChartWrapper chartInterval={chartInterval} />
+              </div>
+              <div className={classes.chartWrapper}>
+                <DepthChartWrapper />
+              </div>
             </Panel>
           </>
         }

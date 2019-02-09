@@ -2,11 +2,11 @@ import * as rp from 'request-promise-native'
 import * as path from 'path'
 import { promisify } from 'util'
 import { writeFile } from 'fs'
-import { IRadarRelayAsset } from '../types'
+import { IRadarRelayAssetWithABI } from '../types'
 
 export default class LoadTokenIconsTask {
   async run () {
-    const assets: IRadarRelayAsset[] = require('../../seeders/assets_mainnet.json')
+    const assets: IRadarRelayAssetWithABI[] = require('../../seeders/assets_mainnet.json')
 
     const symbols = assets.filter(one => !one.dydx).map(one => one.symbol)
 
