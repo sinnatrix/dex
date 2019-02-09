@@ -33,7 +33,6 @@ const decorate = jss({
     minHeight: 0
   },
   title: {
-    fontSize: 18,
     marginBottom: 5,
     flex: 'none'
   },
@@ -41,7 +40,8 @@ const decorate = jss({
     display: 'flex',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    fontSize: '0.8em'
   }
 })
 
@@ -88,33 +88,48 @@ class PriceChartWrapper extends React.Component<any> {
   }
 
   render () {
+    const { classes } = this.props
+
+    return (
+      <div className={classes.root}>
+        <div className={classes.title}>Price chart</div>
+        {this.renderChart()}
+      </div>
+    )
+  }
+
+  renderChart () {
     const { classes, candles, chartInterval } = this.props
     const { loaded } = this.state
 
     const candlesWithData = candles.filter(one => one.open)
 
+    if (!loaded) {
+      return (
+        <div className={classes.loader}>
+          <CircularProgress />
+        </div>
+      )
+    }
+
+    if (candlesWithData.length < MIN_POINTS_TO_DRAW_CHART) {
+      return (
+        <div className={classes.loader}>Not enough data to render the chart</div>
+      )
+    }
+
     return (
-      <div className={classes.root}>
-        <div className={classes.title}>Price chart</div>
-        {!loaded
-          ? <div className={classes.loader}>
-              <CircularProgress />
-            </div>
-          : candlesWithData.length < MIN_POINTS_TO_DRAW_CHART
-            ? <div className={classes.loader}>Not enough data to render the chart</div>
-            : <>
-                <PriceChartIntervals className={classes.intervals}/>
-                <div className={classes.chartRoot}>
-                  <PriceChart
-                    type={'svg'}
-                    data={candles}
-                    interval={chartInterval}
-                    ratio={3}
-                  />
-                </div>
-              </>
-        }
-      </div>
+      <>
+        <PriceChartIntervals className={classes.intervals}/>
+        <div className={classes.chartRoot}>
+          <PriceChart
+            type={'svg'}
+            data={candles}
+            interval={chartInterval}
+            ratio={3}
+          />
+        </div>
+      </>
     )
   }
 }

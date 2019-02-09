@@ -37,7 +37,6 @@ const decorate = jss({
     minHeight: 0
   },
   title: {
-    fontSize: 18,
     marginBottom: 5,
     flex: 'none'
   },
@@ -45,42 +44,57 @@ const decorate = jss({
     display: 'flex',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    fontSize: '0.8em'
   }
 })
 
 class DepthChartWrapper extends React.Component<any> {
   // TODO fix multi-render and remove this method
-  shouldComponentUpdate (nextProps: Readonly<any>, nextState: Readonly<{}>, nextContext: any): boolean {
+  shouldComponentUpdate (nextProps: Readonly<any>): boolean {
     return !equals(nextProps, this.props)
   }
 
   render () {
-    let { market, classes, loaded } = this.props
-
-    const { asks, bids, midMarketPrice } = this.prepareData()
+    const { classes } = this.props
 
     return (
       <div className={classes.root}>
         <div className={classes.title}>Depth chart</div>
         <div className={classes.chartRoot}>
-          {!loaded
-            ? <div className={classes.loader}>
-                <CircularProgress />
-              </div>
-            : !asks.length || !bids.length
-              ? <div className={classes.loader}>Not enough data to render the chart</div>
-              : <DepthChart
-                  type={'svg'}
-                  bids={bids}
-                  asks={asks}
-                  midMarketPrice={midMarketPrice}
-                  market={market}
-                  ratio={3}
-                />
-          }
+          {this.renderChart()}
         </div>
       </div>
+    )
+  }
+
+  renderChart () {
+    const { asks, bids, midMarketPrice } = this.prepareData()
+    const { market, classes, loaded } = this.props
+
+    if (!loaded) {
+      return (
+        <div className={classes.loader}>
+          <CircularProgress />
+        </div>
+      )
+    }
+
+    if (!asks.length && !bids.length) {
+      return (
+        <div className={classes.loader}>Not enough data to render the chart</div>
+      )
+    }
+
+    return (
+      <DepthChart
+        type={'svg'}
+        bids={bids}
+        asks={asks}
+        midMarketPrice={midMarketPrice}
+        market={market}
+        ratio={3}
+      />
     )
   }
 
