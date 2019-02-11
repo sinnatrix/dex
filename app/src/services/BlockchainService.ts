@@ -3,6 +3,7 @@ import { MetamaskSubprovider } from '@0x/subproviders'
 import { BigNumber } from '@0x/utils'
 import { Web3Wrapper } from '@0x/web3-wrapper'
 import { delay } from 'helpers/general'
+import { SignedOrder } from '@0x/contract-wrappers'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -281,13 +282,11 @@ class BlockchainService {
     return txHash
   }
 
-  /**
-   * @param account string Taker Address HexString leaded by 0x
-   * @param signedOrder {Object} Signed order with metaData
-   * @param takerAssetFillAmount string The amount of the order (in taker asset baseUnits)
-   * @returns {Promise} txHash
-   */
-  async fillOrderAsync (signedOrder, takerAssetFillAmount, account) {
+  async fillOrder (
+    signedOrder: SignedOrder,
+    takerAssetFillAmount: BigNumber,
+    account: string
+  ): Promise<string | null> {
     try {
       await this.contractWrappers.exchange.validateOrderFillableOrThrowAsync(signedOrder)
     } catch (e) {
