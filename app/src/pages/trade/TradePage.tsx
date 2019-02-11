@@ -15,17 +15,17 @@ import routerListener from 'hocs/routerListener'
 import { loadOrderbook } from 'modules/orders'
 import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
 import { loadMarket } from 'modules/global'
-import { getAssetPairTradeHistory, getMarket, getAccount } from 'selectors'
+import { getAssetPairTradeHistory, getMarket, getAccount, getAssetPairTradeHistoryLoaded } from 'selectors'
 import compose from 'ramda/es/compose'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
 import MarketplaceAllowances from './components/MarketplaceAllowances'
-import * as actions from 'modules/orders/actions'
 
 const TradeHistoryContainer = connect(
   state => ({
-    tradeHistory: getAssetPairTradeHistory(state)
+    tradeHistory: getAssetPairTradeHistory(state),
+    tradeHistoryLoaded: getAssetPairTradeHistoryLoaded(state)
   })
 )(TradeHistory)
 
@@ -152,8 +152,10 @@ export default (compose as any)(
   routerListener({
     async onEnter (params, dispatch) {
       await dispatch(loadMarket(params))
-      await dispatch(loadOrderbook(params))
-      await dispatch(loadAssetPairTradeHistory(params))
+      await Promise.all([
+        dispatch(loadOrderbook(params)),
+        dispatch(loadAssetPairTradeHistory(params))
+      ])
     }
   } as any),
   decorate

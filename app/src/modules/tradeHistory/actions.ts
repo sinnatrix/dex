@@ -16,3 +16,13 @@ export const setAccountTradeHistory = tradeHistoryItems =>
 
 export const setAssetPairTradeHistory = tradeHistoryItems =>
   setTradeHistoryList(tradeHistoryItems, 'assetPairTradeHistory')
+
+export const setAssetPairTradeHistoryLoaded = payload => ({
+  type: types.SET_ASSET_PAIR_TRADE_HISTORY_LOADED,
+  payload
+})
+
+export const setAccountTradeHistoryLoaded = payload => ({
+  type: types.SET_ACCOUNT_TRADE_HISTORY_LOADED,
+  payload
+})

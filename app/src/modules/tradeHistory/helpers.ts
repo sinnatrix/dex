@@ -26,3 +26,10 @@ export const convertTradeHistoryDecimalsToBigNumber = (tradeHistoryItem: IFillEv
 
   return evolve(transformation, tradeHistoryItem as any) as any
 }
+
+export const isTradeHistoryItemForAssets = (tradeHistoryItem, assetA, assetB) =>
+  isTradeHistoryItemHaveAssetData(tradeHistoryItem, assetA.assetData) &&
+    isTradeHistoryItemHaveAssetData(tradeHistoryItem, assetB.assetData)
+
+export const isTradeHistoryItemHaveAssetData = (tradeHistoryItem, assetData) =>
+  tradeHistoryItem.makerAssetData === assetData || tradeHistoryItem.takerAssetData === assetData

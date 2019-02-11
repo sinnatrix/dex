@@ -10,8 +10,6 @@ import {
   getTokens,
   findTokenByAssetData,
   getAccount,
-  getBaseAsset,
-  getQuoteAsset,
   getMarket,
   getNetworkName
 } from 'selectors'
@@ -20,6 +18,7 @@ import { TradeHistoryEntity, IMarket, IDexToken } from 'types'
 import TrendArrow from '../TrendArrow'
 import FormattedAmount from '../orderbook/FormattedAmount'
 import TradeHistoryRow from './TradeHistoryRow'
+import CircularProgress from '@material-ui/core/CircularProgress'
 
 const cellStyle = {
   display: 'flex',
@@ -54,6 +53,12 @@ const decorate = jss({
   },
   trendIcon: {
     fontSize: 12
+  },
+  loader: {
+    display: 'flex',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 })
 
@@ -61,8 +66,6 @@ const connector = connect(
   (state, ownProps) => ({
     account: getAccount(state),
     tokens: getTokens(state),
-    baseAsset: getBaseAsset(ownProps.match.params, state),
-    quoteAsset: getQuoteAsset(ownProps.match.params, state),
     market: getMarket(ownProps.match.params, state),
     network: getNetworkName(state)
   }),
@@ -80,15 +83,22 @@ const TrComponent = props => {
 class TradeHistory extends React.Component<any> {
   render () {
     const {
-      tradeHistory,
+      tradeHistoryLoaded,
       tokens,
       classes,
-      quoteAsset,
-      baseAsset,
       market,
       network,
       columns = ['price', 'trend', 'amount', 'totalEth']
     } = this.props
+
+    const { baseAsset, quoteAsset } = market
+
+    if (!tradeHistoryLoaded) {
+      return this.renderLoader()
+    }
+
+    const tradeHistory = this.props.tradeHistory
+      .filter(one => this.isBid(one, market) || this.isAsk(one, market))
 
     if (tradeHistory.length === 0) {
       return null
@@ -156,6 +166,14 @@ class TradeHistory extends React.Component<any> {
     )
   }
 
+  renderLoader () {
+    return (
+      <div className={this.props.classes.loader}>
+        <CircularProgress />
+      </div>
+    )
+  }
+
   getPrice (tradeHistoryItem, market: IMarket): BigNumber {
     return this.isBid(tradeHistoryItem, market)
       ? tradeHistoryItem.takerAssetFilledAmount.dividedBy(tradeHistoryItem.makerAssetFilledAmount)
@@ -179,6 +197,10 @@ class TradeHistory extends React.Component<any> {
   isBid = (tradeHistoryItem, market: IMarket): boolean =>
     tradeHistoryItem.takerAssetData === market.quoteAsset.assetData &&
     tradeHistoryItem.makerAssetData === market.baseAsset.assetData
+
+  isAsk = (tradeHistoryItem, market: IMarket): boolean =>
+    tradeHistoryItem.takerAssetData === market.baseAsset.assetData &&
+    tradeHistoryItem.makerAssetData === market.quoteAsset.assetData
 
   getMakerAssetAmount (tradeHistoryItem: TradeHistoryEntity, market: IMarket, tokens: IDexToken[]): BigNumber {
     const token = findTokenByAssetData(tradeHistoryItem.makerAssetData, tokens)

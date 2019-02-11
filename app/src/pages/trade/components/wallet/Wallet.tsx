@@ -1,5 +1,6 @@
 import React from 'react'
 import jss from 'react-jss'
+import { withRouter } from 'react-router-dom'
 import Panel from 'components/Panel'
 import ConnectionWidget from './ConnectionWidget'
 import Tabs from '@material-ui/core/Tabs'
@@ -10,14 +11,15 @@ import TradeHistory from '../tradeHistory/TradeHistory'
 import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
 import { loadAccountTradeHistory } from 'modules/tradeHistory'
-import { getAccountTradeHistory } from 'modules/tradeHistory/selectors'
+import { getAccountTradeHistory, getAccountTradeHistoryLoaded } from 'modules/tradeHistory/selectors'
 import { getAccount } from 'selectors'
 
-const TradeHistoryContainer = connect(
-  state => ({
-    tradeHistory: getAccountTradeHistory(state)
+const TradeHistoryContainer = withRouter(connect(
+  (state, ownProps) => ({
+    tradeHistory: getAccountTradeHistory(ownProps.match.params, state),
+    tradeHistoryLoaded: getAccountTradeHistoryLoaded(state)
   })
-)(TradeHistory)
+)(TradeHistory))
 
 const connector = connect(
   state => ({

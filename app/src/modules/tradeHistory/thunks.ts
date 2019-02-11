@@ -5,11 +5,16 @@ import { expandTradeHistory } from './helpers'
 
 export const loadAccountTradeHistory = () => async (dispatch, getState, { apiService }) => {
   const { account } = getState().global
+
+  dispatch(actions.setAccountTradeHistoryLoaded(false))
+
   const tradeHistory = await apiService.loadAccountTradeHistory(account)
 
   const expandedTradeHistory = tradeHistory.map(expandTradeHistory)
 
   dispatch(actions.setAccountTradeHistory(expandedTradeHistory))
+
+  dispatch(actions.setAccountTradeHistoryLoaded(true))
 
   const [ subscription ] = getSubscriptionsByListType(getState(), 'accountTradeHistory')
   if (subscription) {
@@ -29,6 +34,8 @@ export const loadAccountTradeHistory = () => async (dispatch, getState, { apiSer
 }
 
 export const loadAssetPairTradeHistory = (matchParams, page?, perPage?) => async (dispatch, getState, { apiService }) => {
+  dispatch(actions.setAssetPairTradeHistoryLoaded(false))
+
   const baseAsset = getBaseAsset(matchParams, getState())
   const quoteAsset = getQuoteAsset(matchParams, getState())
 
@@ -46,6 +53,8 @@ export const loadAssetPairTradeHistory = (matchParams, page?, perPage?) => async
   const expandedTradeHistory = tradeHistory.map(expandTradeHistory)
 
   dispatch(actions.setAssetPairTradeHistory(expandedTradeHistory))
+
+  dispatch(actions.setAssetPairTradeHistoryLoaded(true))
 
   const [ subscription ] = getSubscriptionsByListType(getState(), 'assetPairTradeHistory')
   if (subscription) {
