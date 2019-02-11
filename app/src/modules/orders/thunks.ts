@@ -9,6 +9,7 @@ import {
   getSubscriptionsByListType
 } from 'selectors'
 import { AssetEntity, IDexOrder, ISRA2Order } from 'types'
+import { BigNumber } from '@0x/utils'
 
 export const loadOrderbook = matchParams => async (dispatch, getState) => {
   const quoteAsset = getQuoteAsset(matchParams, getState())
@@ -104,12 +105,22 @@ export const loadActiveAccountOrders = () => async (dispatch, getState, { apiSer
   ))
 }
 
-export const fillOrder = (order: IDexOrder) => async (dispatch, getState, { blockchainService }) => {
+export const fillOrder = (
+  order: IDexOrder,
+  takerFillAmount?: number | string
+) => async (dispatch, getState, { blockchainService }) => {
   const account = getAccount(getState())
 
-  const txHash = await blockchainService.fillOrderAsync(
+  const amountToFill = takerFillAmount === undefined
+    ? order.extra.remainingTakerAssetAmount
+    : new BigNumber(takerFillAmount)
+
+  const txHash = await blockchainService.fillOrder(
     order.order,
-    Web3Wrapper.toBaseUnitAmount(order.order.takerAssetAmount, order.extra.takerToken.decimals),
+    Web3Wrapper.toBaseUnitAmount(
+      amountToFill,
+      order.extra.takerToken.decimals
+    ),
     account
   )
 

@@ -9,6 +9,8 @@ const ENTITY_STORE_KEY = 'tradeHistory'
 const LIST_TYPES = ['accountTradeHistory', 'assetPairTradeHistory']
 
 const initialState = {
+  assetPairTradeHistoryLoaded: false,
+  accountTradeHistoryLoaded: false,
   [ENTITY_STORE_KEY]: {}
 }
 
@@ -18,6 +20,12 @@ for (let listType of LIST_TYPES) {
 
 const tradeHistoryReducer = (state = initialState, { type, payload }) => {
   switch (type) {
+    case types.SET_ASSET_PAIR_TRADE_HISTORY_LOADED:
+      return { ...state, assetPairTradeHistoryLoaded: !!payload }
+
+    case types.SET_ACCOUNT_TRADE_HISTORY_LOADED:
+      return { ...state, accountTradeHistoryLoaded: !!payload }
+
     case types.SET_TRADE_HISTORY_LIST:
       return mergeItemsReducer({
         state: resetItemsReducer(state, payload.listType),
