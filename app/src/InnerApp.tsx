@@ -4,7 +4,6 @@ import { ConnectedRouter } from 'connected-react-router'
 import { connect } from 'react-redux'
 import TradePage from 'pages/trade/TradePage'
 import { loadMarkets } from 'modules/global'
-import { getMarkets } from 'selectors'
 import history from 'ownHistory'
 
 const connector = connect(

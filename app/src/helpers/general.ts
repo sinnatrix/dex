@@ -71,24 +71,24 @@ export const getFormattedMarketVolume = (market: IMarket, addQuoteAssetSymbol: b
   return symbol + formatMarketVolume(volume, decimals)
 }
 
-export const formatMarketPrice = (price: BigNumber): string => {
+export const formatMarketPrice = (price: BigNumber, toFixedDecimals = 7): string => {
   if (price.equals(0)) {
     return '0'
   }
 
   return trimChars(
-    price.toFixed(7),
+    price.toFixed(toFixedDecimals),
     '0.',
     { fromRight: true, fromLeft: false }
   )
 }
 
-export const formatMarketVolume = (volume: BigNumber, decimals: number): string => {
+export const formatMarketVolume = (volume: BigNumber, assetDecimals: number = 18, toFixedDecimals = 2): string => {
   if (volume.equals(0)) {
     return '0'
   }
 
-  return volume.dividedBy(Math.pow(10, decimals)).toFixed(2)
+  return volume.dividedBy(Math.pow(10, assetDecimals)).toFixed(toFixedDecimals)
 }
 
 export const renderExpiresAt = (order: IDexOrder): string => {

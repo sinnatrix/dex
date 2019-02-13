@@ -10,7 +10,13 @@ import MarketsList from './MarketsList'
 import { withRouter } from 'react-router-dom'
 import { Paper } from '@material-ui/core'
 import ClickAwayListener from '@material-ui/core/ClickAwayListener'
-import { getFormattedMarketPrice, getFormattedMarketEthPrice } from 'helpers/general'
+import {
+  getFormattedMarketPrice,
+  getFormattedMarketEthPrice,
+  formatMarketVolume,
+  getQuoteAssetSymbol,
+  ETHER_SYMBOL
+} from 'helpers/general'
 import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
 
 const connector = connect(
@@ -21,13 +27,15 @@ const connector = connect(
 
 const decorate = jss({
   root: {
-    display: 'flex',
-    flex: 'none',
     cursor: 'pointer',
     padding: 0,
     '&:hover $rightColumn': {
       backgroundColor: '#ccc'
     }
+  },
+  row: {
+    display: 'flex',
+    flex: 'none'
   },
   leftColumn: {
     flex: 1,
@@ -134,6 +142,19 @@ const decorate = jss({
       left: 1
     },
     top: 20
+  },
+  volumes: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '5px 10px 10px',
+    color: 'gray',
+    borderTop: 'solid #ccc 1px',
+    fontSize: '0.8em'
+  },
+  volume: {
+    paddingTop: 8,
+    color: '#333',
+    fontSize: 12
   }
 })
 
@@ -205,31 +226,44 @@ class Marketplace extends React.Component<any, IOwnState> {
 
     return (
       <Panel className={classes.root} onClick={this.toggleMarkets}>
-        <div className={classes.leftColumn}>
-          <img
-            className={classes.logo}
-            src={`/token-icons/${market.baseAsset.symbol}.png`}
-            alt=''
-          />
-          <div className={classes.percentChange}>
-            {market.stats.percentChange24Hours.toFixed(2)}%
+        <div className={classes.row}>
+          <div className={classes.leftColumn}>
+            <img
+              className={classes.logo}
+              src={`/token-icons/${market.baseAsset.symbol}.png`}
+              alt=''
+            />
+            <div className={classes.percentChange}>
+              {market.stats.percentChange24Hours.toFixed(2)}%
+            </div>
+            <TrendArrow className={classes.trendIcon} value={market.stats.percentChange24Hours} />
           </div>
-          <TrendArrow className={classes.trendIcon} value={market.stats.percentChange24Hours} />
+          <div className={classes.rightColumn}>
+            <div className={classes.marketName}>
+              {market.name}
+              <ArrowRight className={classes.corner} />
+            </div>
+            <div className={classes.priceTitle}>Price</div>
+            <div className={classes.pricesRow}>
+              <span className={cx(classes.price, classes.quotePrice)}>
+                { getFormattedMarketPrice(market) }
+              </span>
+              <span className={cx(classes.price, classes.ethPrice)}>
+                { getFormattedMarketEthPrice(market) }
+              </span>
+            </div>
+          </div>
         </div>
-        <div className={classes.rightColumn}>
-          <div className={classes.marketName}>
-            {market.name}
-            <ArrowRight className={classes.corner} />
-          </div>
-          <div className={classes.priceTitle}>Price</div>
-          <div className={classes.pricesRow}>
-            <span className={cx(classes.price, classes.quotePrice)}>
-              { getFormattedMarketPrice(market) }
-            </span>
-            <span className={cx(classes.price, classes.ethPrice)}>
-              { getFormattedMarketEthPrice(market) }
-            </span>
-          </div>
+        <div className={cx(classes.row, classes.volumes)}>
+          Volume
+          <span className={classes.volume}>
+            {getQuoteAssetSymbol(market)}&nbsp;
+            {formatMarketVolume(market.stats.volume24Hours, market.quoteAsset.decimals)}
+          </span>
+          <span className={classes.volume}>
+            {ETHER_SYMBOL}&nbsp;
+            {formatMarketVolume(market.stats.ethVolume24Hours)}
+          </span>
         </div>
         <Popper
           id={id as any}
