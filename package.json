@@ -9,5 +9,8 @@
     "docs": "grip",
     "start": "docker-compose up --build",
     "stop": "docker-compose down"
+  },
+  "dependencies": {
+    "shallow-equal": "^1.1.0"
   }
 }

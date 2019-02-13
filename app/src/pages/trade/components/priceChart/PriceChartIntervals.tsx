@@ -2,18 +2,15 @@ import React from 'react'
 import { connect } from 'react-redux'
 import jss from 'react-jss'
 import { withRouter } from 'react-router'
-import { getPriceChartIntervals } from 'selectors'
 import compose from 'ramda/es/compose'
 import { Button } from '@material-ui/core'
-import { setPriceChartIntervalById } from 'modules/global'
+import { changePriceChartInterval } from 'modules/global'
 
 const connector = connect(
-  state => ({
-    chartIntervals: getPriceChartIntervals(state)
-  }),
+  null,
   (dispatch, ownProps) => ({
-    setPriceChartIntervalById (id) {
-      return dispatch(setPriceChartIntervalById(ownProps.match.params, id))
+    changePriceChartInterval (interval) {
+      return dispatch(changePriceChartInterval(ownProps.match.params, interval))
     }
   })
 )
@@ -30,18 +27,45 @@ const decorate = jss(() => ({
 }))
 
 class PriceChartIntervals extends React.Component<any> {
-  handleClick = ({ id }) => {
-    this.props.setPriceChartIntervalById(id)
+  intervals = [
+    {
+      id: '1d',
+      name: '1 day',
+      intervalSeconds: 24 * 60 * 60,
+      groupIntervalSeconds: 3600,
+      ticks: 6,
+      tickFormat: '%H:%M'
+    },
+    {
+      id: '1w',
+      name: '1 week',
+      intervalSeconds: 7 * 24 * 60 * 60,
+      groupIntervalSeconds: 3 * 60 * 60,
+      ticks: 6,
+      tickFormat: '%a %d'
+    },
+    {
+      id: '1m',
+      name: '1 month',
+      intervalSeconds: 30 * 24 * 60 * 60,
+      groupIntervalSeconds: 24 * 60 * 60,
+      ticks: 6,
+      tickFormat: '%b %d'
+    }
+  ]
+
+  handleClick = interval => {
+    this.props.changePriceChartInterval(interval)
   }
 
   render () {
-    const { classes, chartIntervals, className } = this.props
+    const { classes, interval: activeInterval, className } = this.props
     return (
       <div className={className}>
-        {chartIntervals.map(one =>
+        {this.intervals.map(one =>
           <Button
             key={one.id}
-            className={one.active ? classes.active : null}
+            className={one.id === activeInterval.id ? classes.active : null}
             onClick={() => this.handleClick(one)}
             size={'small'}
           >

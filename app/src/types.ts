@@ -187,3 +187,34 @@ export interface TradeHistoryEntity {
   takerFeePaid?: string
   timestamp: number
 }
+
+export interface ICandleWithStrings {
+  volume: string
+  open: string | null
+  close: string | null
+  high: string | null
+  low: string | null
+  timestamp: number
+}
+
+export interface IPriceChartPoint {
+  volume: number
+  open: number | null
+  close: number | null
+  high: number | null
+  low: number | null
+  date: Date
+}
+
+interface ITokensIndexedBySymbol {
+  [key: string]: IDexToken
+}
+
+interface ITokenEntities {
+  tokens: ITokensIndexedBySymbol
+}
+
+export interface ITokensState {
+  entities: ITokenEntities
+  result: string[]
+}

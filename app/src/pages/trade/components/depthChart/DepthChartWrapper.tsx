@@ -6,7 +6,6 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import { getMarket, getOrderbookAsks, getOrderbookBids, getOrderbookLoaded } from 'selectors'
 import DepthChart from './DepthChart'
 import { BigNumber } from '@0x/utils'
-import equals from 'ramda/es/equals'
 import compose from 'ramda/es/compose'
 import reverse from 'ramda/es/reverse'
 import head from 'ramda/es/head'
@@ -50,11 +49,6 @@ const decorate = jss({
 })
 
 class DepthChartWrapper extends React.Component<any> {
-  // TODO fix multi-render and remove this method
-  shouldComponentUpdate (nextProps: Readonly<any>): boolean {
-    return !equals(nextProps, this.props)
-  }
-
   render () {
     const { classes } = this.props
 

@@ -6,6 +6,9 @@ import mergeWith from 'ramda/es/mergeWith'
 import descend from 'ramda/es/descend'
 import sort from 'ramda/es/sort'
 import { AssetEntity, IDexOrder } from 'types'
+import moize from 'moize'
+
+const shallowEqualArrays = require('shallow-equal/arrays')
 
 const getPrice = (order: IDexOrder): BigNumber => new BigNumber(order.extra.price)
 const getExpiration = (order: IDexOrder): string => order.order.expirationTimeSeconds.toString(10)
@@ -22,6 +25,24 @@ const sortByExpirationDesc = sort(descend(getExpiration))
 export const getAccountOrders = (matchParams, state) =>
   sortByExpirationDesc(state.orders.accountOrders.map(hash => getOrderAsBidByHash(hash, matchParams, state)))
 
+const getBids = (matchParams, state) => state.orders.bids
+  .map(hash => getOrderAsBidByHash(hash, matchParams, state))
+
+const getAsks = (matchParams, state) => state.orders.asks
+  .map(hash => getOrderAsBidByHash(hash, matchParams, state))
+
+const sortBids = bids => sort(
+  byPriceAscComparator,
+  bids
+)
+
+const sortAsks = asks => sort(
+  byPriceAscComparator,
+  asks
+)
+
+const sortBidsCached = moize(sortBids, { equals: shallowEqualArrays })
+
 export const getOrderbookBids = (matchParams, state) => {
   const baseAsset = getBaseAsset(matchParams, state)
   const quoteAsset = getQuoteAsset(matchParams, state)
@@ -30,13 +51,13 @@ export const getOrderbookBids = (matchParams, state) => {
     return []
   }
 
-  return sort(
-    byPriceAscComparator,
-    state.orders.bids
-      .map(hash => getOrderAsBidByHash(hash, matchParams, state))
+  return sortBidsCached(
+    getBids(matchParams, state)
       .filter(one => filterOrderByAssets(one, baseAsset, quoteAsset))
   )
 }
+
+const sortAsksCached = moize(sortAsks, { equals: shallowEqualArrays })
 
 export const getOrderbookAsks = (matchParams, state) => {
   const baseAsset = getBaseAsset(matchParams, state)
@@ -46,22 +67,24 @@ export const getOrderbookAsks = (matchParams, state) => {
     return []
   }
 
-  return sort(
-    byPriceAscComparator,
-    state.orders.asks
-      .map(hash => getOrderAsBidByHash(hash, matchParams, state))
+  return sortAsksCached(
+    getAsks(matchParams, state)
       .filter(one => filterOrderByAssets(one, baseAsset, quoteAsset))
   )
 }
 
 const filterOrderByAssets = (order: IDexOrder, baseAsset: AssetEntity, quoteAsset: AssetEntity): Boolean => {
-  return (order.order.makerAssetData === baseAsset.assetData && order.order.takerAssetData === quoteAsset.assetData)
+  const { order: { makerAssetData, takerAssetData } } = order
+  const baseAssetData = baseAsset.assetData
+  const quoteAssetData = quoteAsset.assetData
+
+  return (makerAssetData === baseAssetData && takerAssetData === quoteAssetData)
     ||
-    (order.order.makerAssetData === quoteAsset.assetData && order.order.takerAssetData === baseAsset.assetData)
+    (makerAssetData === quoteAssetData && takerAssetData === baseAssetData)
 }
 
 const getOrderAsBidByHash = (hash, matchParams, state) =>
-  orderAsBid(
+  orderAsBidCached(
     getOrderByHash(hash, state),
     getBaseAsset(matchParams, state),
     getQuoteAsset(matchParams, state)
@@ -77,6 +100,8 @@ export const orderAsBid = (order, baseAsset, quoteAsset) => {
     getBidExtraFields(orderWithBN, baseAsset, quoteAsset)
   )
 }
+
+const orderAsBidCached = moize(orderAsBid)
 
 const getBidExtraFields = (orderWithBN, baseToken, quoteToken) => {
   const { tokenAddress: makerAssetAddress } = assetDataUtils.decodeAssetDataOrThrow(orderWithBN.order.makerAssetData)

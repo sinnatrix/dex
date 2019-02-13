@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import jss from 'react-jss'
 import { withRouter } from 'react-router'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import { getMarketCandles, getMarket, getActivePriceChartInterval } from 'selectors'
+import { getMarket, getActivePriceChartInterval, getPriceChartPoints } from 'selectors'
 import { loadMarketCandles } from 'modules/global'
 import PriceChart from './PriceChart'
 import PriceChartIntervals from './PriceChartIntervals'
@@ -12,7 +12,7 @@ import { MIN_POINTS_TO_DRAW_CHART } from 'helpers/general'
 
 const connector = connect(
   (state, ownProps) => ({
-    candles: getMarketCandles(state),
+    chartPoints: getPriceChartPoints(state),
     market: getMarket(ownProps.match.params, state),
     chartInterval: getActivePriceChartInterval(state)
   }),
@@ -99,10 +99,10 @@ class PriceChartWrapper extends React.Component<any> {
   }
 
   renderChart () {
-    const { classes, candles, chartInterval } = this.props
+    const { classes, chartPoints, chartInterval } = this.props
     const { loaded } = this.state
 
-    const candlesWithData = candles.filter(one => one.open)
+    const pointsWithData = chartPoints.filter(one => one.open)
 
     if (!loaded) {
       return (
@@ -112,7 +112,7 @@ class PriceChartWrapper extends React.Component<any> {
       )
     }
 
-    if (candlesWithData.length < MIN_POINTS_TO_DRAW_CHART) {
+    if (pointsWithData.length < MIN_POINTS_TO_DRAW_CHART) {
       return (
         <div className={classes.loader}>Not enough data to render the chart</div>
       )
@@ -120,11 +120,14 @@ class PriceChartWrapper extends React.Component<any> {
 
     return (
       <>
-        <PriceChartIntervals className={classes.intervals}/>
+        <PriceChartIntervals
+          interval={chartInterval}
+          className={classes.intervals}
+        />
         <div className={classes.chartRoot}>
           <PriceChart
             type={'svg'}
-            data={candles}
+            data={chartPoints}
             interval={chartInterval}
             ratio={3}
           />
