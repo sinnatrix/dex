@@ -4,13 +4,13 @@ import EthToken from './EthToken'
 import Token from './Token'
 import WethToken from './WethToken'
 import { connect } from 'react-redux'
-import { getTokensToDisplay, getTokenBySymbol } from 'selectors'
+import { getTokensToDisplay, getTokenBySymbol, getTokensState } from 'selectors'
 import { loadTokenBalances } from 'modules/global'
 
 const connector = connect(
   state => ({
     tokens: getTokensToDisplay(state),
-    wethToken: getTokenBySymbol('WETH', state)
+    wethToken: getTokenBySymbol('WETH', getTokensState(state))
   }),
   { loadTokenBalances }
 )

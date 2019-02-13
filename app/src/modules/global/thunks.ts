@@ -4,7 +4,7 @@ import {
   getTokens,
   getTokenBySymbol,
   getActivePriceChartInterval,
-  getMarket
+  getMarket, getTokensState
 } from './selectors'
 import { IMarket } from 'types'
 
@@ -76,7 +76,7 @@ export const loadTokens = () => async (dispatch, getState, { apiService }) => {
 }
 
 export const loadTokenBalances = () => async (dispatch, getState) => {
-  const tokens = getTokens(getState())
+  const tokens = getTokens(getTokensState(getState()))
 
   await Promise.all(
     tokens.map(token =>
@@ -170,16 +170,15 @@ export const loadMarketCandles = (market: IMarket, fromTimestamp, toTimestamp, g
     dispatch(actions.setMarketCandles(candles))
   }
 
-export const setPriceChartIntervalById = (matchParams, id: string) => async (dispatch, getState) => {
+export const changePriceChartInterval = (matchParams, interval: any) => async (dispatch, getState) => {
   const market = getMarket(matchParams, getState())
 
   if (!market) {
     return
   }
 
-  dispatch(actions.setPriceChartInterval(id))
+  dispatch(actions.setPriceChartInterval(interval))
 
-  const interval = getActivePriceChartInterval(getState())
   const now = Math.round((new Date()).getTime() / 1000)
 
   dispatch(loadMarketCandles(market, now - interval.intervalSeconds, now, interval.groupIntervalSeconds))

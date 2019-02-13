@@ -1,6 +1,6 @@
 import evolve from 'ramda/es/evolve'
 import { toBN } from 'helpers/general'
-import { IMarket, IMarketWithStrings } from 'types'
+import { IPriceChartPoint, ICandleWithStrings, IMarket, IMarketWithStrings } from 'types'
 
 export const convertMarketDecimalsToNumbers = (market: IMarketWithStrings): IMarket => {
   const transformation = {
@@ -15,3 +15,12 @@ export const convertMarketDecimalsToNumbers = (market: IMarketWithStrings): IMar
 
   return evolve(transformation, market) as any
 }
+
+export const convertMarketCandleToDepthChartPoint = (candle: ICandleWithStrings): IPriceChartPoint => ({
+  open: candle.open ? parseFloat(candle.open) : null,
+  close: candle.close ? parseFloat(candle.close) : null,
+  high: candle.high ? parseFloat(candle.high) : null,
+  low: candle.low ? parseFloat(candle.low) : null,
+  volume: parseFloat(candle.volume),
+  date: new Date(candle.timestamp * 1000)
+})

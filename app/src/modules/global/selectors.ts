@@ -1,9 +1,10 @@
-import { assetDataUtils } from '@0x/order-utils'
 import { BigNumber } from '@0x/utils'
-import { IDexToken, IMarket } from 'types'
-import { convertMarketDecimalsToNumbers } from './helpers'
+import { ICandleWithStrings, IDexToken, IMarket, IPriceChartPoint, ITokensState } from 'types'
+import { convertMarketCandleToDepthChartPoint, convertMarketDecimalsToNumbers } from './helpers'
 import { createSelector } from 'reselect'
 import moize from 'moize'
+
+const shallowEqualArrays = require('shallow-equal/arrays')
 
 export const DEFAULT_TOKEN = {
   id: 0,
@@ -21,27 +22,31 @@ export const DEFAULT_TOKEN = {
 
 export const getAccount = state => state.global.account
 
-export const getTokens = state => state.global.tokens.result.map(symbol =>
-  getTokenBySymbol(symbol, state)
-).map(token => ({
-  ...token,
-  assetData: assetDataUtils.encodeERC20AssetData(token.address)
-}))
+export const getTokensState = state => state.global.tokens
 
-export const getTokensToDisplay = state => getTokens(state)
-  .filter(one => one.symbol !== 'WETH')
-  .filter(one =>
-    one.symbol === 'DAI' || getTokenBalance(one.symbol, state)
+export const getTokens = moize((state: ITokensState) =>
+  state.result.map(symbol =>
+    getTokenBySymbol(symbol, state)
   )
+)
 
-export const getTokenBySymbol = (symbol: string, state): IDexToken =>
-  state.global.tokens.entities.tokens[symbol] || DEFAULT_TOKEN
+const memoizeTokensToDisplay = moize(tokensToDisplay => tokensToDisplay, {
+  equals: shallowEqualArrays
+})
+
+export const getTokensToDisplay = (state: any) => memoizeTokensToDisplay(
+  getTokens(getTokensState(state))
+    .filter(one => one.symbol !== 'WETH')
+    .filter(one =>
+      one.symbol === 'DAI' || getTokenBalance(one.symbol, state)
+    )
+)
+
+export const getTokenBySymbol = (symbol: string, state: ITokensState): IDexToken =>
+  state.entities.tokens[symbol] || DEFAULT_TOKEN
 
 export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
   tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN
-
-const getMarketsRaw = (state): IMarket[] => state.global.markets.result
-  .map(id => getMarketById(id, state))
 
 export const getMarkets = createSelector(
   (state: any) => state.global.markets,
@@ -79,20 +84,19 @@ export const getQuoteAsset = (matchParams, state) => {
 
 export const getNetworkName = state => state.global.network
 
-export const getMarketCandles = (state) => {
-  const candles = state.global.marketCandles
-  return candles.map(one => ({
-    open: parseFloat(one.open),
-    close: parseFloat(one.close),
-    high: parseFloat(one.high),
-    low: parseFloat(one.low),
-    volume: parseFloat(one.volume),
-    date: new Date(one.timestamp * 1000)
-  }))
+export const getMarketCandles = state => state.global.marketCandles
+
+export const getPriceChartPoints = state => {
+  const candles = getMarketCandles(state)
+  return convertCandlesToPriceChartPoints(candles)
 }
 
-export const getPriceChartIntervals = state => state.global.priceChart.intervals
-export const getActivePriceChartInterval = state => getPriceChartIntervals(state).find(one => one.active)
+export const convertCandlesToPriceChartPoints = moize(
+  (candles: ICandleWithStrings[]): IPriceChartPoint[] =>
+    candles.map(moize(convertMarketCandleToDepthChartPoint))
+)
+
+export const getActivePriceChartInterval = state => state.global.priceChartInterval
 
 export const getTokenAllowance = (symbol: string, state: any) => state.global.tokenAllowances[symbol]
 export const getTokenBalance = (symbol: string, state: any) => state.global.tokenBalances[symbol]

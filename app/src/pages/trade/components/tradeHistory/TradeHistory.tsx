@@ -11,7 +11,8 @@ import {
   findTokenByAssetData,
   getAccount,
   getMarket,
-  getNetworkName
+  getNetworkName,
+  getTokensState
 } from 'selectors'
 import compose from 'ramda/es/compose'
 import { TradeHistoryEntity, IMarket, IDexToken } from 'types'
@@ -65,7 +66,7 @@ const decorate = jss({
 const connector = connect(
   (state, ownProps) => ({
     account: getAccount(state),
-    tokens: getTokens(state),
+    tokens: getTokens(getTokensState(state)),
     market: getMarket(ownProps.match.params, state),
     network: getNetworkName(state)
   }),
