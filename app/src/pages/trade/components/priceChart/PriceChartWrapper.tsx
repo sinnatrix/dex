@@ -88,11 +88,15 @@ class PriceChartWrapper extends React.Component<any> {
   }
 
   render () {
-    const { classes } = this.props
+    const { classes, chartInterval } = this.props
 
     return (
       <div className={classes.root}>
         <div className={classes.title}>Price chart</div>
+        <PriceChartIntervals
+          interval={chartInterval}
+          className={classes.intervals}
+        />
         {this.renderChart()}
       </div>
     )
@@ -119,20 +123,14 @@ class PriceChartWrapper extends React.Component<any> {
     }
 
     return (
-      <>
-        <PriceChartIntervals
+      <div className={classes.chartRoot}>
+        <PriceChart
+          type={'svg'}
+          data={chartPoints}
           interval={chartInterval}
-          className={classes.intervals}
+          ratio={3}
         />
-        <div className={classes.chartRoot}>
-          <PriceChart
-            type={'svg'}
-            data={chartPoints}
-            interval={chartInterval}
-            ratio={3}
-          />
-        </div>
-      </>
+      </div>
     )
   }
 }
