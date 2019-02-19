@@ -5,6 +5,7 @@ import WsRelayerServerSubscriptionsStorage from './WsRelayerServerSubscriptionsS
 import WsRelayerServerValidator from './WsRelayerServerValidator'
 import WsRelayerServerSubscription from './WsRelayerServerSubscription'
 import WsRelayerServerError from './WsRelayerServerError'
+import Timer = NodeJS.Timer
 
 interface IConstructorOptions {
   wsRelayerServerValidator?: WsRelayerServerValidator
@@ -18,6 +19,9 @@ class WsRelayerServer {
 
   subscriptionsStorage: WsRelayerServerSubscriptionsStorage
   validator: WsRelayerServerValidator
+
+  checkWsConnectionIntervalFn?: Timer
+  checkWsConnectionIntervalMs: number = 30000
 
   constructor ({
     server,
@@ -34,13 +38,36 @@ class WsRelayerServer {
   }
 
   attach () {
-    const wss = this.websocketServerFactory({
+    const wssOptions = {
       server: this.server,
-      path: config.RELAYER_API_V2_PATH
-    })
+      path: config.RELAYER_API_V2_PATH,
+      clientTracking: true
+    }
+
+    const wss = this.websocketServerFactory(wssOptions)
+
+    const heartbeat = ws => {
+      ws.isAlive = true
+    }
+
+    const noop = () => {}
+
+    const ping = () => {
+      wss.clients.forEach(ws => {
+        if (ws.isAlive === false) {
+          return ws.terminate()
+        }
+
+        ws.isAlive = false
+        ws.ping(noop)
+      })
+    }
 
     wss.on('connection', ws => {
       log.info('connection')
+
+      ws.isAlive = true
+      ws.on('pong', () => heartbeat(ws))
 
       ws.on('message', rawMessage => {
         const message: IInputMessage = JSON.parse(rawMessage)
@@ -58,6 +85,11 @@ class WsRelayerServer {
         this.handleClose(ws)
       })
     })
+
+    this.checkWsConnectionIntervalFn = setInterval(
+      ping,
+      this.checkWsConnectionIntervalMs
+    )
   }
 
   handleSubscribe (ws, message: IInputMessage) {
