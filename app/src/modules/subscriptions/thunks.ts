@@ -5,7 +5,7 @@ import { getSubscriptionByRequestId } from './selectors'
 
 const uuidv4 = require('uuid/v4')
 
-export const wsUnsubscribe = (requestId = null) => async (dispatch, getState, { socketService }) => {
+export const wsUnsubscribe = (requestId?: string) => async (dispatch, getState, { socketService }) => {
   socketService.send(JSON.stringify({
     type: 'unsubscribe',
     requestId
@@ -39,7 +39,7 @@ export const processSocketMessage = (message, matchParams) => (dispatch, getStat
   const data = JSON.parse(message.data)
   const { type, payload, requestId } = data
 
-  const subscription = getSubscriptionByRequestId(getState(), requestId)
+  const subscription = getSubscriptionByRequestId(requestId, getState())
 
   if (!subscription) {
     return

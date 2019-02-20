@@ -1,12 +1,14 @@
 import * as types from './types'
 import assocPath from 'ramda/es/assocPath'
 import mergeDeepRight from 'ramda/es/mergeDeepRight'
+import { BigNumber } from '@0x/utils'
+import { IGlobalStateSection } from 'types'
 
-const initialState = {
+const initialState: IGlobalStateSection = {
   enabled: false,
   account: '',
   network: '',
-  ethBalance: 0,
+  ethBalance: new BigNumber(0),
   tokenBalances: {},
   tokenAllowances: {},
   tokens: {
@@ -32,7 +34,7 @@ const initialState = {
   }
 }
 
-export default (state = initialState, { type, payload }) => {
+export default (state: IGlobalStateSection = initialState, { type, payload }) => {
   switch (type) {
     case types.SET_ENABLED:
       return { ...state, enabled: payload }

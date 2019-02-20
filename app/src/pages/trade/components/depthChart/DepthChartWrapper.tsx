@@ -10,7 +10,7 @@ import compose from 'ramda/es/compose'
 import reverse from 'ramda/es/reverse'
 import head from 'ramda/es/head'
 import last from 'ramda/es/last'
-import { IDepthChartPoint, IDexOrder, IDexOrderWithCummulativeVolumes, TOrder } from 'types'
+import { IDepthChartPoint, IDexOrder, IDexOrderWithCumulativeVolumes, TOrder } from 'types'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -149,8 +149,8 @@ class DepthChartWrapper extends React.Component<any> {
       asks = [],
       bids = []
     }: {
-      asks: IDexOrderWithCummulativeVolumes[],
-      bids: IDexOrderWithCummulativeVolumes[]
+      asks: IDexOrderWithCumulativeVolumes[],
+      bids: IDexOrderWithCumulativeVolumes[]
     }
   ): string | null => {
     const ask = head(asks)
@@ -165,7 +165,7 @@ class DepthChartWrapper extends React.Component<any> {
     }
   }
 
-  getCumulativeVolumesForOrders = (orders: IDexOrder[]): IDexOrderWithCummulativeVolumes[] => {
+  getCumulativeVolumesForOrders = (orders: IDexOrder[]): IDexOrderWithCumulativeVolumes[] => {
     let makerVolume = new BigNumber(0)
     let takerVolume = new BigNumber(0)
     return orders.map(order => {
@@ -180,7 +180,7 @@ class DepthChartWrapper extends React.Component<any> {
   }
 
   convertOrderToDepthChartPoint = (
-    order: IDexOrderWithCummulativeVolumes,
+    order: IDexOrderWithCumulativeVolumes,
     type: TOrder
   ): IDepthChartPoint => ({
     type,
