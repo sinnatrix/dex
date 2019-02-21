@@ -1,7 +1,7 @@
 import { assetDataUtils } from '@0x/order-utils'
 import evolve from 'ramda/es/evolve'
 import { toBN } from 'helpers/general'
-import { IFillEventLog, IFillEventLogWithStrings } from 'types'
+import { IFillEventLog, IFillEventLogWithStrings, TradeHistoryEntity } from 'types'
 
 export const expandTradeHistory = one => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(one.makerAssetData)
@@ -16,7 +16,7 @@ export const expandTradeHistory = one => {
   }
 }
 
-export const convertTradeHistoryDecimalsToBigNumber = (tradeHistoryItem: IFillEventLogWithStrings): IFillEventLog => {
+export const convertTradeHistoryDecimalsToBigNumber = (tradeHistoryItem: TradeHistoryEntity): IFillEventLog => {
   const transformation = {
     makerAssetFilledAmount: toBN,
     takerAssetFilledAmount: toBN,

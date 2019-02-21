@@ -5,6 +5,7 @@ import { mergeMarkets, mergeTokens } from 'modules/global/actions'
 import { processSocketMessage } from './thunks'
 import { getOrderByHash } from 'modules/orders/selectors'
 import { generateSRA2Order, generateMarket } from 'helpers/testUtils'
+import { IState } from 'types'
 const uuidv4 = require('uuid/v4')
 
 test('processSocketMessage', async t => {
@@ -67,8 +68,8 @@ test('processSocketMessage', async t => {
         quoteAssetSymbol: market.quoteAsset.symbol
       }
     ))
-
-    const orderByHash = getOrderByHash(sra2Order.metaData.orderHash, store.getState())
+    
+    const orderByHash = getOrderByHash(sra2Order.metaData.orderHash, store.getState() as IState)
 
     t.deepEqual(
       orderByHash,

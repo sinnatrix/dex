@@ -3,8 +3,8 @@ import * as actions from './actions'
 import {
   getTokens,
   getTokenBySymbol,
-  getActivePriceChartInterval,
-  getMarket, getTokensState
+  getMarket,
+  getTokensState
 } from './selectors'
 import { IMarket } from 'types'
 

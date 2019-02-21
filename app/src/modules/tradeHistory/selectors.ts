@@ -2,8 +2,8 @@ import descend from 'ramda/es/descend'
 import sortBy from 'ramda/es/sortBy'
 import prop from 'ramda/es/prop'
 import { convertTradeHistoryDecimalsToBigNumber, isTradeHistoryItemForAssets } from './helpers'
-import { IFillEventLog, IFillEventLogWithStrings } from 'types'
-import { getBaseAsset, getQuoteAsset } from '../global/selectors'
+import { IFillEventLog, IState, TradeHistoryEntity } from 'types'
+import { getBaseAsset, getQuoteAsset } from 'selectors'
 
 const sortByBlockNumberDesc = sortBy(
   descend(
@@ -11,13 +11,13 @@ const sortByBlockNumberDesc = sortBy(
   ) as any
 )
 
-const getTradeHistoryItemInDexFormatById = (id, state): IFillEventLog =>
+const getTradeHistoryItemInDexFormatById = (id: string, state: IState): IFillEventLog =>
   convertTradeHistoryDecimalsToBigNumber(getEventLogItemById(id, state))
 
-const getEventLogItemById = (id, state): IFillEventLogWithStrings =>
+const getEventLogItemById = (id: string, state: IState): TradeHistoryEntity =>
   state.tradeHistory.tradeHistory[id]
 
-export const getAccountTradeHistory = (matchParams, state: any): IFillEventLog[] => {
+export const getAccountTradeHistory = (matchParams, state: IState): IFillEventLog[] => {
   const baseAsset = getBaseAsset(matchParams, state)
   const quoteAsset = getQuoteAsset(matchParams, state)
 
@@ -32,13 +32,13 @@ export const getAccountTradeHistory = (matchParams, state: any): IFillEventLog[]
   )
 }
 
-export const getAssetPairTradeHistory = (state: any): IFillEventLog[] =>
+export const getAssetPairTradeHistory = (state: IState): IFillEventLog[] =>
   sortByBlockNumberDesc(state.tradeHistory.assetPairTradeHistory.map(id =>
     getTradeHistoryItemInDexFormatById(id, state))
   )
 
-export const getAssetPairTradeHistoryLoaded = (state: any): boolean =>
+export const getAssetPairTradeHistoryLoaded = (state: IState): boolean =>
   state.tradeHistory.assetPairTradeHistoryLoaded
 
-export const getAccountTradeHistoryLoaded = (state: any): boolean =>
+export const getAccountTradeHistoryLoaded = (state: IState): boolean =>
   state.tradeHistory.accountTradeHistoryLoaded

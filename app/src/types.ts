@@ -2,6 +2,10 @@ import { EventLog } from 'web3/types'
 import { BigNumber } from '@0x/utils'
 import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
 
+export interface IIndexedType<T> {
+  readonly [key: string]: T
+}
+
 export interface ISRA2Order {
   order: SignedOrder
   metaData: OrderInfo
@@ -11,7 +15,7 @@ export interface IDexOrder extends ISRA2Order {
   extra: IDexOrderExtra
 }
 
-export interface IDexOrderWithCummulativeVolumes extends IDexOrder {
+export interface IDexOrderWithCumulativeVolumes extends IDexOrder {
   takerVolume: BigNumber
   makerVolume: BigNumber
 }
@@ -206,15 +210,67 @@ export interface IPriceChartPoint {
   date: Date
 }
 
-interface ITokensIndexedBySymbol {
-  [key: string]: IDexToken
+/**
+ * Typify State
+ */
+// global module state
+export interface ITokenBalances extends IIndexedType<BigNumber> {}
+export interface ITokenAllowances extends IIndexedType<BigNumber> {}
+export interface INormalizedStateEntities<T> {
+  readonly [key: string]: IIndexedType<T>
+}
+export interface INormalizedState<T> {
+  readonly entities: INormalizedStateEntities<T>
+  readonly result: string[]
+}
+export interface ITokensState extends INormalizedState<IDexToken> {}
+export interface IMarketsState extends INormalizedState<IMarketWithStrings> {}
+export interface IPriceChartInterval {
+  readonly id: string
+  readonly name: string
+  readonly intervalSeconds: number
+  readonly groupIntervalSeconds: number
+  readonly ticks: number
+  readonly tickFormat: string
+}
+export interface IGlobalStateSection {
+  readonly enabled: boolean
+  readonly account: string
+  readonly network: string
+  readonly ethBalance: BigNumber
+  readonly tokenBalances: ITokenBalances
+  readonly tokenAllowances: ITokenAllowances
+  readonly tokens: ITokensState
+  readonly markets: IMarketsState
+  readonly marketCandles: ICandleWithStrings[]
+  readonly priceChartInterval: IPriceChartInterval
 }
 
-interface ITokenEntities {
-  tokens: ITokensIndexedBySymbol
+// orders module state
+export interface IOrdersStateSection {
+  readonly orderbookLoaded: boolean
+  readonly orders: IIndexedType<IDexOrder>
+  readonly bids: string[]
+  readonly asks: string[]
+  readonly accountOrders: string[]
 }
 
-export interface ITokensState {
-  entities: ITokenEntities
-  result: string[]
+// tradeHistory module state
+export interface ITradeHistoryStateSection {
+  readonly assetPairTradeHistoryLoaded: boolean
+  readonly accountTradeHistoryLoaded: boolean
+  readonly tradeHistory: IIndexedType<TradeHistoryEntity>
+  readonly assetPairTradeHistory: string[]
+  readonly accountTradeHistory: string[]
+}
+
+export interface ISubscriptionsStateSection {
+  subscriptions: ISubscription[]
+}
+
+export interface IState {
+  readonly global: IGlobalStateSection
+  readonly orders: IOrdersStateSection
+  readonly tradeHistory: ITradeHistoryStateSection
+  readonly subscriptions: ISubscriptionsStateSection
 }

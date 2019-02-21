@@ -1,7 +1,9 @@
-export const getAllSubscriptions = state => state.subscriptions
+import { IState, ISubscription } from 'types'
 
-export const getSubscriptionByRequestId = (state, requestId) =>
+export const getAllSubscriptions = (state: IState): ISubscription[] => state.subscriptions.subscriptions
+
+export const getSubscriptionByRequestId = (requestId: string, state: IState) =>
   getAllSubscriptions(state).find(one => one.requestId === requestId)
 
-export const getSubscriptionsByListType = (state, listType) =>
+export const getSubscriptionsByListType = (listType: string, state: IState) =>
   getAllSubscriptions(state).filter(one => one.name === listType)
