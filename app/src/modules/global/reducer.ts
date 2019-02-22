@@ -23,6 +23,8 @@ const initialState: IGlobalStateSection = {
     },
     result: []
   },
+  marketLoaded: false,
+  marketsLoaded: false,
   marketCandles: [],
   priceChartInterval: {
     id: '1d',
@@ -91,6 +93,18 @@ export default (state: IGlobalStateSection = initialState, { type, payload }) =>
       return {
         ...state,
         priceChartInterval: payload
+      }
+
+    case types.SET_MARKETS_LOADED:
+      return {
+        ...state,
+        marketsLoaded: payload
+      }
+
+    case types.SET_MARKET_LOADED:
+      return {
+        ...state,
+        marketLoaded: payload
       }
 
     default:

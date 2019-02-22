@@ -27,7 +27,7 @@ const initialState: IOrdersStateSection = {
   accountOrders: []
 }
 
-const ordersReducer = (state:IOrdersStateSection = initialState, { type, payload }) => {
+const ordersReducer = (state: IOrdersStateSection = initialState, { type, payload }) => {
   switch (type) {
     case types.SET_ORDERBOOK_LOADED:
       return { ...state, orderbookLoaded: !!payload }

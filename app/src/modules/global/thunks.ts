@@ -138,6 +138,7 @@ export const unwrapWeth = amount => async (dispatch, getState, { blockchainServi
 }
 
 export const loadMarkets = () => async (dispatch, getState, { apiService }) => {
+  dispatch(actions.setMarketsLoaded(false))
   const markets = await apiService.loadMarkets()
 
   const normalized = normalize(
@@ -146,14 +147,24 @@ export const loadMarkets = () => async (dispatch, getState, { apiService }) => {
   )
 
   dispatch(actions.mergeMarkets(normalized))
+
+  dispatch(actions.setMarketsLoaded(true))
 }
 
 export const loadMarket = matchParams => async (dispatch, getState, { apiService }) => {
+  dispatch(actions.setMarketLoaded(false))
+
   const { baseAssetSymbol, quoteAssetSymbol } = matchParams
   const marketId = `${baseAssetSymbol}-${quoteAssetSymbol}`
-  const market = await apiService.loadMarket(marketId)
 
-  dispatch(actions.addMarket(market))
+  try {
+    const market = await apiService.loadMarket(marketId)
+    await dispatch(actions.addMarket(market))
+  } catch (e) {
+    console.error('Error while loading market', e)
+  } finally {
+    dispatch(actions.setMarketLoaded(true))
+  }
 }
 
 export const loadMarketCandles = (market: IMarket, fromTimestamp, toTimestamp, groupIntervalSeconds) =>
