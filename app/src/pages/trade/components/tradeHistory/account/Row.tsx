@@ -1,12 +1,17 @@
 import React from 'react'
 import { ReactTableDefaults } from 'react-table'
-import { TradeHistoryEntity } from 'types'
+import { ITradeHistoryItem } from 'types'
 
-class TradeHistoryRow extends React.Component<any> {
+class Row extends React.Component<any> {
   handleClick = () => {
-    const tradeHistoryItem: TradeHistoryEntity = this.props.data
+    const tradeHistoryItem: ITradeHistoryItem = this.props.data
     const { network } = this.props
-    const url = `https://${network}.etherscan.io/tx/${tradeHistoryItem.transactionHash}`
+
+    let url = 'https://'
+    if (network !== 'mainnet') {
+      url += `${network}.`
+    }
+    url += `etherscan.io/tx/${tradeHistoryItem.transactionHash}`
 
     const win = window.open(url, '_blank')
     if (win) {
@@ -24,4 +29,4 @@ class TradeHistoryRow extends React.Component<any> {
   }
 }
 
-export default TradeHistoryRow
+export default Row

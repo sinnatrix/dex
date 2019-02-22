@@ -8,7 +8,7 @@ import Wallet from './components/wallet/Wallet'
 import Marketplace from './components/Marketplace'
 import LimitOrderPanel from './components/LimitOrderPanel'
 import Orderbook from './components/orderbook/Orderbook'
-import TradeHistory from './components/tradeHistory/TradeHistory'
+import MarketTradeHistory from './components/tradeHistory/market/Table'
 import PriceChartWrapper from './components/priceChart/PriceChartWrapper'
 import DepthChartWrapper from './components/depthChart/DepthChartWrapper'
 import MessageListenerContainer from 'MessageListenerContainer'
@@ -17,10 +17,8 @@ import { loadOrderbook } from 'modules/orders'
 import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
 import { loadMarket } from 'modules/global'
 import {
-  getAssetPairTradeHistory,
   getAccount,
   getMarket,
-  getAssetPairTradeHistoryLoaded,
   getMarketLoaded
 } from 'selectors'
 import compose from 'ramda/es/compose'
@@ -29,13 +27,6 @@ import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
 import MarketplaceAllowances from './components/MarketplaceAllowances'
 import { DEFAULT_MARKET_PATH } from 'modules/global/helpers'
-
-const TradeHistoryContainer = connect(
-  state => ({
-    tradeHistory: getAssetPairTradeHistory(state),
-    tradeHistoryLoaded: getAssetPairTradeHistoryLoaded(state)
-  })
-)(TradeHistory)
 
 const connector = connect(
   (state, ownProps) => ({
@@ -64,7 +55,9 @@ const decorate = jss({
   wallet: {
     width: 300,
     paddingRight: 2,
-    overflowY: 'auto'
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column'
   },
   left: {
     display: 'flex',
@@ -135,7 +128,7 @@ class TradePage extends React.Component<any> {
                 <StyledTab label='Trade History' />
               </Tabs>
               { value === 0 && <Orderbook /> }
-              { value === 1 && <TradeHistoryContainer /> }
+              { value === 1 && <MarketTradeHistory /> }
             </Panel>
             <Panel className={classes.charts}>
               <div className={classes.chartWrapper}>

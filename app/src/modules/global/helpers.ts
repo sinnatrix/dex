@@ -26,3 +26,21 @@ export const convertMarketCandleToDepthChartPoint = (candle: ICandleWithStrings)
   volume: parseFloat(candle.volume),
   date: new Date(candle.timestamp * 1000)
 })
+
+export const getEtherscanUrl = (type: string, address: string, network: string): string => {
+  let url = 'https://'
+
+  if (network !== 'mainnet') {
+    url += `${network}.`
+  }
+  return url + `etherscan.io/${type}/${address}`
+}
+
+export const getEtherscanTxUrl = getEtherscanUrl.bind(null, 'tx')
+
+export const openUrlInNewWindow = (url: string): void => {
+  const win = window.open(url, '_blank')
+  if (win) {
+    win.focus()
+  }
+}

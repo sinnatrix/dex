@@ -2,9 +2,10 @@ import { EventLog } from 'web3/types'
 import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
 import RelayerEntity from './entities/Relayer'
 import AssetEntity from './entities/Asset'
-import TradeHistoryEntity from './entities/TradeHistory'
-import { BlockType } from 'web3/eth/types'
 import JobEntity from './entities/Job'
+import TradeHistoryEntity from './entities/TradeHistory'
+import OrderEntity from './entities/Order'
+import { BlockType } from 'web3/eth/types'
 import { OrdersRequestOpts } from '@0x/types'
 
 export interface ISRA2Order {
@@ -73,6 +74,13 @@ export interface ICancelEventLog extends IDexEventLogExtended {
     takerAssetData: string
   }
 }
+
+export enum OrderType {
+  BID = 'bid',
+  ASK = 'ask'
+}
+
+export type TOrder = OrderType.BID | OrderType.ASK
 
 export enum EventType {
   FILL = 'Fill',
@@ -173,6 +181,20 @@ export interface IMarketStats {
   volume24Hours: string
   percentChange24Hours: string
   ethVolume24Hours: string
+}
+
+export interface ITradeHistoryItem extends TradeHistoryEntity {
+  orderType: TOrder
+  baseAssetData: string
+  quoteAssetData: string
+  baseAssetFilledAmount?: number
+  quoteAssetFilledAmount?: number
+  baseAssetAmount?: number
+  quoteAssetAmount?: number
+}
+export interface IFillItem extends ITradeHistoryItem {
+  baseAssetFilledAmount: number
+  quoteAssetFilledAmount: number
 }
 
 export interface IFillEntity extends TradeHistoryEntity {

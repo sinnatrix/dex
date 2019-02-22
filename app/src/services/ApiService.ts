@@ -1,5 +1,15 @@
 import axios from 'axios'
-import { IMarket } from 'types'
+import { IFillItem, IMarket, ITradeHistoryItem } from 'types'
+
+interface IPaginatedRequest {
+  page: number
+  perPage: number
+}
+
+interface ITradeHistoryRequest {
+  baseAssetData: string
+  quoteAssetData: string
+}
 
 class ApiService {
   async loadTokenBySymbol (symbol) {
@@ -21,17 +31,17 @@ class ApiService {
     return data
   }
 
-  async loadAccountOrders (account) {
+  async loadAccountOrders (account: string) {
     const { data } = await axios.get(`/api/v1/accounts/${account}/orders`)
     return data
   }
 
-  async loadAccountTradeHistory (account) {
+  async loadAccountTradeHistory (account: string): Promise<ITradeHistoryItem[]> {
     const { data } = await axios.get(`/api/v1/accounts/${account}/history`)
     return data
   }
 
-  async loadTradeHistory (params) {
+  async loadTradeHistory (params: ITradeHistoryRequest & IPaginatedRequest): Promise<IFillItem[]> {
     const { data } = await axios.get(
       `/api/v1/tradeHistory`,
       {

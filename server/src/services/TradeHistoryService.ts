@@ -67,7 +67,9 @@ class TradeHistoryService {
     const eventLogItem = convertFillEventToDexTradeHistory(fillEventWithTs)
     await this.tradeHistoryRepository.saveFullTradeHistory([eventLogItem])
 
-    WsRelayerServerFacade.pushTradeHistory(this.wsRelayerServer, [eventLogItem])
+    const tradeHistoryItems = await this.tradeHistoryRepository.getTradeHistoryItemById(eventLogItem.id)
+
+    WsRelayerServerFacade.pushTradeHistory(this.wsRelayerServer, tradeHistoryItems)
 
     try {
       await this.orderService.updateOrderInfoAndPush(eventLogItem.orderHash)

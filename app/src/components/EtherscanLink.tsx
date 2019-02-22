@@ -4,6 +4,7 @@ import cx from 'classnames'
 import { connect } from 'react-redux'
 import Button from '@material-ui/core/Button'
 import { getNetworkName } from 'selectors'
+import { getEtherscanUrl } from 'modules/global/helpers'
 
 const connector = connect(
   state => ({
@@ -32,7 +33,7 @@ const EtherscanLink = ({ classes, className, children, network, address, type = 
       className={cx(classes.root, className)}
       classes={{ label: classes.label }}
       target='_blank'
-      href={`https://${network}.etherscan.io/${type}/${address}`}
+      href={getEtherscanUrl(type, address, network)}
     >
       <span className={classes.content}>{children}</span>&nbsp;({network})
     </Button>
