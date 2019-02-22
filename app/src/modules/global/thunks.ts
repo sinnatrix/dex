@@ -3,8 +3,8 @@ import * as actions from './actions'
 import {
   getTokens,
   getTokenBySymbol,
-  getActivePriceChartInterval,
-  getMarket
+  getMarket,
+  getTokensState
 } from './selectors'
 import { IMarket } from 'types'
 
@@ -76,7 +76,7 @@ export const loadTokens = () => async (dispatch, getState, { apiService }) => {
 }
 
 export const loadTokenBalances = () => async (dispatch, getState) => {
-  const tokens = getTokens(getState())
+  const tokens = getTokens(getTokensState(getState()))
 
   await Promise.all(
     tokens.map(token =>
@@ -138,6 +138,7 @@ export const unwrapWeth = amount => async (dispatch, getState, { blockchainServi
 }
 
 export const loadMarkets = () => async (dispatch, getState, { apiService }) => {
+  dispatch(actions.setMarketsLoaded(false))
   const markets = await apiService.loadMarkets()
 
   const normalized = normalize(
@@ -146,14 +147,24 @@ export const loadMarkets = () => async (dispatch, getState, { apiService }) => {
   )
 
   dispatch(actions.mergeMarkets(normalized))
+
+  dispatch(actions.setMarketsLoaded(true))
 }
 
 export const loadMarket = matchParams => async (dispatch, getState, { apiService }) => {
+  dispatch(actions.setMarketLoaded(false))
+
   const { baseAssetSymbol, quoteAssetSymbol } = matchParams
   const marketId = `${baseAssetSymbol}-${quoteAssetSymbol}`
-  const market = await apiService.loadMarket(marketId)
 
-  dispatch(actions.addMarket(market))
+  try {
+    const market = await apiService.loadMarket(marketId)
+    await dispatch(actions.addMarket(market))
+  } catch (e) {
+    console.error('Error while loading market', e)
+  } finally {
+    dispatch(actions.setMarketLoaded(true))
+  }
 }
 
 export const loadMarketCandles = (market: IMarket, fromTimestamp, toTimestamp, groupIntervalSeconds) =>
@@ -170,16 +181,15 @@ export const loadMarketCandles = (market: IMarket, fromTimestamp, toTimestamp, g
     dispatch(actions.setMarketCandles(candles))
   }
 
-export const setPriceChartIntervalById = (matchParams, id: string) => async (dispatch, getState) => {
+export const changePriceChartInterval = (matchParams, interval: any) => async (dispatch, getState) => {
   const market = getMarket(matchParams, getState())
 
   if (!market) {
     return
   }
 
-  dispatch(actions.setPriceChartInterval(id))
+  dispatch(actions.setPriceChartInterval(interval))
 
-  const interval = getActivePriceChartInterval(getState())
   const now = Math.round((new Date()).getTime() / 1000)
 
   dispatch(loadMarketCandles(market, now - interval.intervalSeconds, now, interval.groupIntervalSeconds))

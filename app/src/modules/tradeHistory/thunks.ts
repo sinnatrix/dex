@@ -16,7 +16,7 @@ export const loadAccountTradeHistory = () => async (dispatch, getState, { apiSer
 
   dispatch(actions.setAccountTradeHistoryLoaded(true))
 
-  const [ subscription ] = getSubscriptionsByListType(getState(), 'accountTradeHistory')
+  const [ subscription ] = getSubscriptionsByListType('accountTradeHistory', getState())
   if (subscription) {
     dispatch(wsUnsubscribe(subscription.requestId))
   }
@@ -56,7 +56,7 @@ export const loadAssetPairTradeHistory = (matchParams, page?, perPage?) => async
 
   dispatch(actions.setAssetPairTradeHistoryLoaded(true))
 
-  const [ subscription ] = getSubscriptionsByListType(getState(), 'assetPairTradeHistory')
+  const [ subscription ] = getSubscriptionsByListType('assetPairTradeHistory', getState())
   if (subscription) {
     dispatch(wsUnsubscribe(subscription.requestId))
   }

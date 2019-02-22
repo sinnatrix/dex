@@ -1,24 +1,21 @@
 import * as types from './types'
 import prop from 'ramda/es/prop'
 import { mergeItemsReducer, resetItemsReducer } from 'modules/reducerHelpers'
+import { ITradeHistoryStateSection } from 'types'
 
 const getId = prop('id')
 
 const ENTITY_STORE_KEY = 'tradeHistory'
 
-const LIST_TYPES = ['accountTradeHistory', 'assetPairTradeHistory']
-
-const initialState = {
+const initialState: ITradeHistoryStateSection = {
   assetPairTradeHistoryLoaded: false,
   accountTradeHistoryLoaded: false,
-  [ENTITY_STORE_KEY]: {}
+  [ENTITY_STORE_KEY]: {},
+  assetPairTradeHistory: [],
+  accountTradeHistory: []
 }
 
-for (let listType of LIST_TYPES) {
-  initialState[listType] = []
-}
-
-const tradeHistoryReducer = (state = initialState, { type, payload }) => {
+const tradeHistoryReducer = (state: ITradeHistoryStateSection = initialState, { type, payload }) => {
   switch (type) {
     case types.SET_ASSET_PAIR_TRADE_HISTORY_LOADED:
       return { ...state, assetPairTradeHistoryLoaded: !!payload }

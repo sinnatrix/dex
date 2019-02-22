@@ -22,6 +22,14 @@ const decorate = jss({
     justifyContent: 'center',
     alignItems: 'center',
     padding: '0 !important'
+  },
+  emptyOrders: {
+    display: 'flex',
+    flex: 1,
+    fontSize: 14,
+    padding: 30,
+    justifyContent: 'center',
+    alignContent: 'center'
   }
 })
 
@@ -34,7 +42,7 @@ class OrdersList extends React.Component<any> {
     const { accountOrders, classes } = this.props
 
     if (accountOrders.length === 0) {
-      return null
+      return <div className={classes.emptyOrders}>No active orders yet</div>
     }
 
     return (

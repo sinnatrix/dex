@@ -6,12 +6,17 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import { getMarket, getOrderbookAsks, getOrderbookBids, getOrderbookLoaded } from 'selectors'
 import DepthChart from './DepthChart'
 import { BigNumber } from '@0x/utils'
-import equals from 'ramda/es/equals'
 import compose from 'ramda/es/compose'
 import reverse from 'ramda/es/reverse'
 import head from 'ramda/es/head'
 import last from 'ramda/es/last'
-import { IDepthChartPoint, IDexOrder, IDexOrderWithCummulativeVolumes, TOrder } from 'types'
+import {
+  IDepthChartPoint,
+  IDexOrder,
+  IDexOrderWithCumulativeVolumes,
+  OrderType,
+  TOrder
+} from 'types'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -50,11 +55,6 @@ const decorate = jss({
 })
 
 class DepthChartWrapper extends React.Component<any> {
-  // TODO fix multi-render and remove this method
-  shouldComponentUpdate (nextProps: Readonly<any>): boolean {
-    return !equals(nextProps, this.props)
-  }
-
   render () {
     const { classes } = this.props
 
@@ -110,10 +110,10 @@ class DepthChartWrapper extends React.Component<any> {
     })
 
     let preparedBids = bidsWithVolumes.reverse()
-      .map(bid => this.convertOrderToDepthChartPoint(bid, 'bid'))
+      .map(bid => this.convertOrderToDepthChartPoint(bid, OrderType.BID))
 
     let preparedAsks = asksWithVolumes
-      .map(ask => this.convertOrderToDepthChartPoint(ask, 'ask'))
+      .map(ask => this.convertOrderToDepthChartPoint(ask, OrderType.ASK))
 
     let lastAsk
     if (preparedAsks.length) {
@@ -155,8 +155,8 @@ class DepthChartWrapper extends React.Component<any> {
       asks = [],
       bids = []
     }: {
-      asks: IDexOrderWithCummulativeVolumes[],
-      bids: IDexOrderWithCummulativeVolumes[]
+      asks: IDexOrderWithCumulativeVolumes[],
+      bids: IDexOrderWithCumulativeVolumes[]
     }
   ): string | null => {
     const ask = head(asks)
@@ -171,7 +171,7 @@ class DepthChartWrapper extends React.Component<any> {
     }
   }
 
-  getCumulativeVolumesForOrders = (orders: IDexOrder[]): IDexOrderWithCummulativeVolumes[] => {
+  getCumulativeVolumesForOrders = (orders: IDexOrder[]): IDexOrderWithCumulativeVolumes[] => {
     let makerVolume = new BigNumber(0)
     let takerVolume = new BigNumber(0)
     return orders.map(order => {
@@ -186,7 +186,7 @@ class DepthChartWrapper extends React.Component<any> {
   }
 
   convertOrderToDepthChartPoint = (
-    order: IDexOrderWithCummulativeVolumes,
+    order: IDexOrderWithCumulativeVolumes,
     type: TOrder
   ): IDepthChartPoint => ({
     type,

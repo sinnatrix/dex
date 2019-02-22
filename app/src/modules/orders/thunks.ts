@@ -38,7 +38,7 @@ export const loadOrderbookByAssets = (
   dispatch(actions.setOrderbookBids(data.bids.records))
   dispatch(actions.setOrderbookAsks(data.asks.records))
 
-  const [ subscription ] = getSubscriptionsByListType(getState(), 'orders')
+  const [ subscription ] = getSubscriptionsByListType('orders', getState())
 
   if (subscription) {
     dispatch(wsUnsubscribe(subscription.requestId))
@@ -88,7 +88,7 @@ export const loadActiveAccountOrders = () => async (dispatch, getState, { apiSer
 
   dispatch(actions.setAccountOrders(orders))
 
-  const [ subscription ] = getSubscriptionsByListType(getState(), 'accountOrders')
+  const [ subscription ] = getSubscriptionsByListType('accountOrders', getState())
   if (subscription) {
     dispatch(wsUnsubscribe(subscription.requestId))
   }

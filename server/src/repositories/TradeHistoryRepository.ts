@@ -1,6 +1,6 @@
 import { EntityRepository, Repository, Brackets } from 'typeorm'
 import TradeHistoryEntity from '../entities/TradeHistory'
-import { EventType, IFillEntity } from '../types'
+import { EventType, IFillEntity, IFillItem, ITradeHistoryItem, OrderType } from '../types'
 import { BigNumber } from '@0x/utils'
 import AssetPairEntity from '../entities/AssetPair'
 import { getNowUnixtime } from '../utils/helpers'
@@ -21,43 +21,142 @@ class TradeHistoryRepository extends Repository<any> {
     })
   }
 
-  async getMaxBlockNumber (): Promise<number> {
-    const records = await this.createQueryBuilder()
-      .select('MAX("blockNumber")')
-      .execute()
-
-    if (records.length === 0 || records[0].max === null) {
-      return -1
-    }
-
-    return +records[0].max
+  getTradeHistoryItemsSql () {
+    return `
+      SELECT
+        CASE
+          WHEN apBid IS NOT NULL THEN '${OrderType.BID}'
+          WHEN apAsk IS NOT NULL THEN '${OrderType.ASK}'
+          ELSE NULL
+        END AS "orderType",
+        CASE
+          WHEN apBid IS NOT NULL THEN th."takerAssetData"
+          WHEN apAsk IS NOT NULL THEN th."makerAssetData"
+        END AS "quoteAssetData",
+        CASE
+          WHEN apBid IS NOT NULL THEN th."makerAssetData"
+          WHEN apAsk IS NOT NULL THEN th."takerAssetData"
+        END AS "baseAssetData",
+        CASE
+          WHEN apBid IS NOT NULL
+            THEN (th."takerAssetFilledAmount" / 10 ^ ta.decimals)
+          WHEN apAsk IS NOT NULL
+            THEN (th."makerAssetFilledAmount" / 10 ^ ma.decimals)
+        END AS "baseAssetFilledAmount",
+        CASE
+          WHEN apBid IS NOT NULL
+            THEN (th."makerAssetFilledAmount" / 10 ^ ma.decimals)
+          WHEN apAsk IS NOT NULL
+            THEN (th."takerAssetFilledAmount" / 10 ^ ta.decimals)
+        END AS "quoteAssetFilledAmount",
+        CASE
+          WHEN apBid IS NOT NULL AND o IS NOT NULL
+            THEN (o."takerAssetAmount" / 10 ^ ta.decimals)
+          WHEN apAsk IS NOT NULL
+            THEN (o."makerAssetAmount" / 10 ^ ma.decimals)
+        END AS "baseAssetAmount",
+        CASE
+          WHEN apBid IS NOT NULL AND o IS NOT NULL
+            THEN (o."makerAssetAmount" / 10 ^ ma.decimals)
+          WHEN apAsk IS NOT NULL
+            THEN (o."takerAssetAmount" / 10 ^ ta.decimals)
+        END AS "quoteAssetAmount",
+        th.*
+      FROM
+        "tradeHistory" th
+      LEFT JOIN
+        "assetPairs" apBid
+        ON apBid."assetDataB" = th."makerAssetData"
+          AND apBid."assetDataA" = th."takerAssetData"
+      LEFT JOIN
+        "assetPairs" apAsk
+        ON apAsk."assetDataA" = th."makerAssetData"
+          AND apAsk."assetDataB" = th."takerAssetData"
+      LEFT JOIN
+        assets ma
+        ON ma."assetData" = th."makerAssetData"
+      LEFT JOIN
+        assets ta
+        ON ta."assetData" = th."takerAssetData"
+      LEFT JOIN
+        orders o
+        ON o."orderHash" = th."orderHash"
+    `
   }
 
-  getAssetPairTradeHistoryAsync ({ baseAssetData, quoteAssetData, skip, take }) {
-    return this.createQueryBuilder()
-      .where('"event" = :event')
-      .andWhere(new Brackets(qb => {
-        qb.where('("makerAssetData" = :baseAssetData AND "takerAssetData" = :quoteAssetData)')
-          .orWhere('("makerAssetData" = :quoteAssetData AND "takerAssetData" = :baseAssetData)')
-      }))
-      .setParameters({ baseAssetData, quoteAssetData, event: EventType.FILL })
-      .skip(skip)
-      .take(take)
-      .orderBy('"blockNumber"', 'DESC')
-      .getMany()
+  getAssetPairTradeHistoryAsync ({
+    baseAssetData,
+    quoteAssetData,
+    skip,
+    take
+  }: {
+    baseAssetData: string,
+    quoteAssetData: string,
+    skip: number,
+    take: number
+  }): Promise<IFillItem[]> {
+    let sql = this.getTradeHistoryItemsSql()
+
+    sql += `
+      WHERE (
+        (th."makerAssetData" = $1 AND th."takerAssetData" = $2)
+        OR
+        (th."takerAssetData" = $1 AND th."makerAssetData" = $2)
+      ) AND (
+        th.event = $3
+      )
+      ORDER BY
+        th."blockNumber" DESC,
+        th."logIndex" DESC
+      LIMIT $4 OFFSET $5
+    `
+
+    return this.query(
+      sql, [
+        baseAssetData,
+        quoteAssetData,
+        EventType.FILL,
+        take,
+        skip
+      ]
+    )
   }
 
-  getAccountTradeHistoryAsync (address) {
-    return this.createQueryBuilder()
-      .where('"event" = :event')
-      .andWhere(new Brackets(qb => {
-        qb.where('"makerAddress" = :address')
-          .orWhere('"takerAddress" = :address')
-      }))
-      .setParameters({ address, event: EventType.FILL })
-      .orderBy('"blockNumber"', 'DESC')
-      .addOrderBy('"id"', 'DESC')
-      .getMany()
+  async getTradeHistoryItemById (id: string): Promise<ITradeHistoryItem[]> {
+    let sql = this.getTradeHistoryItemsSql()
+
+    sql += `
+      WHERE
+        th.id = $1
+    `
+
+    return this.query(sql, [id])
+  }
+
+  getAccountTradeHistoryAsync (address: string): Promise<ITradeHistoryItem[]> {
+    let sql = this.getTradeHistoryItemsSql()
+    sql += `
+      WHERE (
+        th."makerAddress" = $1
+        OR
+        th."takerAssetData" = $1
+      ) AND (
+        th.event = $2
+        OR
+        th.event = $3
+      )
+      ORDER BY
+        th."blockNumber" DESC,
+        th."logIndex" DESC
+    `
+
+    return this.query(
+      sql, [
+        address,
+        EventType.FILL,
+        EventType.CANCEL
+      ]
+    )
   }
 
   prepareAssetPairFillQuery (assetPair: AssetPairEntity) {

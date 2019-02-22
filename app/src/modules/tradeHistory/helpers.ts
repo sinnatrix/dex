@@ -1,7 +1,15 @@
 import { assetDataUtils } from '@0x/order-utils'
 import evolve from 'ramda/es/evolve'
 import { toBN } from 'helpers/general'
-import { IFillEventLog, IFillEventLogWithStrings } from 'types'
+import {
+  EventType,
+  ICancelItem,
+  ICancelItemWithoutOrder,
+  IFillItem,
+  ITradeHistoryItem,
+  TradeHistoryEntity
+} from 'types'
+import moize from 'moize'
 
 export const expandTradeHistory = one => {
   const decodedMakerAssetData = assetDataUtils.decodeAssetDataOrThrow(one.makerAssetData)
@@ -16,7 +24,7 @@ export const expandTradeHistory = one => {
   }
 }
 
-export const convertTradeHistoryDecimalsToBigNumber = (tradeHistoryItem: IFillEventLogWithStrings): IFillEventLog => {
+const convertTradeHistoryDecimalsToBigNumbersRaw = (tradeHistoryItem: TradeHistoryEntity): ITradeHistoryItem => {
   const transformation = {
     makerAssetFilledAmount: toBN,
     takerAssetFilledAmount: toBN,
@@ -27,9 +35,12 @@ export const convertTradeHistoryDecimalsToBigNumber = (tradeHistoryItem: IFillEv
   return evolve(transformation, tradeHistoryItem as any) as any
 }
 
-export const isTradeHistoryItemForAssets = (tradeHistoryItem, assetA, assetB) =>
-  isTradeHistoryItemHaveAssetData(tradeHistoryItem, assetA.assetData) &&
-    isTradeHistoryItemHaveAssetData(tradeHistoryItem, assetB.assetData)
+export const convertTradeHistoryDecimalsToBigNumbers = moize(convertTradeHistoryDecimalsToBigNumbersRaw)
 
-export const isTradeHistoryItemHaveAssetData = (tradeHistoryItem, assetData) =>
-  tradeHistoryItem.makerAssetData === assetData || tradeHistoryItem.takerAssetData === assetData
+export const isFillItem = (item: ITradeHistoryItem): item is IFillItem => item.event === EventType.FILL
+
+export const isCancelItem = (item: ITradeHistoryItem): item is ICancelItem =>
+  item.event === EventType.CANCEL && !item.baseAssetFilledAmount && !!item.baseAssetAmount
+
+export const isCancelItemWithoutOrder = (item: ITradeHistoryItem): item is ICancelItemWithoutOrder =>
+  item.event === EventType.CANCEL && !item.baseAssetFilledAmount && !item.baseAssetAmount

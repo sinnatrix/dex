@@ -4,7 +4,10 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
 import compose from 'ramda/es/compose'
 import OrdersTable from './OrdersTable'
-import { getOrderbookBids, getOrderbookAsks } from 'modules/orders/selectors'
+import {
+  getOrderbookBids,
+  getOrderbookAsks
+} from 'modules/orders/selectors'
 
 const connector = connect(
   (state, ownProps) => ({

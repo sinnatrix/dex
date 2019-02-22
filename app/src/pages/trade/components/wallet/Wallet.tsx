@@ -7,25 +7,15 @@ import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import TokensList from './TokensList'
 import OrdersList from './OrdersList'
-import TradeHistory from '../tradeHistory/TradeHistory'
+import AccountTradeHistory from '../tradeHistory/account/Table'
 import { connect } from 'react-redux'
 import compose from 'ramda/es/compose'
-import { loadAccountTradeHistory } from 'modules/tradeHistory'
-import { getAccountTradeHistory, getAccountTradeHistoryLoaded } from 'modules/tradeHistory/selectors'
 import { getAccount } from 'selectors'
-
-const TradeHistoryContainer = withRouter(connect(
-  (state, ownProps) => ({
-    tradeHistory: getAccountTradeHistory(ownProps.match.params, state),
-    tradeHistoryLoaded: getAccountTradeHistoryLoaded(state)
-  })
-)(TradeHistory))
 
 const connector = connect(
   state => ({
     account: getAccount(state)
-  }),
-  { loadAccountTradeHistory }
+  })
 )
 
 const StyledTab = jss({
@@ -39,7 +29,7 @@ const StyledTab = jss({
 const decorate = jss({
   root: {
     display: 'flex',
-    flex: 'none',
+    flex: 1,
     flexDirection: 'column',
     padding: 0
   },
@@ -56,11 +46,6 @@ class Wallet extends React.Component<any> {
 
   handleChange = (e, value) => {
     this.setState({ value })
-
-    // FIXME
-    if (value === 2) {
-      this.props.loadAccountTradeHistory()
-    }
   }
 
   render () {
@@ -81,7 +66,7 @@ class Wallet extends React.Component<any> {
 
             {value === 0 && <TokensList />}
             {value === 1 && <OrdersList />}
-            {value === 2 && <TradeHistoryContainer />}
+            {value === 2 && <AccountTradeHistory />}
           </>
         }
       </Panel>
