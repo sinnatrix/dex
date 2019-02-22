@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import jss from 'react-jss'
 import { withRouter } from 'react-router'
+import { Redirect } from 'react-router-dom'
 import Layout from 'components/Layout'
 import Wallet from './components/wallet/Wallet'
 import Marketplace from './components/Marketplace'
@@ -15,12 +16,19 @@ import routerListener from 'hocs/routerListener'
 import { loadOrderbook } from 'modules/orders'
 import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
 import { loadMarket } from 'modules/global'
-import { getAssetPairTradeHistory, getMarket, getAccount, getAssetPairTradeHistoryLoaded } from 'selectors'
+import {
+  getAssetPairTradeHistory,
+  getAccount,
+  getMarket,
+  getAssetPairTradeHistoryLoaded,
+  getMarketLoaded
+} from 'selectors'
 import compose from 'ramda/es/compose'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Panel from 'components/Panel'
 import MarketplaceAllowances from './components/MarketplaceAllowances'
+import { DEFAULT_MARKET_PATH } from 'modules/global/helpers'
 
 const TradeHistoryContainer = connect(
   state => ({
@@ -31,8 +39,9 @@ const TradeHistoryContainer = connect(
 
 const connector = connect(
   (state, ownProps) => ({
+    account: getAccount(state),
     market: getMarket(ownProps.match.params, state),
-    account: getAccount(state)
+    marketLoaded: getMarketLoaded(state)
   })
 )
 
@@ -102,14 +111,11 @@ class TradePage extends React.Component<any> {
   render () {
     const { classes, chartInterval, account, market } = this.props
 
-    if (!market) {
-      return null
-    }
-
     const { value } = this.state
 
     return (
       <Layout contentClassName={classes.root}>
+        {this.renderRedirect()}
         <MessageListenerContainer />
         <div className={classes.wallet}>
           <Wallet />
@@ -143,6 +149,26 @@ class TradePage extends React.Component<any> {
         }
       </Layout>
     )
+  }
+
+  renderRedirect () {
+    const {
+      marketLoaded,
+      market,
+      match: { url }
+    } = this.props
+
+    if (!marketLoaded) {
+      return null
+    }
+
+    if (market) {
+      return null
+    }
+
+    if (url !== DEFAULT_MARKET_PATH) {
+      return <Redirect to={DEFAULT_MARKET_PATH} />
+    }
   }
 }
 

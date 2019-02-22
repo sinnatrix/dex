@@ -117,3 +117,6 @@ const tokenAllowanceSelector = (state: IState): ITokenAllowances => state.global
 
 export const getTokenAllowance = (symbol: string, state: IState) => tokenAllowanceSelector(state)[symbol]
 export const getTokenBalance = (symbol: string, state: IState) => state.global.tokenBalances[symbol]
+
+export const getMarketsLoaded = (state: IState) => state.global.marketsLoaded
+export const getMarketLoaded = (state: IState) => state.global.marketLoaded

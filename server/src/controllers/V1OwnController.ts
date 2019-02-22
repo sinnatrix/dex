@@ -175,6 +175,8 @@ class V1OwnController {
     const assetPair = await this.assetPairRepository.getByAssetPairSymbolsString(assetPairSymbols)
 
     if (!assetPair) {
+      res.status(404)
+      res.end()
       throw new Error('Market not found')
     }
     const market = await this.marketService.getMarketByAssetPair(assetPair)

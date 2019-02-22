@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import TradePage from 'pages/trade/TradePage'
 import { loadMarkets } from 'modules/global'
 import history from 'ownHistory'
+import { DEFAULT_MARKET_PATH } from 'modules/global/helpers'
 
 const connector = connect(
   null,
@@ -21,8 +22,11 @@ class InnerApp extends React.Component<any> {
       <ConnectedRouter history={history}>
         <React.Fragment>
           <Switch>
-            <Route exact path='/' render={() => <Redirect to={'/WETH/DAI'} />} />
-            <Route path='/:baseAssetSymbol/:quoteAssetSymbol' component={TradePage} />
+            <Route
+              path='/:baseAssetSymbol/:quoteAssetSymbol'
+              render={props => <TradePage {...props} />}
+            />
+            <Redirect to={DEFAULT_MARKET_PATH} />
           </Switch>
         </React.Fragment>
       </ConnectedRouter>

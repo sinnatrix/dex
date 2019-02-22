@@ -68,7 +68,7 @@ test('processSocketMessage', async t => {
         quoteAssetSymbol: market.quoteAsset.symbol
       }
     ))
-    
+
     const orderByHash = getOrderByHash(sra2Order.metaData.orderHash, store.getState() as IState)
 
     t.deepEqual(

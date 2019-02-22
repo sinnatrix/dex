@@ -242,6 +242,8 @@ export interface IGlobalStateSection {
   readonly tokenAllowances: ITokenAllowances
   readonly tokens: ITokensState
   readonly markets: IMarketsState
+  readonly marketLoaded: boolean
+  readonly marketsLoaded: boolean
   readonly marketCandles: ICandleWithStrings[]
   readonly priceChartInterval: IPriceChartInterval
 }

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { IMarket } from 'types'
 
 class ApiService {
   async loadTokenBySymbol (symbol) {
@@ -46,7 +47,7 @@ class ApiService {
     return data
   }
 
-  async loadMarket (marketId) {
+  async loadMarket (marketId: string): Promise<IMarket> {
     const { data } = await axios.get(`/api/v1/market/${marketId}`)
     return data
   }

@@ -2,6 +2,8 @@ import evolve from 'ramda/es/evolve'
 import { toBN } from 'helpers/general'
 import { IPriceChartPoint, ICandleWithStrings, IMarket, IMarketWithStrings } from 'types'
 
+export const DEFAULT_MARKET_PATH = '/WETH/DAI'
+
 export const convertMarketDecimalsToNumbers = (market: IMarketWithStrings): IMarket => {
   const transformation = {
     price: toBN,
