@@ -1,7 +1,6 @@
 import WsRelayerServer from './WsRelayerServer'
-import { ISRA2Order } from '../types'
+import { ISRA2Order, ITradeHistoryItem } from '../types'
 import { convertOrderToDexFormat } from '../utils/helpers'
-import TradeHistoryEntity from '../entities/TradeHistory'
 
 export default class WsRelayerServerFacade {
   static pushOrders (wsRelayerServer: WsRelayerServer, items: ISRA2Order[]) {
@@ -12,7 +11,7 @@ export default class WsRelayerServerFacade {
     ))
   }
 
-  static pushTradeHistory (wsRelayerServer: WsRelayerServer, items: TradeHistoryEntity[]) {
+  static pushTradeHistory (wsRelayerServer: WsRelayerServer, items: ITradeHistoryItem[]) {
     items.forEach(item => wsRelayerServer.pushUpdate(
       'tradeHistory',
       [item],

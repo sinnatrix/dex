@@ -10,7 +10,13 @@ import compose from 'ramda/es/compose'
 import reverse from 'ramda/es/reverse'
 import head from 'ramda/es/head'
 import last from 'ramda/es/last'
-import { IDepthChartPoint, IDexOrder, IDexOrderWithCumulativeVolumes, TOrder } from 'types'
+import {
+  IDepthChartPoint,
+  IDexOrder,
+  IDexOrderWithCumulativeVolumes,
+  OrderType,
+  TOrder
+} from 'types'
 
 const connector = connect(
   (state, ownProps) => ({
@@ -104,10 +110,10 @@ class DepthChartWrapper extends React.Component<any> {
     })
 
     let preparedBids = bidsWithVolumes.reverse()
-      .map(bid => this.convertOrderToDepthChartPoint(bid, 'bid'))
+      .map(bid => this.convertOrderToDepthChartPoint(bid, OrderType.BID))
 
     let preparedAsks = asksWithVolumes
-      .map(ask => this.convertOrderToDepthChartPoint(ask, 'ask'))
+      .map(ask => this.convertOrderToDepthChartPoint(ask, OrderType.ASK))
 
     let lastAsk
     if (preparedAsks.length) {

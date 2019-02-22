@@ -66,6 +66,9 @@ export const getTokenBySymbol = (symbol: string, state: ITokensState): IDexToken
 export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
   tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN
 
+export const getTokenByAssetData = (assetData: string, state: ITokensState): IDexToken =>
+  Object.values(state.entities.tokens).find(one => one.assetData === assetData) || DEFAULT_TOKEN
+
 export const getMarkets = createSelector(
   getMarketsState,
   (markets: IMarketsState) => markets.result.map(id =>

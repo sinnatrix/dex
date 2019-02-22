@@ -1,4 +1,3 @@
-import { EventLog } from 'web3/types'
 import { BigNumber } from '@0x/utils'
 import { SignedOrder, OrderInfo } from '@0x/contract-wrappers'
 
@@ -20,7 +19,12 @@ export interface IDexOrderWithCumulativeVolumes extends IDexOrder {
   makerVolume: BigNumber
 }
 
-export type TOrder = 'bid' | 'ask'
+export enum OrderType {
+  BID = 'bid',
+  ASK = 'ask'
+}
+
+export type TOrder = OrderType.BID | OrderType.ASK
 
 export interface IDepthChartPoint {
   type: TOrder
@@ -52,46 +56,6 @@ export interface IDexOrderExtra {
   takerAmount: BigNumber,
   remainingMakerAssetAmount: BigNumber,
   remainingTakerAssetAmount: BigNumber
-}
-
-export interface IDexEventLog extends EventLog {
-  id: string
-  transactionHash: string
-  blockNumber: number
-  logIndex: number
-  returnValues: any
-}
-
-export interface IFillEventLogWithStrings extends IDexEventLog {
-  returnValues: {
-    orderHash: string
-    senderAddress: string
-    feeRecipientAddress: string
-    makerAddress: string
-    takerAddress: string
-    makerAssetData: string
-    takerAssetData: string
-    makerAssetFilledAmount: string
-    takerAssetFilledAmount: string
-    makerFeePaid: string
-    takerFeePaid: string
-  }
-}
-
-export interface IFillEventLog extends IDexEventLog {
-  returnValues: {
-    orderHash: string
-    senderAddress: string
-    feeRecipientAddress: string
-    makerAddress: string
-    takerAddress: string
-    makerAssetData: string
-    takerAssetData: string
-    makerAssetFilledAmount: BigNumber
-    takerAssetFilledAmount: BigNumber
-    makerFeePaid: BigNumber
-    takerFeePaid: BigNumber
-  }
 }
 
 type TChannel = 'orders' | 'tradeHistory'
@@ -192,6 +156,45 @@ export interface TradeHistoryEntity {
   timestamp: number
 }
 
+export interface ITradeHistoryItem extends TradeHistoryEntity {
+  orderType: TOrder
+  baseAssetData: string
+  quoteAssetData: string
+  baseAssetFilledAmount?: number
+  quoteAssetFilledAmount?: number
+  baseAssetAmount?: number
+  quoteAssetAmount?: number
+}
+
+export interface IFillItem extends ITradeHistoryItem {
+  event: EventType.FILL
+  baseAssetFilledAmount: number
+  quoteAssetFilledAmount: number
+}
+
+export interface ICancelItem extends ITradeHistoryItem {
+  event: EventType.CANCEL
+  baseAssetAmount: number
+  quoteAssetAmount: number
+}
+
+export interface ICancelItemWithoutOrder extends ITradeHistoryItem {
+  event: EventType.CANCEL
+  baseAssetAmount: undefined
+  quoteAssetAmount: undefined
+  baseAssetFilledAmount: undefined
+  quoteAssetFilledAmount: undefined
+}
+
+export interface TradeHistoryItemWithTokens extends ITradeHistoryItem {
+  tokens: {
+    baseToken: IDexToken,
+    quoteToken: IDexToken,
+    makerToken: IDexToken,
+    takerToken: IDexToken
+  }
+}
+
 export interface ICandleWithStrings {
   volume: string
   open: string | null
@@ -215,16 +218,21 @@ export interface IPriceChartPoint {
  */
 // global module state
 export interface ITokenBalances extends IIndexedType<BigNumber> {}
+
 export interface ITokenAllowances extends IIndexedType<BigNumber> {}
+
 export interface INormalizedStateEntities<T> {
   readonly [key: string]: IIndexedType<T>
 }
+
 export interface INormalizedState<T> {
   readonly entities: INormalizedStateEntities<T>
   readonly result: string[]
 }
 export interface ITokensState extends INormalizedState<IDexToken> {}
+
 export interface IMarketsState extends INormalizedState<IMarketWithStrings> {}
+
 export interface IPriceChartInterval {
   readonly id: string
   readonly name: string
@@ -233,6 +241,7 @@ export interface IPriceChartInterval {
   readonly ticks: number
   readonly tickFormat: string
 }
+
 export interface IGlobalStateSection {
   readonly enabled: boolean
   readonly account: string
@@ -261,7 +270,7 @@ export interface IOrdersStateSection {
 export interface ITradeHistoryStateSection {
   readonly assetPairTradeHistoryLoaded: boolean
   readonly accountTradeHistoryLoaded: boolean
-  readonly tradeHistory: IIndexedType<TradeHistoryEntity>
+  readonly tradeHistory: IIndexedType<ITradeHistoryItem>
   readonly assetPairTradeHistory: string[]
   readonly accountTradeHistory: string[]
 }
