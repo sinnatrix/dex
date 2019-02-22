@@ -32,18 +32,18 @@ export const makeConnectRequest = () => async (dispatch, getState, { blockchainS
 }
 
 export const updateAccountData = () => async (dispatch, getState, { blockchainService }) => {
-  const { network, account } = getState().global
+  const { clientNetwork: network, account } = getState().global
 
   const accounts = await blockchainService.getAccounts()
   const nextAccount = (accounts[0] || '').toLowerCase()
-  const nextNetwork = await blockchainService.getNetworkName()
+  const nextNetwork = await blockchainService.getNetwork()
 
   if (nextAccount !== account) {
     dispatch(actions.setAccount(nextAccount))
   }
 
-  if (nextNetwork !== network) {
-    dispatch(actions.setNetwork(nextNetwork))
+  if (!network || nextNetwork.name !== network.name) {
+    dispatch(actions.setClientNetwork(nextNetwork))
   }
 }
 
@@ -193,4 +193,10 @@ export const changePriceChartInterval = (matchParams, interval: any) => async (d
   const now = Math.round((new Date()).getTime() / 1000)
 
   dispatch(loadMarketCandles(market, now - interval.intervalSeconds, now, interval.groupIntervalSeconds))
+}
+
+export const loadNetwork = () => async (dispatch, getState, { apiService }) => {
+  const network = await apiService.loadNetwork()
+
+  dispatch(actions.setApplicationNetwork(network))
 }

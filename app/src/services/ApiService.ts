@@ -66,6 +66,11 @@ class ApiService {
     const { data } = await axios.get(`/api/v1/market/${marketId}/candles`, { params })
     return data
   }
+
+  async loadNetwork () {
+    const { data } = await axios.get(`/api/v1/network`)
+    return data
+  }
 }
 
 export default ApiService

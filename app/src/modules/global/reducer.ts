@@ -7,7 +7,8 @@ import { IGlobalStateSection } from 'types'
 const initialState: IGlobalStateSection = {
   enabled: false,
   account: '',
-  network: '',
+  applicationNetwork: undefined,
+  clientNetwork: undefined,
   ethBalance: new BigNumber(0),
   tokenBalances: {},
   tokenAllowances: {},
@@ -44,8 +45,11 @@ export default (state: IGlobalStateSection = initialState, { type, payload }) =>
     case types.SET_ACCOUNT:
       return { ...state, account: payload }
 
-    case types.SET_NETWORK:
-      return { ...state, network: payload }
+    case types.SET_APPLICATION_NETWORK:
+      return { ...state, applicationNetwork: payload }
+
+    case types.SET_CLIENT_NETWORK:
+      return { ...state, clientNetwork: payload }
 
     case types.SET_ETH_BALANCE:
       return { ...state, ethBalance: payload }

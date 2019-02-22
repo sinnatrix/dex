@@ -11,7 +11,8 @@ import {
   ITokensState,
   ITokenAllowances,
   IPriceChartInterval,
-  IMarketsState
+  IMarketsState,
+  INetwork
 } from 'types'
 
 const shallowEqualArrays = require('shallow-equal/arrays')
@@ -36,7 +37,11 @@ export const getMarketsState = (state: IState): IMarketsState => state.global.ma
 
 export const getAccount = (state: IState): string => state.global.account
 
-export const getNetworkName = (state: IState): string => state.global.network
+export const getClientNetwork = (state: IState): INetwork | undefined =>
+  state.global.clientNetwork
+
+export const getApplicationNetwork = (state: IState): INetwork | undefined =>
+  state.global.applicationNetwork
 
 export const getEthBalance = (state: IState): BigNumber => state.global.ethBalance
 
@@ -62,9 +67,6 @@ export const getTokensToDisplay = (state: IState) => memoizeTokensToDisplay(
 
 export const getTokenBySymbol = (symbol: string, state: ITokensState): IDexToken =>
   state.entities.tokens[symbol] || DEFAULT_TOKEN
-
-export const findTokenByAssetData = (assetData: string, tokens: IDexToken[]): IDexToken =>
-  tokens.find(token => token.assetData === assetData) || DEFAULT_TOKEN
 
 export const getTokenByAssetData = (assetData: string, state: ITokensState): IDexToken =>
   Object.values(state.entities.tokens).find(one => one.assetData === assetData) || DEFAULT_TOKEN
@@ -123,3 +125,10 @@ export const getTokenBalance = (symbol: string, state: IState) => state.global.t
 
 export const getMarketsLoaded = (state: IState) => state.global.marketsLoaded
 export const getMarketLoaded = (state: IState) => state.global.marketLoaded
+
+export const isClientNetworkChangeRequired = (state) => {
+  const client = getClientNetwork(state)
+  const app = getApplicationNetwork(state)
+
+  return client && app && client.id !== app.id
+}

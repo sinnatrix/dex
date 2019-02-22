@@ -3,11 +3,11 @@ import jss from 'react-jss'
 import EtherscanLink from 'components/EtherscanLink'
 import { connect } from 'react-redux'
 import { loadTokens, updateAccountData, makeConnectRequest } from 'modules/global'
-import { getAccount, getNetworkName } from 'selectors'
+import { getAccount, getClientNetwork } from 'selectors'
 
 const connector = connect(
   state => ({
-    network: getNetworkName(state),
+    network: getClientNetwork(state),
     account: getAccount(state)
   }),
   { loadTokens, updateAccountData, makeConnectRequest }
@@ -45,7 +45,7 @@ class ConnectionWidget extends React.Component<any> {
       console.log('updateAccountData error', e)
     }
 
-    this.timeout = setTimeout(this.updateAccountDataWithTimeout, 100)
+    this.timeout = setTimeout(this.updateAccountDataWithTimeout, 500)
   }
 
   render () {
@@ -54,7 +54,14 @@ class ConnectionWidget extends React.Component<any> {
     if (!account) {
       return (
         <div className={classes.error}>
-          <a target='_blank' href='https://metamask.io/' rel='noopener noreferrer' style={{ marginRight: 5 }}>Metamask</a>
+          <a
+            target='_blank'
+            href='https://metamask.io/'
+            rel='noopener noreferrer'
+            style={{ marginRight: 5 }}
+          >
+            Metamask
+          </a>
           account is not connected
         </div>
       )

@@ -6,9 +6,9 @@ import ReactTable, { ReactTableDefaults } from 'react-table'
 import {
   getAccount,
   getMarket,
-  getNetworkName,
   getAssetPairTradeHistory,
-  getAssetPairTradeHistoryLoaded
+  getAssetPairTradeHistoryLoaded,
+  getApplicationNetwork
 } from 'selectors'
 import {
   getPrice,
@@ -71,7 +71,7 @@ const connector = connect(
     tradeHistoryLoaded: getAssetPairTradeHistoryLoaded(state),
     account: getAccount(state),
     market: getMarket(ownProps.match.params, state),
-    network: getNetworkName(state)
+    network: getApplicationNetwork(state)
   })
 )
 

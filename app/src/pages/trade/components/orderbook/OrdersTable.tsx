@@ -7,7 +7,7 @@ import OrderTrComponent from './OrderTrComponent'
 import ReactTable from 'react-table'
 import 'react-table/react-table.css'
 import red from '@material-ui/core/colors/red'
-import { getQuoteAsset, getBaseAsset, getMarket } from 'selectors'
+import { getQuoteAsset, getBaseAsset, getMarket, isClientNetworkChangeRequired } from 'selectors'
 import compose from 'ramda/es/compose'
 import { IDexOrder, IMarket } from 'types'
 import { BigNumber } from '@0x/utils'
@@ -19,7 +19,8 @@ const connector = connect(
   (state, ownProps) => ({
     baseAsset: getBaseAsset(ownProps.match.params, state),
     quoteAsset: getQuoteAsset(ownProps.match.params, state),
-    market: getMarket(ownProps.match.params, state)
+    market: getMarket(ownProps.match.params, state),
+    isClientNetworkChangeRequired: isClientNetworkChangeRequired(state)
   })
 )
 
@@ -84,7 +85,7 @@ class OrdersTable extends React.Component<any> {
   }
 
   render () {
-    const { classes, orders, quoteAsset, baseAsset, market } = this.props
+    const { classes, orders, quoteAsset, baseAsset, market, isClientNetworkChangeRequired } = this.props
 
     const ethCap = this.getEthCap(
       orders.filter(order => !order.spread),
@@ -153,7 +154,9 @@ class OrdersTable extends React.Component<any> {
             Header: '',
             id: 'fill',
             sortable: false,
-            Cell: ({ original: order }) => order.spread ? null : <FillOrderButton order={order} />,
+            Cell: ({ original: order }) => order.spread
+              ? null
+              : <FillOrderButton order={order} disabled={isClientNetworkChangeRequired}/>,
             width: 64,
             className: classes.controlColumn
           }

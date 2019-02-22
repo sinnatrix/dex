@@ -25,9 +25,15 @@ class FillOrderButton extends React.Component<any> {
   }
 
   render () {
-    const { classes } = this.props
+    const { classes, disabled } = this.props
     return (
-      <ProgressButton className={classes.fillButton} onClick={this.handleClick} variant='contained' replaceContent>
+      <ProgressButton
+        disabled={disabled}
+        className={classes.fillButton}
+        onClick={this.handleClick}
+        variant='contained'
+        replaceContent
+      >
         Fill
       </ProgressButton>
     )
