@@ -7,9 +7,9 @@ import ReactTable, { ReactTableDefaults } from 'react-table'
 import {
   getAccount,
   getMarket,
-  getNetworkName,
   getAccountTradeHistory,
-  getAccountTradeHistoryLoaded
+  getAccountTradeHistoryLoaded,
+  getApplicationNetwork
 } from 'selectors'
 import compose from 'ramda/es/compose'
 import TrendArrow from '../../TrendArrow'
@@ -94,7 +94,7 @@ const connector = connect(
     tradeHistoryLoaded: getAccountTradeHistoryLoaded(state),
     account: getAccount(state),
     market: getMarket(ownProps.match.params, state),
-    network: getNetworkName(state)
+    network: getApplicationNetwork(state)
   }),
   { loadAccountTradeHistory }
 )

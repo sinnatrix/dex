@@ -3,18 +3,19 @@ import { Route, Switch, Redirect } from 'react-router-dom'
 import { ConnectedRouter } from 'connected-react-router'
 import { connect } from 'react-redux'
 import TradePage from 'pages/trade/TradePage'
-import { loadMarkets } from 'modules/global'
+import { loadMarkets, loadNetwork } from 'modules/global'
 import history from 'ownHistory'
 import { DEFAULT_MARKET_PATH } from 'modules/global/helpers'
 
 const connector = connect(
   null,
-  { loadMarkets }
+  { loadMarkets, loadNetwork }
 )
 
 class InnerApp extends React.Component<any> {
   componentDidMount () {
     this.props.loadMarkets()
+    this.props.loadNetwork()
   }
 
   render () {

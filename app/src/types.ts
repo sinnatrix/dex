@@ -217,6 +217,11 @@ export interface IPriceChartPoint {
  * Typify State
  */
 // global module state
+export interface INetwork {
+  id: number
+  name: string
+}
+
 export interface ITokenBalances extends IIndexedType<BigNumber> {}
 
 export interface ITokenAllowances extends IIndexedType<BigNumber> {}
@@ -229,6 +234,7 @@ export interface INormalizedState<T> {
   readonly entities: INormalizedStateEntities<T>
   readonly result: string[]
 }
+
 export interface ITokensState extends INormalizedState<IDexToken> {}
 
 export interface IMarketsState extends INormalizedState<IMarketWithStrings> {}
@@ -245,7 +251,8 @@ export interface IPriceChartInterval {
 export interface IGlobalStateSection {
   readonly enabled: boolean
   readonly account: string
-  readonly network: string
+  readonly applicationNetwork?: INetwork
+  readonly clientNetwork?: INetwork
   readonly ethBalance: BigNumber
   readonly tokenBalances: ITokenBalances
   readonly tokenAllowances: ITokenAllowances

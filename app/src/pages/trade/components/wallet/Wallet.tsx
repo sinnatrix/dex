@@ -56,12 +56,12 @@ class Wallet extends React.Component<any> {
       <Panel className={classes.root}>
         <ConnectionWidget />
 
-        {!!account &&
+        {account &&
           <>
             <Tabs onChange={this.handleChange} value={value}>
-              <StyledTab label='Tokens'/>
-              <StyledTab label='Orders'/>
-              <StyledTab label='History'/>
+              <StyledTab label='Tokens' />
+              <StyledTab label='Orders' />
+              <StyledTab label='History' />
             </Tabs>
 
             {value === 0 && <TokensList />}

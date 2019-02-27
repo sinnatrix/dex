@@ -1,7 +1,11 @@
 import * as express from 'express'
 import WsRelayerServer from '../wsRelayerServer/WsRelayerServer'
 import config from '../config'
-import { convertDexOrderToSRA2Format, convertSignedOrderWithStringsToSignedOrder } from '../utils/helpers'
+import {
+  convertDexOrderToSRA2Format,
+  convertSignedOrderWithStringsToSignedOrder,
+  getNetworkNameById
+} from '../utils/helpers'
 import { ISRA2Order } from '../types'
 import MarketService from '../services/MarketService'
 import { In } from 'typeorm'
@@ -60,6 +64,7 @@ class V1OwnController {
     router.get('/markets', this.getTopMarkets.bind(this))
     router.get('/market/:marketId', this.getMarket.bind(this))
     router.get('/market/:marketId/candles', this.getMarketCandles.bind(this))
+    router.get('/network', this.getNetwork.bind(this))
 
     this.application.use(config.OWN_API_PATH, router)
   }
@@ -204,6 +209,15 @@ class V1OwnController {
     )
 
     res.send(candles)
+  }
+
+  getNetwork (req, res) {
+    const networkId = parseInt(process.env.NETWORK_ID as string, 10)
+
+    res.send({
+      id: networkId,
+      name: getNetworkNameById(networkId)
+    })
   }
 }
 

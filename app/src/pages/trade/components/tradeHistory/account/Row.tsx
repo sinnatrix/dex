@@ -1,22 +1,15 @@
 import React from 'react'
 import { ReactTableDefaults } from 'react-table'
 import { ITradeHistoryItem } from 'types'
+import { getEtherscanTxUrl, openUrlInNewWindow } from 'modules/global/helpers'
 
 class Row extends React.Component<any> {
   handleClick = () => {
     const tradeHistoryItem: ITradeHistoryItem = this.props.data
     const { network } = this.props
+    const url = getEtherscanTxUrl(tradeHistoryItem.transactionHash, network.name)
 
-    let url = 'https://'
-    if (network !== 'mainnet') {
-      url += `${network}.`
-    }
-    url += `etherscan.io/tx/${tradeHistoryItem.transactionHash}`
-
-    const win = window.open(url, '_blank')
-    if (win) {
-      win.focus()
-    }
+    openUrlInNewWindow(url)
   }
 
   render () {

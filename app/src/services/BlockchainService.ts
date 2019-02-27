@@ -59,7 +59,7 @@ class BlockchainService {
     return this.web3.eth.net.getId()
   }
 
-  async getNetworkName () {
+  async getNetwork () {
     const networkNamesByIds = {
       1: 'mainnet',
       42: 'kovan',
@@ -68,7 +68,10 @@ class BlockchainService {
 
     const networkId = await this.getNetworkId()
 
-    return networkNamesByIds[networkId]
+    return {
+      id: networkId,
+      name: networkNamesByIds[networkId]
+    }
   }
 
   async getEthBalance (address) {

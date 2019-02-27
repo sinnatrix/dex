@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import jss from 'react-jss'
+import cx from 'classnames'
 import { withRouter } from 'react-router'
 import { Redirect } from 'react-router-dom'
 import Layout from 'components/Layout'
@@ -18,8 +19,10 @@ import { loadAssetPairTradeHistory } from 'modules/tradeHistory'
 import { loadMarket } from 'modules/global'
 import {
   getAccount,
+  getApplicationNetwork,
   getMarket,
-  getMarketLoaded
+  getMarketLoaded,
+  isClientNetworkChangeRequired
 } from 'selectors'
 import compose from 'ramda/es/compose'
 import Tabs from '@material-ui/core/Tabs'
@@ -32,7 +35,9 @@ const connector = connect(
   (state, ownProps) => ({
     account: getAccount(state),
     market: getMarket(ownProps.match.params, state),
-    marketLoaded: getMarketLoaded(state)
+    marketLoaded: getMarketLoaded(state),
+    isClientNetworkChangeRequired: isClientNetworkChangeRequired(state),
+    applicationNetwork: getApplicationNetwork(state)
   })
 )
 
@@ -89,6 +94,12 @@ const decorate = jss({
     flex: 1,
     flexDirection: 'column',
     minHeight: 0
+  },
+  connectionIssue: {
+    fontSize: 14,
+    padding: 20,
+    textAlign: 'center',
+    flex: 1
   }
 })
 
@@ -102,7 +113,14 @@ class TradePage extends React.Component<any> {
   }
 
   render () {
-    const { classes, chartInterval, account, market } = this.props
+    const {
+      classes,
+      chartInterval,
+      account,
+      market,
+      isClientNetworkChangeRequired,
+      applicationNetwork
+    } = this.props
 
     const { value } = this.state
 
@@ -111,14 +129,16 @@ class TradePage extends React.Component<any> {
         {this.renderRedirect()}
         <MessageListenerContainer />
         <div className={classes.wallet}>
-          <Wallet />
+          {applicationNetwork &&
+            this.renderWallet()
+          }
         </div>
         {!!market &&
           <>
             <div className={classes.left}>
               <Marketplace />
-              <LimitOrderPanel />
-              {!!account &&
+              <LimitOrderPanel disabled={isClientNetworkChangeRequired}/>
+              {!!account && !isClientNetworkChangeRequired &&
                 <MarketplaceAllowances />
               }
             </div>
@@ -142,6 +162,20 @@ class TradePage extends React.Component<any> {
         }
       </Layout>
     )
+  }
+
+  renderWallet () {
+    const { classes, isClientNetworkChangeRequired, applicationNetwork } = this.props
+
+    const networkName = applicationNetwork.name.charAt(0).toUpperCase() + applicationNetwork.name.slice(1)
+
+    if (isClientNetworkChangeRequired) {
+      return <Panel className={classes.connectionIssue}>
+        Please connect to the<br />Ethereum <strong>{networkName}</strong> Network
+      </Panel>
+    }
+
+    return <Wallet />
   }
 
   renderRedirect () {
